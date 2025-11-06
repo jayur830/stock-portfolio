@@ -27,6 +27,8 @@ interface Stock {
   yield: number;
   /** 비율 */
   ratio: number;
+  /** 보유 주식 수 (선택) */
+  shares?: number;
 }
 
 interface FormValues {
@@ -290,6 +292,7 @@ export default function Page() {
               dividendMonths: [],
               yield: 0,
               ratio: 0,
+              shares: undefined,
             };
 
             const currentStocks = getValues('stocks');

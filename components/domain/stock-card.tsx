@@ -22,6 +22,7 @@ interface FormValues {
     dividendMonths: number[];
     yield: number;
     ratio: number;
+    shares?: number;
   }>;
 }
 
@@ -239,6 +240,23 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
               </Select>
             )}
           />
+        </div>
+        <div className="flex items-center gap-2 max-w-[240px]">
+          <label className="text-sm font-medium whitespace-nowrap w-24">보유 주식 수</label>
+          <Controller
+            control={control}
+            name={`stocks.${index}.shares`}
+            render={({ field }) => (
+              <Input
+                {...field}
+                onChange={(e) => field.onChange(parseFloat(e.target.value) || undefined)}
+                placeholder="선택사항"
+                type="number"
+                value={field.value ?? ''}
+              />
+            )}
+          />
+          <span className="text-sm text-muted-foreground">주</span>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
