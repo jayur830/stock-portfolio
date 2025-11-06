@@ -1,11 +1,9 @@
-export type DividendFrequency = 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
-
 export interface Stock {
   name: string;
   ticker: string;
   price: number;
   dividend: number;
-  dividendFrequency: DividendFrequency;
+  dividendMonths: number[]; // 1~12월 중 배당을 받는 달
   yield: number;
   ratio: number;
 }

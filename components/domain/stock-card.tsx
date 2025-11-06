@@ -5,13 +5,6 @@ import { Control, Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 
 interface FormValues {
@@ -21,7 +14,7 @@ interface FormValues {
     ticker: string;
     price: number;
     dividend: number;
-    dividendFrequency: 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
+    dividendMonths: number[];
     yield: number;
     ratio: number;
   }>;
@@ -88,28 +81,74 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium">배당 지급 월</label>
+            <Controller
+              control={control}
+              name={`stocks.${index}.dividendMonths`}
+              render={({ field }) => (
+                <>
+                  <Button
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      // 월별: 모든 월 선택 (1~12)
+                      field.onChange([
+                        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                      ]);
+                    }}
+                    type="button"
+                    variant="outline"
+                  >
+                    월별
+                  </Button>
+                  <Button
+                    className="h-7 text-xs"
+                    onClick={() => {
+                      // 분기별: 3, 6, 9, 12월 선택
+                      field.onChange([3, 6, 9, 12]);
+                    }}
+                    type="button"
+                    variant="outline"
+                  >
+                    분기별
+                  </Button>
+                </>
+              )}
+            />
+          </div>
           <Controller
             control={control}
-            name={`stocks.${index}.dividendFrequency`}
+            name={`stocks.${index}.dividendMonths`}
             render={({ field }) => (
-              <Select
-                onValueChange={field.onChange}
-                value={field.value}
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="주기" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">월배당</SelectItem>
-                  <SelectItem value="quarterly">분기배당</SelectItem>
-                  <SelectItem value="semi-annual">반기배당</SelectItem>
-                  <SelectItem value="annual">연배당</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="grid grid-cols-6 gap-2">
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
+                  const isSelected = field.value?.includes(month);
+                  return (
+                    <Button
+                      className={`h-8 text-xs ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                      key={month}
+                      onClick={() => {
+                        const currentMonths = field.value || [];
+                        if (isSelected) {
+                          field.onChange(currentMonths.filter((m) => m !== month));
+                        } else {
+                          field.onChange([...currentMonths, month].sort((a, b) => a - b));
+                        }
+                      }}
+                      type="button"
+                      variant={isSelected ? 'default' : 'outline'}
+                    >
+                      {month}월
+                    </Button>
+                  );
+                })}
+              </div>
             )}
           />
-          <div className="flex items-center gap-2 pl-6">
+        </div>
+        <div className="flex gap-2">
+          <div className="flex items-center gap-2">
             <span className="text-sm text-muted-foreground">연</span>
             <Controller
               control={control}

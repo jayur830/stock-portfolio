@@ -13,7 +13,7 @@ interface Stock {
   ticker: string;
   price: number;
   dividend: number;
-  dividendFrequency: 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
+  dividendMonths: number[];
   yield: number;
   ratio: number;
 }
@@ -23,7 +23,7 @@ interface FormValues {
   stocks: Stock[];
 }
 
-export default function Home() {
+export default function Page() {
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
       totalInvestment: 0,
@@ -99,7 +99,7 @@ export default function Home() {
               ticker: '',
               price: 0,
               dividend: 0,
-              dividendFrequency: 'quarterly' as const,
+              dividendMonths: [],
               yield: 0,
               ratio: 0,
             };
@@ -152,7 +152,7 @@ export default function Home() {
               <div className="flex items-center gap-2">
                 <span className="text-sm font-medium text-green-700">세전 연 배당금:</span>
                 <span className="text-lg font-bold text-green-700">
-                  {annualDividend.toLocaleString('ko-KR')}원
+                  {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
                 </span>
               </div>
               <div className="h-6 w-px bg-green-300" />
