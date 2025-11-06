@@ -43,6 +43,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<StockQuote[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -82,15 +83,44 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
     return () => clearTimeout(delayTimer);
   }, [searchQuery]);
 
-  const handleStockSelect = (quote: StockQuote) => {
+  const handleStockSelect = async (quote: StockQuote) => {
     setValue(`stocks.${index}.ticker`, quote.symbol);
     setValue(`stocks.${index}.name`, quote.shortname);
     setSearchQuery(quote.symbol);
     setShowDropdown(false);
+
+    // 종목 상세 정보 가져오기
+    setIsLoadingQuote(true);
+    try {
+      const response = await fetch(`/api/stock-quote?symbol=${encodeURIComponent(quote.symbol)}`);
+      const data = await response.json();
+
+      if (response.ok && !data.error) {
+        setValue(`stocks.${index}.price`, data.price);
+        setValue(`stocks.${index}.currency`, data.currency);
+        setValue(`stocks.${index}.dividend`, data.dividend);
+        setValue(`stocks.${index}.dividendCurrency`, data.currency);
+        if (data.dividendMonths && data.dividendMonths.length > 0) {
+          setValue(`stocks.${index}.dividendMonths`, data.dividendMonths);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch stock quote:', error);
+    } finally {
+      setIsLoadingQuote(false);
+    }
   };
 
   return (
     <Card className="p-4 relative">
+      {isLoadingQuote && (
+        <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg z-10">
+          <div className="flex flex-col items-center gap-2">
+            <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
+            <span className="text-sm text-gray-600">종목 정보 불러오는 중...</span>
+          </div>
+        </div>
+      )}
       {onDelete && (
         <Button
           className="absolute top-2 right-2 h-6 w-6"
