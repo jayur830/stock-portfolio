@@ -80,32 +80,35 @@ const StockCard = ({ stock, onChange }: StockCardProps) => {
               <SelectItem value="annual">연배당</SelectItem>
             </SelectContent>
           </Select>
-          <Input
-            onChange={(e) => onChange?.({
-              ...stock,
-              yield: parseFloat(e.target.value) || 0,
-            })}
-            placeholder="배당률"
-            type="number"
-            value={stock.yield}
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium whitespace-nowrap">비율</label>
+          <div className="flex items-center gap-2 pl-6">
+            <span className="text-sm text-muted-foreground">연</span>
             <Input
-              className="flex-1"
-              max={100}
-              min={0}
-              onChange={(e) => handleRatioChange(parseFloat(e.target.value) || 0)}
-              placeholder="비율"
-              step={10}
+              onChange={(e) => onChange?.({
+                ...stock,
+                yield: parseFloat(e.target.value) || 0,
+              })}
+              placeholder="배당률"
               type="number"
-              value={stock.ratio.toFixed(0)}
+              value={stock.yield}
             />
             <span className="text-sm text-muted-foreground">%</span>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium whitespace-nowrap">비율</label>
+          <Input
+            className="w-[100px]"
+            max={100}
+            min={0}
+            onChange={(e) => handleRatioChange(parseFloat(e.target.value) || 0)}
+            placeholder="비율"
+            step={10}
+            type="number"
+            value={stock.ratio.toFixed(0)}
+          />
+          <span className="text-sm text-muted-foreground">%</span>
           <Slider
+            className="flex-1"
             max={100}
             min={0}
             onValueChange={(values) => handleRatioChange(values[0])}
