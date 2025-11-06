@@ -1,0 +1,275 @@
+'use client';
+
+import ReactECharts from 'echarts-for-react';
+import { useEffect, useState } from 'react';
+
+interface Stock {
+  ticker: string;
+  name: string;
+  price: number;
+  currency: string;
+  dividend: number;
+  dividendCurrency: string;
+  ratio: number;
+}
+
+interface StockChartsProps {
+  stocks: Stock[];
+  totalInvestment: number;
+  exchangeRate: number;
+}
+
+interface HistoryData {
+  symbol: string;
+  data: Array<{
+    date: Date;
+    close: number;
+  }>;
+}
+
+export default function StockCharts({ stocks, totalInvestment, exchangeRate }: StockChartsProps) {
+  const [histories, setHistories] = useState<HistoryData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchHistories = async () => {
+      if (stocks.length === 0) return;
+
+      setIsLoading(true);
+      try {
+        const symbols = stocks.map((s) => s.ticker).filter(Boolean);
+        const response = await fetch('/api/stock-history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symbols }),
+        });
+
+        const data = await response.json();
+        setHistories(data.histories || []);
+      } catch (error) {
+        console.error('Failed to fetch histories:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchHistories();
+  }, [stocks]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
+          <span className="text-sm text-gray-600">차트 데이터 로딩 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (histories.length === 0) {
+    return null;
+  }
+
+  // 1. 통합 포트폴리오 차트 (모든 종목 합산)
+  const combinedChartOption = (() => {
+    if (histories.length === 0) return null;
+
+    // 모든 날짜의 합집합 구하기
+    const allDates = new Set<string>();
+    histories.forEach((h) => {
+      h.data.forEach((d) => {
+        allDates.add(new Date(d.date).toISOString().split('T')[0]);
+      });
+    });
+    const sortedDates = Array.from(allDates).sort();
+
+    // 각 종목의 series 생성
+    const series = histories.map((history) => {
+      const stock = stocks.find((s) => s.ticker === history.symbol);
+      const dataMap = new Map(
+        history.data.map((d) => [new Date(d.date).toISOString().split('T')[0], d.close]),
+      );
+
+      const seriesData = sortedDates.map((date) => {
+        const price = dataMap.get(date);
+        if (!price) return null;
+
+        // USD 종목이면 KRW로 환산
+        return stock?.currency === 'USD' ? price * exchangeRate : price;
+      });
+
+      return {
+        name: stock?.name || history.symbol,
+        type: 'line',
+        data: seriesData,
+        smooth: true,
+      };
+    });
+
+    return {
+      title: {
+        text: '전체 포트폴리오 주가 추이',
+        left: 'center',
+        top: '10px',
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any) => {
+          let result = `${params[0].axisValue}<br/>`;
+          params.forEach((param: any) => {
+            if (param.value !== null) {
+              result += `${param.marker}${param.seriesName}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW<br/>`;
+            }
+          });
+          return result;
+        },
+      },
+      legend: {
+        data: histories.map((h) => {
+          const stock = stocks.find((s) => s.ticker === h.symbol);
+          return stock?.name || h.symbol;
+        }),
+        top: '45px',
+      },
+      xAxis: {
+        type: 'category',
+        data: sortedDates.map((d) => new Date(d).toLocaleDateString('ko-KR', { month: 'short',
+          day: 'numeric' })),
+      },
+      yAxis: {
+        type: 'value',
+        name: '가격 (KRW)',
+      },
+      series,
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '100px',
+        containLabel: true,
+      },
+    };
+  })();
+
+  // 2. 수익금 차트 (0부터 시작)
+  const profitChartOption = (() => {
+    if (histories.length === 0) return null;
+
+    const allDates = new Set<string>();
+    histories.forEach((h) => {
+      h.data.forEach((d) => {
+        allDates.add(new Date(d.date).toISOString().split('T')[0]);
+      });
+    });
+    const sortedDates = Array.from(allDates).sort();
+
+    // 각 날짜의 총 포트폴리오 가치 계산
+    const portfolioValues = sortedDates.map((date) => {
+      let totalValue = 0;
+
+      stocks.forEach((stock) => {
+        const history = histories.find((h) => h.symbol === stock.ticker);
+        if (!history) return;
+
+        const dataPoint = history.data.find(
+          (d) => new Date(d.date).toISOString().split('T')[0] === date,
+        );
+        if (!dataPoint) return;
+
+        const investmentAmount = (totalInvestment * stock.ratio) / 100;
+        let priceInKRW = dataPoint.close;
+        if (stock.currency === 'USD') {
+          priceInKRW = dataPoint.close * exchangeRate;
+        }
+
+        const shares = investmentAmount / (stock.price || 1);
+        const currentValue = shares * priceInKRW;
+        totalValue += currentValue;
+      });
+
+      return totalValue;
+    });
+
+    // 수익금 = 현재 가치 - 투자금 (0부터 시작)
+    const initialValue = portfolioValues[0] || totalInvestment;
+    const profits = portfolioValues.map((value) => value - initialValue);
+
+    return {
+      title: {
+        text: '누적 수익금',
+        left: 'center',
+        top: '10px',
+      },
+      tooltip: {
+        trigger: 'axis',
+        formatter: (params: any) => {
+          const param = params[0];
+          const value = param.value;
+          const color = value >= 0 ? '#16a34a' : '#dc2626';
+          return `${param.axisValue}<br/>${param.marker}<span style="color:${color}">수익: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span>`;
+        },
+      },
+      xAxis: {
+        type: 'category',
+        data: sortedDates.map((d) => new Date(d).toLocaleDateString('ko-KR', { month: 'short',
+          day: 'numeric' })),
+      },
+      yAxis: {
+        type: 'value',
+        name: '수익금 (KRW)',
+      },
+      series: [
+        {
+          name: '수익금',
+          type: 'line',
+          data: profits,
+          smooth: true,
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                { offset: 0,
+                  color: 'rgba(34, 197, 94, 0.3)' },
+                { offset: 1,
+                  color: 'rgba(34, 197, 94, 0.05)' },
+              ],
+            },
+          },
+          lineStyle: { width: 2,
+            color: '#16a34a' },
+          itemStyle: { color: '#16a34a' },
+        },
+      ],
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        top: '60px',
+        containLabel: true,
+      },
+    };
+  })();
+
+  return (
+    <div className="flex flex-col gap-6 mt-6">
+      {/* 통합 포트폴리오 차트 */}
+      {combinedChartOption && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <ReactECharts option={combinedChartOption} style={{ height: '400px' }} />
+        </div>
+      )}
+
+      {/* 수익금 차트 */}
+      {profitChartOption && (
+        <div className="bg-white border border-gray-200 rounded-lg p-4">
+          <ReactECharts option={profitChartOption} style={{ height: '350px' }} />
+        </div>
+      )}
+    </div>
+  );
+}

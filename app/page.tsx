@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
+import StockCharts from '@/components/domain/stock-charts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,8 +28,6 @@ interface Stock {
   yield: number;
   /** 비율 */
   ratio: number;
-  /** 보유 주식 수 (선택) */
-  shares?: number;
 }
 
 interface FormValues {
@@ -292,7 +291,6 @@ export default function Page() {
               dividendMonths: [],
               yield: 0,
               ratio: 0,
-              shares: undefined,
             };
 
             const currentStocks = getValues('stocks');
@@ -404,6 +402,13 @@ export default function Page() {
                 </div>
               </div>
             </>
+          )}
+          {(annualDividend !== null || requiredInvestment !== null) && watchedStocks.length > 0 && (
+            <StockCharts
+              exchangeRate={watch('exchangeRate')}
+              stocks={watchedStocks}
+              totalInvestment={requiredInvestment !== null ? requiredInvestment : watch('totalInvestment')}
+            />
           )}
         </div>
       </form>
