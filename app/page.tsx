@@ -14,6 +14,7 @@ interface Stock {
   price: number;
   currency: string;
   dividend: number;
+  dividendCurrency: string;
   dividendMonths: number[];
   yield: number;
   ratio: number;
@@ -69,9 +70,9 @@ export default function Page() {
     }
 
     // USD 종목이 있는 경우 환율 체크
-    const hasUsdStock = data.stocks.some((stock) => stock.currency === 'USD');
+    const hasUsdStock = data.stocks.some((stock) => stock.currency === 'USD' || stock.dividendCurrency === 'USD');
     if (hasUsdStock && (!data.exchangeRate || data.exchangeRate <= 0)) {
-      alert('USD 종목이 있습니다. 환율을 먼저 조회해주세요.');
+      alert('USD 항목이 있습니다. 환율을 먼저 조회해주세요.');
       return;
     }
 
@@ -83,12 +84,15 @@ export default function Page() {
       // 해당 종목에 투자된 금액 (KRW)
       const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
 
-      // 주가와 주당 배당금을 KRW로 환산
+      // 주가를 KRW로 환산
       let priceInKRW = stock.price;
-      let dividendInKRW = stock.dividend;
-
       if (stock.currency === 'USD') {
         priceInKRW = stock.price * data.exchangeRate;
+      }
+
+      // 주당 배당금을 KRW로 환산
+      let dividendInKRW = stock.dividend;
+      if (stock.dividendCurrency === 'USD') {
         dividendInKRW = stock.dividend * data.exchangeRate;
       }
 
@@ -173,6 +177,7 @@ export default function Page() {
               price: 0,
               currency: 'KRW',
               dividend: 0,
+              dividendCurrency: 'KRW',
               dividendMonths: [],
               yield: 0,
               ratio: 0,

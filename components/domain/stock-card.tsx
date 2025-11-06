@@ -17,6 +17,7 @@ interface FormValues {
     price: number;
     currency: string;
     dividend: number;
+    dividendCurrency: string;
     dividendMonths: number[];
     yield: number;
     ratio: number;
@@ -204,6 +205,44 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
                   type="number"
                   value={field.value}
                 />
+              )}
+            />
+            <Controller
+              control={control}
+              name={`stocks.${index}.dividendCurrency`}
+              render={({ field }) => (
+                <Select
+                  onValueChange={(newCurrency) => {
+                    const oldCurrency = field.value;
+                    const currentDividend = getValues(`stocks.${index}.dividend`);
+                    const exchangeRate = getValues('exchangeRate');
+
+                    if (oldCurrency !== newCurrency && currentDividend > 0 && exchangeRate > 0) {
+                      let newDividend = currentDividend;
+
+                      if (oldCurrency === 'KRW' && newCurrency === 'USD') {
+                        // KRW → USD
+                        newDividend = currentDividend / exchangeRate;
+                      } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
+                        // USD → KRW
+                        newDividend = currentDividend * exchangeRate;
+                      }
+
+                      setValue(`stocks.${index}.dividend`, Math.round(newDividend * 100) / 100);
+                    }
+
+                    field.onChange(newCurrency);
+                  }}
+                  value={field.value}
+                >
+                  <SelectTrigger className="w-24">
+                    <SelectValue placeholder="통화" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="KRW">KRW</SelectItem>
+                    <SelectItem value="USD">USD</SelectItem>
+                  </SelectContent>
+                </Select>
               )}
             />
           </div>
