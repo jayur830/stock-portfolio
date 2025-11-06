@@ -12,6 +12,7 @@ interface Stock {
   name: string;
   ticker: string;
   price: number;
+  currency: string;
   dividend: number;
   dividendMonths: number[];
   yield: number;
@@ -67,16 +68,35 @@ export default function Page() {
       return; // 조건이 맞지 않으면 계산하지 않음
     }
 
+    // USD 종목이 있는 경우 환율 체크
+    const hasUsdStock = data.stocks.some((stock) => stock.currency === 'USD');
+    if (hasUsdStock && (!data.exchangeRate || data.exchangeRate <= 0)) {
+      alert('USD 종목이 있습니다. 환율을 먼저 조회해주세요.');
+      return;
+    }
+
     // 세전 연 배당금 계산
     let totalAnnualDividend = 0;
     const monthlyDividendArray = Array(12).fill(0);
 
     data.stocks.forEach((stock) => {
-      // 해당 종목에 투자된 금액
+      // 해당 종목에 투자된 금액 (KRW)
       const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
 
-      // 해당 종목의 연 배당금 = 투자금액 * 배당률 / 100
-      const stockAnnualDividend = (investmentAmount * stock.yield) / 100;
+      // 주가와 주당 배당금을 KRW로 환산
+      let priceInKRW = stock.price;
+      let dividendInKRW = stock.dividend;
+
+      if (stock.currency === 'USD') {
+        priceInKRW = stock.price * data.exchangeRate;
+        dividendInKRW = stock.dividend * data.exchangeRate;
+      }
+
+      // 보유 주식 수 계산
+      const shares = investmentAmount / priceInKRW;
+
+      // 연 배당금 = 보유 주식 수 × 연간 주당 배당금
+      const stockAnnualDividend = shares * dividendInKRW;
 
       totalAnnualDividend += stockAnnualDividend;
 
@@ -137,9 +157,11 @@ export default function Page() {
         {fields.map((field, index) => (
           <StockCard
             control={control}
+            getValues={getValues}
             index={index}
             key={field.id}
             onDelete={() => remove(index)}
+            setValue={setValue}
           />
         ))}
         <Button
@@ -149,6 +171,7 @@ export default function Page() {
               name: '',
               ticker: '',
               price: 0,
+              currency: 'KRW',
               dividend: 0,
               dividendMonths: [],
               yield: 0,

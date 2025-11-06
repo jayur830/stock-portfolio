@@ -1,10 +1,11 @@
 import { X } from 'lucide-react';
 import { memo } from 'react';
-import { Control, Controller } from 'react-hook-form';
+import { Control, Controller, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 
 interface FormValues {
@@ -14,6 +15,7 @@ interface FormValues {
     name: string;
     ticker: string;
     price: number;
+    currency: string;
     dividend: number;
     dividendMonths: number[];
     yield: number;
@@ -24,10 +26,12 @@ interface FormValues {
 interface StockCardProps {
   control: Control<FormValues>;
   index: number;
+  getValues: UseFormGetValues<FormValues>;
+  setValue: UseFormSetValue<FormValues>;
   onDelete?: () => void;
 }
 
-const StockCard = ({ control, index, onDelete }: StockCardProps) => {
+const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardProps) => {
   return (
     <Card className="p-4 relative">
       {onDelete && (
@@ -77,6 +81,44 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 type="number"
                 value={field.value}
               />
+            )}
+          />
+          <Controller
+            control={control}
+            name={`stocks.${index}.currency`}
+            render={({ field }) => (
+              <Select
+                onValueChange={(newCurrency) => {
+                  const oldCurrency = field.value;
+                  const currentPrice = getValues(`stocks.${index}.price`);
+                  const exchangeRate = getValues('exchangeRate');
+
+                  if (oldCurrency !== newCurrency && currentPrice > 0 && exchangeRate > 0) {
+                    let newPrice = currentPrice;
+
+                    if (oldCurrency === 'KRW' && newCurrency === 'USD') {
+                      // KRW → USD
+                      newPrice = currentPrice / exchangeRate;
+                    } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
+                      // USD → KRW
+                      newPrice = currentPrice * exchangeRate;
+                    }
+
+                    setValue(`stocks.${index}.price`, Math.round(newPrice * 100) / 100);
+                  }
+
+                  field.onChange(newCurrency);
+                }}
+                value={field.value}
+              >
+                <SelectTrigger className="w-24">
+                  <SelectValue placeholder="통화" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="KRW">KRW</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
+                </SelectContent>
+              </Select>
             )}
           />
         </div>
@@ -150,21 +192,20 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
         <div className="flex gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-sm text-muted-foreground">연</span>
+            <span className="text-sm w-[120px]">주당 배당금: </span>
             <Controller
               control={control}
-              name={`stocks.${index}.yield`}
+              name={`stocks.${index}.dividend`}
               render={({ field }) => (
                 <Input
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  placeholder="배당률"
+                  placeholder="주당 배당금"
                   type="number"
                   value={field.value}
                 />
               )}
             />
-            <span className="text-sm text-muted-foreground">%</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
