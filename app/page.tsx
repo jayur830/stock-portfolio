@@ -247,6 +247,7 @@ export default function Page() {
             <label className="text-sm font-medium whitespace-nowrap">총 투자금</label>
             <Input
               className="flex-1"
+              maxLength={24}
               placeholder="총 투자금을 입력하세요"
               type="number"
               {...register('totalInvestment', { valueAsNumber: true })}
@@ -258,6 +259,7 @@ export default function Page() {
             <label className="text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
             <Input
               className="flex-1"
+              maxLength={24}
               placeholder="목표 연 배당금을 입력하세요"
               type="number"
               {...register('targetAnnualDividend', { valueAsNumber: true })}
