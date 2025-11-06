@@ -1,9 +1,10 @@
-"use client";
+'use client';
 
-import StockCard from "@/components/domain/stock-card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useState } from "react";
+import { useState } from 'react';
+
+import StockCard from '@/components/domain/stock-card';
+import { Button } from '@/components/ui/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Stock {
   name: string;
@@ -19,7 +20,7 @@ export default function Home() {
 
   return (
     <main className="flex flex-col gap-3.5 p-4">
-      <Tabs defaultValue="dividend" className="w-full">
+      <Tabs className="w-full" defaultValue="dividend">
         <TabsList>
           <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
           <TabsTrigger value="investment">투자금 계산</TabsTrigger>
@@ -30,14 +31,13 @@ export default function Home() {
           <StockCard key={index} stock={stock} />
         ))}
         <Button
-          variant="outline"
           className="border-dashed"
           onClick={() => {
             setList([
               ...list,
               {
-                name: "",
-                ticker: "",
+                name: '',
+                ticker: '',
                 price: 0,
                 dividend: 0,
                 yield: 0,
@@ -45,6 +45,7 @@ export default function Home() {
               },
             ]);
           }}
+          variant="outline"
         >
           +
         </Button>

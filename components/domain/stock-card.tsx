@@ -1,23 +1,24 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import type { Stock } from "@/types";
-import { memo } from "react";
+import { memo } from 'react';
+
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import type { Stock } from '@/types';
 
 const StockCard = ({ stock }: { stock: Stock }) => {
-    return (
-        <Card className="p-4">
-            <CardHeader>
-                <Input type="search" placeholder="종목검색" className="flex-1" value={stock.ticker} />
-                <Input type="text" placeholder="종목명" value={stock.name} />
-            </CardHeader>
-            <CardContent className="flex gap-2">
-                <Input type="number" placeholder="가격" value={stock.price} />
-                <Input type="number" placeholder="배당" value={stock.dividend} />
-                <Input type="number" placeholder="배당률" value={stock.yield} />
-                <Input type="number" placeholder="수량" value={stock.amount} />
-            </CardContent>
-        </Card>
-    );
-}
+  return (
+    <Card className="p-4">
+      <CardHeader>
+        <Input className="flex-1" placeholder="종목검색" type="search" value={stock.ticker} />
+        <Input placeholder="종목명" type="text" value={stock.name} />
+      </CardHeader>
+      <CardContent className="flex gap-2">
+        <Input placeholder="가격" type="number" value={stock.price} />
+        <Input placeholder="배당" type="number" value={stock.dividend} />
+        <Input placeholder="배당률" type="number" value={stock.yield} />
+        <Input placeholder="수량" type="number" value={stock.amount} />
+      </CardContent>
+    </Card>
+  );
+};
 
 export default memo(StockCard);
