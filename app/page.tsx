@@ -1,9 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Stock {
@@ -17,38 +19,49 @@ interface Stock {
 }
 
 interface FormValues {
+  totalInvestment: number;
   stocks: Stock[];
 }
 
 export default function Home() {
-  const { control, handleSubmit, reset, watch } = useForm<FormValues>({
+  const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
+      totalInvestment: 0,
       stocks: [],
     },
   });
 
-  const { fields, append, remove, update } = useFieldArray({
+  const { fields, append, remove } = useFieldArray({
     control,
     name: 'stocks',
   });
 
-  const stocks = watch('stocks');
-  const totalRatio = stocks.reduce((sum, stock) => sum + stock.ratio, 0);
-
-  const handleStockChange = (index: number, updatedStock: Stock) => {
-    // 최대 100%로 제한
-    if (updatedStock.ratio > 100) {
-      updatedStock.ratio = 100;
-    } else if (updatedStock.ratio < 0) {
-      updatedStock.ratio = 0;
-    }
-
-    update(index, updatedStock);
-  };
+  const totalInvestment = watch('totalInvestment');
+  const watchedStocks = watch('stocks');
+  const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
+  const [annualDividend, setAnnualDividend] = useState<number | null>(null);
 
   const onSubmit = (data: FormValues) => {
-    console.log('계산 데이터:', data);
-    // TODO: 실제 계산 로직 구현
+    // 조건 체크: 총 비율이 100%이고 투자금이 0보다 커야 함
+    const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
+    if (Math.abs(currentTotalRatio - 100) > 0.1 || data.totalInvestment <= 0) {
+      return; // 조건이 맞지 않으면 계산하지 않음
+    }
+
+    // 연 배당금 계산
+    let totalAnnualDividend = 0;
+
+    data.stocks.forEach((stock) => {
+      // 해당 종목에 투자된 금액
+      const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
+
+      // 해당 종목의 연 배당금 = 투자금액 * 배당률 / 100
+      const stockAnnualDividend = (investmentAmount * stock.yield) / 100;
+
+      totalAnnualDividend += stockAnnualDividend;
+    });
+
+    setAnnualDividend(totalAnnualDividend);
   };
 
   return (
@@ -60,12 +73,22 @@ export default function Home() {
         </TabsList>
       </Tabs>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
+        <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
+          <label className="text-sm font-medium whitespace-nowrap">총 투자금</label>
+          <Input
+            className="flex-1"
+            placeholder="총 투자금을 입력하세요"
+            type="number"
+            {...register('totalInvestment', { valueAsNumber: true })}
+          />
+          <span className="text-sm text-muted-foreground">원</span>
+        </div>
         {fields.map((field, index) => (
           <StockCard
+            control={control}
+            index={index}
             key={field.id}
-            onChange={(updatedStock) => handleStockChange(index, updatedStock)}
             onDelete={() => remove(index)}
-            stock={stocks[index]}
           />
         ))}
         <Button
@@ -81,7 +104,7 @@ export default function Home() {
               ratio: 0,
             };
 
-            const currentStocks = stocks;
+            const currentStocks = getValues('stocks');
             const newList = [...currentStocks, newStock];
 
             // 모든 종목을 균등하게 재분배
@@ -91,14 +114,11 @@ export default function Home() {
               ratio: equalRatio,
             }));
 
-            // 기존 stocks를 모두 제거하고 새로운 리스트로 교체
-            redistributedList.forEach((stock, idx) => {
-              if (idx < currentStocks.length) {
-                update(idx, stock);
-              } else {
-                append(stock);
-              }
+            // 기존 stocks의 ratio만 업데이트하고 새 종목 추가
+            currentStocks.forEach((_, idx) => {
+              setValue(`stocks.${idx}.ratio`, redistributedList[idx].ratio);
             });
+            append(redistributedList[redistributedList.length - 1]);
           }}
           type="button"
           variant="outline"
@@ -113,17 +133,28 @@ export default function Home() {
             </span>
           </div>
           <div className="flex justify-center items-center gap-1">
-            <Button disabled={totalRatio !== 100} type="submit">
+            <Button disabled={Math.abs(totalRatio - 100) > 0.1 || totalInvestment <= 0} type="submit">
               계산
             </Button>
             <Button
-              onClick={() => reset()}
+              onClick={() => {
+                reset();
+                setAnnualDividend(null);
+              }}
               type="button"
               variant="outline"
             >
               초기화
             </Button>
           </div>
+          {annualDividend !== null && (
+            <div className="flex justify-center items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <span className="text-sm font-medium text-green-700">연 배당금:</span>
+              <span className="text-lg font-bold text-green-700">
+                {annualDividend.toLocaleString('ko-KR')}원
+              </span>
+            </div>
+          )}
         </div>
       </form>
     </main>
