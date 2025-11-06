@@ -9,21 +9,34 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Stock {
+  /** 종목명 */
   name: string;
+  /** 종목코드 */
   ticker: string;
+  /** 주가 */
   price: number;
+  /** 통화 */
   currency: string;
+  /** 주당 배당금 */
   dividend: number;
+  /** 배당통화 */
   dividendCurrency: string;
+  /** 배당 지급 월 */
   dividendMonths: number[];
+  /** 배당률 */
   yield: number;
+  /** 비율 */
   ratio: number;
 }
 
 interface FormValues {
+  /** 총 투자금 */
   totalInvestment: number;
+  /** 목표 연 배당금 */
   targetAnnualDividend: number;
+  /** 환율 */
   exchangeRate: number;
+  /** 종목 */
   stocks: Stock[];
 }
 
@@ -42,7 +55,6 @@ export default function Page() {
     name: 'stocks',
   });
 
-  const totalInvestment = watch('totalInvestment');
   const watchedStocks = watch('stocks');
   const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
   const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
@@ -66,143 +78,134 @@ export default function Page() {
     }
   };
 
-  const onSubmit = (data: FormValues) => {
-    // 조건 체크: 총 비율이 100%
+  /** 금액을 KRW로 환산 */
+  const convertToKRW = (amount: number, currency: string, exchangeRate: number): number => {
+    return currency === 'USD' ? amount * exchangeRate : amount;
+  };
+
+  /** 단일 종목의 연 배당금 계산 */
+  const calculateStockAnnualDividend = (
+    stock: Stock,
+    investmentAmount: number,
+    exchangeRate: number,
+  ): number => {
+    const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
+    const dividendInKRW = convertToKRW(stock.dividend, stock.dividendCurrency, exchangeRate);
+    const shares = investmentAmount / priceInKRW;
+    return shares * dividendInKRW;
+  };
+
+  /** 단일 종목의 월별 배당금 계산 */
+  const calculateStockMonthlyDividends = (
+    stock: Stock,
+    annualDividend: number,
+  ): Record<number, number> => {
+    if (!stock.dividendMonths || stock.dividendMonths.length === 0) {
+      return {};
+    }
+
+    return stock.dividendMonths.reduce((acc, month) => {
+      acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - 0.154);
+      return acc;
+    }, {} as Record<number, number>);
+  };
+
+  // 배당률 계산
+  const calculateDividendYield = (stock: Stock, exchangeRate: number): number => {
+    const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
+    const dividendInKRW = convertToKRW(stock.dividend, stock.dividendCurrency, exchangeRate);
+    return dividendInKRW / priceInKRW;
+  };
+
+  // 월별 배당금 배열 생성
+  const mergeMonthlyDividends = (
+    stockDividends: Array<{ monthlyDividends: Record<number, number> }>,
+  ): number[] => {
+    return stockDividends.reduce((acc, { monthlyDividends }) => {
+      Object.entries(monthlyDividends).forEach(([month, amount]) => {
+        acc[Number(month) - 1] += amount;
+      });
+      return acc;
+    }, Array(12).fill(0) as number[]);
+  };
+
+  // 폼 데이터 검증
+  const validateFormData = (data: FormValues): string | null => {
     const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
     if (Math.abs(currentTotalRatio - 100) > 0.1) {
-      alert('총 비율이 100%가 되어야 합니다.');
-      return;
+      return '총 비율이 100%가 되어야 합니다.';
     }
 
-    // 입력값 체크
     if (activeTab === 'dividend' && data.totalInvestment <= 0) {
-      alert('총 투자금을 입력해주세요.');
-      return;
-    }
-    if (activeTab === 'investment' && data.targetAnnualDividend <= 0) {
-      alert('목표 연 배당금을 입력해주세요.');
-      return;
+      return '총 투자금을 입력해주세요.';
     }
 
-    // USD 종목이 있는 경우 환율 체크
-    const hasUsdStock = data.stocks.some((stock) => stock.currency === 'USD' || stock.dividendCurrency === 'USD');
+    if (activeTab === 'investment' && data.targetAnnualDividend <= 0) {
+      return '목표 연 배당금을 입력해주세요.';
+    }
+
+    const hasUsdStock = data.stocks.some(
+      (stock) => stock.currency === 'USD' || stock.dividendCurrency === 'USD',
+    );
     if (hasUsdStock && (!data.exchangeRate || data.exchangeRate <= 0)) {
-      alert('USD 항목이 있습니다. 환율을 먼저 조회해주세요.');
+      return 'USD 항목이 있습니다. 환율을 먼저 조회해주세요.';
+    }
+
+    return null;
+  };
+
+  // 배당금 계산: 투자금 → 배당금
+  const calculateDividendFromInvestment = (data: FormValues) => {
+    const stockDividends = data.stocks.map((stock) => {
+      const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
+      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRate);
+      const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
+      return { annualDividend,
+        monthlyDividends };
+    });
+
+    const totalAnnualDividend = stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+    const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
+
+    setAnnualDividend(totalAnnualDividend);
+    setMonthlyDividends(monthlyDividendArray);
+    setRequiredInvestment(null);
+  };
+
+  // 투자금 계산: 목표 배당금 → 필요한 투자금
+  const calculateInvestmentFromDividend = (data: FormValues) => {
+    const weightedDividendYield = data.stocks.reduce((sum, stock) => {
+      const dividendYield = calculateDividendYield(stock, data.exchangeRate);
+      return sum + dividendYield * (stock.ratio / 100);
+    }, 0);
+
+    const requiredInvestmentAmount = data.targetAnnualDividend / weightedDividendYield;
+
+    const stockDividends = data.stocks.map((stock) => {
+      const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
+      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRate);
+      const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
+      return { monthlyDividends };
+    });
+
+    const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
+
+    setRequiredInvestment(requiredInvestmentAmount);
+    setMonthlyDividends(monthlyDividendArray);
+    setAnnualDividend(null);
+  };
+
+  const onSubmit = (data: FormValues) => {
+    const error = validateFormData(data);
+    if (error) {
+      alert(error);
       return;
     }
 
     if (activeTab === 'dividend') {
-      // 배당금 계산: 투자금 → 배당금
-      let totalAnnualDividend = 0;
-      const monthlyDividendArray = Array(12).fill(0);
-
-      data.stocks.forEach((stock) => {
-        // 해당 종목에 투자된 금액 (KRW)
-        const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
-
-        // 주가를 KRW로 환산
-        let priceInKRW = stock.price;
-        if (stock.currency === 'USD') {
-          priceInKRW = stock.price * data.exchangeRate;
-        }
-
-        // 주당 배당금을 KRW로 환산
-        let dividendInKRW = stock.dividend;
-        if (stock.dividendCurrency === 'USD') {
-          dividendInKRW = stock.dividend * data.exchangeRate;
-        }
-
-        // 보유 주식 수 계산
-        const shares = investmentAmount / priceInKRW;
-
-        // 연 배당금 = 보유 주식 수 × 연간 주당 배당금
-        const stockAnnualDividend = shares * dividendInKRW;
-
-        totalAnnualDividend += stockAnnualDividend;
-
-        // 월별 배당금 계산
-        if (stock.dividendMonths && stock.dividendMonths.length > 0) {
-          // 1회당 배당금 = 연 배당금 / 배당 지급 횟수
-          const perPaymentDividend = stockAnnualDividend / stock.dividendMonths.length;
-
-          // 각 배당 지급 월에 배당금 추가 (세후)
-          stock.dividendMonths.forEach((month) => {
-            monthlyDividendArray[month - 1] += perPaymentDividend * (1 - 0.154);
-          });
-        }
-      });
-
-      setAnnualDividend(totalAnnualDividend);
-      setMonthlyDividends(monthlyDividendArray);
-      setRequiredInvestment(null);
+      calculateDividendFromInvestment(data);
     } else {
-      // 투자금 계산: 목표 배당금 → 필요한 투자금
-      // 가중 평균 배당률 계산
-      let weightedDividendYield = 0;
-
-      data.stocks.forEach((stock) => {
-        // 주가를 KRW로 환산
-        let priceInKRW = stock.price;
-        if (stock.currency === 'USD') {
-          priceInKRW = stock.price * data.exchangeRate;
-        }
-
-        // 주당 배당금을 KRW로 환산
-        let dividendInKRW = stock.dividend;
-        if (stock.dividendCurrency === 'USD') {
-          dividendInKRW = stock.dividend * data.exchangeRate;
-        }
-
-        // 배당률 = 배당금 / 주가
-        const dividendYield = dividendInKRW / priceInKRW;
-
-        // 가중치 적용
-        weightedDividendYield += dividendYield * (stock.ratio / 100);
-      });
-
-      // 필요한 투자금 = 목표 배당금 / 가중 평균 배당률
-      const requiredInvestmentAmount = data.targetAnnualDividend / weightedDividendYield;
-
-      // 월별 배당금 계산
-      const monthlyDividendArray = Array(12).fill(0);
-
-      data.stocks.forEach((stock) => {
-        // 해당 종목에 투자된 금액 (KRW)
-        const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
-
-        // 주가를 KRW로 환산
-        let priceInKRW = stock.price;
-        if (stock.currency === 'USD') {
-          priceInKRW = stock.price * data.exchangeRate;
-        }
-
-        // 주당 배당금을 KRW로 환산
-        let dividendInKRW = stock.dividend;
-        if (stock.dividendCurrency === 'USD') {
-          dividendInKRW = stock.dividend * data.exchangeRate;
-        }
-
-        // 보유 주식 수 계산
-        const shares = investmentAmount / priceInKRW;
-
-        // 연 배당금 = 보유 주식 수 × 연간 주당 배당금
-        const stockAnnualDividend = shares * dividendInKRW;
-
-        // 월별 배당금 계산
-        if (stock.dividendMonths && stock.dividendMonths.length > 0) {
-          // 1회당 배당금 = 연 배당금 / 배당 지급 횟수
-          const perPaymentDividend = stockAnnualDividend / stock.dividendMonths.length;
-
-          // 각 배당 지급 월에 배당금 추가 (세후)
-          stock.dividendMonths.forEach((month) => {
-            monthlyDividendArray[month - 1] += perPaymentDividend * (1 - 0.154);
-          });
-        }
-      });
-
-      setRequiredInvestment(requiredInvestmentAmount);
-      setMonthlyDividends(monthlyDividendArray);
-      setAnnualDividend(null);
+      calculateInvestmentFromDividend(data);
     }
   };
 
