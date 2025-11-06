@@ -48,7 +48,7 @@ export default function Home() {
       return; // 조건이 맞지 않으면 계산하지 않음
     }
 
-    // 연 배당금 계산
+    // 세전 연 배당금 계산
     let totalAnnualDividend = 0;
 
     data.stocks.forEach((stock) => {
@@ -148,11 +148,22 @@ export default function Home() {
             </Button>
           </div>
           {annualDividend !== null && (
-            <div className="flex justify-center items-center gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <span className="text-sm font-medium text-green-700">연 배당금:</span>
-              <span className="text-lg font-bold text-green-700">
-                {annualDividend.toLocaleString('ko-KR')}원
-              </span>
+            <div className="flex justify-center items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-green-700">세전 연 배당금:</span>
+                <span className="text-lg font-bold text-green-700">
+                  {annualDividend.toLocaleString('ko-KR')}원
+                </span>
+              </div>
+              <div className="h-6 w-px bg-green-300" />
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-green-700">세후 연 배당금:</span>
+                <span className="text-lg font-bold text-green-700">
+                  {(annualDividend * (1 - 0.154)).toLocaleString('ko-KR', {
+                    maximumFractionDigits: 0,
+                  })}원
+                </span>
+              </div>
             </div>
           )}
         </div>
