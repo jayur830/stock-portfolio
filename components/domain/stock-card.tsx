@@ -115,7 +115,7 @@ const StockCard = ({ stock, onChange, onDelete }: StockCardProps) => {
             min={0}
             onChange={(e) => handleRatioChange(parseFloat(e.target.value) || 0)}
             placeholder="비율"
-            step={10}
+            step={1}
             type="number"
             value={stock.ratio.toFixed(0)}
           />
@@ -125,7 +125,7 @@ const StockCard = ({ stock, onChange, onDelete }: StockCardProps) => {
             max={100}
             min={0}
             onValueChange={(values) => handleRatioChange(values[0])}
-            step={10}
+            step={1}
             value={[stock.ratio]}
           />
         </div>

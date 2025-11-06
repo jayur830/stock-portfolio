@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
 import { Button } from '@/components/ui/button';
@@ -16,14 +16,26 @@ interface Stock {
   ratio: number;
 }
 
-export default function Home() {
-  const [list, setList] = useState<Stock[]>([]);
+interface FormValues {
+  stocks: Stock[];
+}
 
-  const totalRatio = list.reduce((sum, stock) => sum + stock.ratio, 0);
+export default function Home() {
+  const { control, handleSubmit, reset, watch } = useForm<FormValues>({
+    defaultValues: {
+      stocks: [],
+    },
+  });
+
+  const { fields, append, remove, update } = useFieldArray({
+    control,
+    name: 'stocks',
+  });
+
+  const stocks = watch('stocks');
+  const totalRatio = stocks.reduce((sum, stock) => sum + stock.ratio, 0);
 
   const handleStockChange = (index: number, updatedStock: Stock) => {
-    const newList = [...list];
-
     // 최대 100%로 제한
     if (updatedStock.ratio > 100) {
       updatedStock.ratio = 100;
@@ -31,13 +43,12 @@ export default function Home() {
       updatedStock.ratio = 0;
     }
 
-    newList[index] = updatedStock;
-    setList(newList);
+    update(index, updatedStock);
   };
 
-  const handleDeleteStock = (index: number) => {
-    const newList = list.filter((_, i) => i !== index);
-    setList(newList);
+  const onSubmit = (data: FormValues) => {
+    console.log('계산 데이터:', data);
+    // TODO: 실제 계산 로직 구현
   };
 
   return (
@@ -48,13 +59,13 @@ export default function Home() {
           <TabsTrigger value="investment">투자금 계산</TabsTrigger>
         </TabsList>
       </Tabs>
-      <div className="flex flex-col gap-2">
-        {list.map((stock, index) => (
+      <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
+        {fields.map((field, index) => (
           <StockCard
-            key={index}
+            key={field.id}
             onChange={(updatedStock) => handleStockChange(index, updatedStock)}
-            onDelete={() => handleDeleteStock(index)}
-            stock={stock}
+            onDelete={() => remove(index)}
+            stock={stocks[index]}
           />
         ))}
         <Button
@@ -70,7 +81,8 @@ export default function Home() {
               ratio: 0,
             };
 
-            const newList = [...list, newStock];
+            const currentStocks = stocks;
+            const newList = [...currentStocks, newStock];
 
             // 모든 종목을 균등하게 재분배
             const equalRatio = 100 / newList.length;
@@ -79,8 +91,16 @@ export default function Home() {
               ratio: equalRatio,
             }));
 
-            setList(redistributedList);
+            // 기존 stocks를 모두 제거하고 새로운 리스트로 교체
+            redistributedList.forEach((stock, idx) => {
+              if (idx < currentStocks.length) {
+                update(idx, stock);
+              } else {
+                append(stock);
+              }
+            });
           }}
+          type="button"
           variant="outline"
         >
           +
@@ -93,11 +113,19 @@ export default function Home() {
             </span>
           </div>
           <div className="flex justify-center items-center gap-1">
-            <Button disabled={totalRatio !== 100}>계산</Button>
-            <Button variant="outline">초기화</Button>
+            <Button disabled={totalRatio !== 100} type="submit">
+              계산
+            </Button>
+            <Button
+              onClick={() => reset()}
+              type="button"
+              variant="outline"
+            >
+              초기화
+            </Button>
           </div>
         </div>
-      </div>
+      </form>
     </main>
   );
 }
