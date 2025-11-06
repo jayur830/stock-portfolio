@@ -22,6 +22,7 @@ interface Stock {
 
 interface FormValues {
   totalInvestment: number;
+  targetAnnualDividend: number;
   exchangeRate: number;
   stocks: Stock[];
 }
@@ -30,6 +31,7 @@ export default function Page() {
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
       totalInvestment: 0,
+      targetAnnualDividend: 0,
       exchangeRate: 0,
       stocks: [],
     },
@@ -43,7 +45,9 @@ export default function Page() {
   const totalInvestment = watch('totalInvestment');
   const watchedStocks = watch('stocks');
   const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
+  const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
+  const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
   const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
   const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState(false);
 
@@ -63,10 +67,21 @@ export default function Page() {
   };
 
   const onSubmit = (data: FormValues) => {
-    // 조건 체크: 총 비율이 100%이고 투자금이 0보다 커야 함
+    // 조건 체크: 총 비율이 100%
     const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
-    if (Math.abs(currentTotalRatio - 100) > 0.1 || data.totalInvestment <= 0) {
-      return; // 조건이 맞지 않으면 계산하지 않음
+    if (Math.abs(currentTotalRatio - 100) > 0.1) {
+      alert('총 비율이 100%가 되어야 합니다.');
+      return;
+    }
+
+    // 입력값 체크
+    if (activeTab === 'dividend' && data.totalInvestment <= 0) {
+      alert('총 투자금을 입력해주세요.');
+      return;
+    }
+    if (activeTab === 'investment' && data.targetAnnualDividend <= 0) {
+      alert('목표 연 배당금을 입력해주세요.');
+      return;
     }
 
     // USD 종목이 있는 경우 환율 체크
@@ -76,54 +91,125 @@ export default function Page() {
       return;
     }
 
-    // 세전 연 배당금 계산
-    let totalAnnualDividend = 0;
-    const monthlyDividendArray = Array(12).fill(0);
+    if (activeTab === 'dividend') {
+      // 배당금 계산: 투자금 → 배당금
+      let totalAnnualDividend = 0;
+      const monthlyDividendArray = Array(12).fill(0);
 
-    data.stocks.forEach((stock) => {
-      // 해당 종목에 투자된 금액 (KRW)
-      const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
+      data.stocks.forEach((stock) => {
+        // 해당 종목에 투자된 금액 (KRW)
+        const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
 
-      // 주가를 KRW로 환산
-      let priceInKRW = stock.price;
-      if (stock.currency === 'USD') {
-        priceInKRW = stock.price * data.exchangeRate;
-      }
+        // 주가를 KRW로 환산
+        let priceInKRW = stock.price;
+        if (stock.currency === 'USD') {
+          priceInKRW = stock.price * data.exchangeRate;
+        }
 
-      // 주당 배당금을 KRW로 환산
-      let dividendInKRW = stock.dividend;
-      if (stock.dividendCurrency === 'USD') {
-        dividendInKRW = stock.dividend * data.exchangeRate;
-      }
+        // 주당 배당금을 KRW로 환산
+        let dividendInKRW = stock.dividend;
+        if (stock.dividendCurrency === 'USD') {
+          dividendInKRW = stock.dividend * data.exchangeRate;
+        }
 
-      // 보유 주식 수 계산
-      const shares = investmentAmount / priceInKRW;
+        // 보유 주식 수 계산
+        const shares = investmentAmount / priceInKRW;
 
-      // 연 배당금 = 보유 주식 수 × 연간 주당 배당금
-      const stockAnnualDividend = shares * dividendInKRW;
+        // 연 배당금 = 보유 주식 수 × 연간 주당 배당금
+        const stockAnnualDividend = shares * dividendInKRW;
 
-      totalAnnualDividend += stockAnnualDividend;
+        totalAnnualDividend += stockAnnualDividend;
+
+        // 월별 배당금 계산
+        if (stock.dividendMonths && stock.dividendMonths.length > 0) {
+          // 1회당 배당금 = 연 배당금 / 배당 지급 횟수
+          const perPaymentDividend = stockAnnualDividend / stock.dividendMonths.length;
+
+          // 각 배당 지급 월에 배당금 추가 (세후)
+          stock.dividendMonths.forEach((month) => {
+            monthlyDividendArray[month - 1] += perPaymentDividend * (1 - 0.154);
+          });
+        }
+      });
+
+      setAnnualDividend(totalAnnualDividend);
+      setMonthlyDividends(monthlyDividendArray);
+      setRequiredInvestment(null);
+    } else {
+      // 투자금 계산: 목표 배당금 → 필요한 투자금
+      // 가중 평균 배당률 계산
+      let weightedDividendYield = 0;
+
+      data.stocks.forEach((stock) => {
+        // 주가를 KRW로 환산
+        let priceInKRW = stock.price;
+        if (stock.currency === 'USD') {
+          priceInKRW = stock.price * data.exchangeRate;
+        }
+
+        // 주당 배당금을 KRW로 환산
+        let dividendInKRW = stock.dividend;
+        if (stock.dividendCurrency === 'USD') {
+          dividendInKRW = stock.dividend * data.exchangeRate;
+        }
+
+        // 배당률 = 배당금 / 주가
+        const dividendYield = dividendInKRW / priceInKRW;
+
+        // 가중치 적용
+        weightedDividendYield += dividendYield * (stock.ratio / 100);
+      });
+
+      // 필요한 투자금 = 목표 배당금 / 가중 평균 배당률
+      const requiredInvestmentAmount = data.targetAnnualDividend / weightedDividendYield;
 
       // 월별 배당금 계산
-      if (stock.dividendMonths && stock.dividendMonths.length > 0) {
-        // 1회당 배당금 = 연 배당금 / 배당 지급 횟수
-        const perPaymentDividend = stockAnnualDividend / stock.dividendMonths.length;
+      const monthlyDividendArray = Array(12).fill(0);
 
-        // 각 배당 지급 월에 배당금 추가 (세후)
-        stock.dividendMonths.forEach((month) => {
-          monthlyDividendArray[month - 1] += perPaymentDividend * (1 - 0.154);
-        });
-      }
-    });
+      data.stocks.forEach((stock) => {
+        // 해당 종목에 투자된 금액 (KRW)
+        const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
 
-    setAnnualDividend(totalAnnualDividend);
-    setMonthlyDividends(monthlyDividendArray);
+        // 주가를 KRW로 환산
+        let priceInKRW = stock.price;
+        if (stock.currency === 'USD') {
+          priceInKRW = stock.price * data.exchangeRate;
+        }
+
+        // 주당 배당금을 KRW로 환산
+        let dividendInKRW = stock.dividend;
+        if (stock.dividendCurrency === 'USD') {
+          dividendInKRW = stock.dividend * data.exchangeRate;
+        }
+
+        // 보유 주식 수 계산
+        const shares = investmentAmount / priceInKRW;
+
+        // 연 배당금 = 보유 주식 수 × 연간 주당 배당금
+        const stockAnnualDividend = shares * dividendInKRW;
+
+        // 월별 배당금 계산
+        if (stock.dividendMonths && stock.dividendMonths.length > 0) {
+          // 1회당 배당금 = 연 배당금 / 배당 지급 횟수
+          const perPaymentDividend = stockAnnualDividend / stock.dividendMonths.length;
+
+          // 각 배당 지급 월에 배당금 추가 (세후)
+          stock.dividendMonths.forEach((month) => {
+            monthlyDividendArray[month - 1] += perPaymentDividend * (1 - 0.154);
+          });
+        }
+      });
+
+      setRequiredInvestment(requiredInvestmentAmount);
+      setMonthlyDividends(monthlyDividendArray);
+      setAnnualDividend(null);
+    }
   };
 
   return (
     <main className="flex flex-col gap-3.5 p-4">
       <div className="flex items-center gap-4">
-        <Tabs className="flex-1" defaultValue="dividend">
+        <Tabs className="flex-1" onValueChange={(value) => setActiveTab(value as 'dividend' | 'investment')} value={activeTab}>
           <TabsList>
             <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
             <TabsTrigger value="investment">투자금 계산</TabsTrigger>
@@ -148,16 +234,29 @@ export default function Page() {
         </div>
       </div>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-          <label className="text-sm font-medium whitespace-nowrap">총 투자금</label>
-          <Input
-            className="flex-1"
-            placeholder="총 투자금을 입력하세요"
-            type="number"
-            {...register('totalInvestment', { valueAsNumber: true })}
-          />
-          <span className="text-sm text-muted-foreground">원</span>
-        </div>
+        {activeTab === 'dividend' ? (
+          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
+            <label className="text-sm font-medium whitespace-nowrap">총 투자금</label>
+            <Input
+              className="flex-1"
+              placeholder="총 투자금을 입력하세요"
+              type="number"
+              {...register('totalInvestment', { valueAsNumber: true })}
+            />
+            <span className="text-sm text-muted-foreground">원</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
+            <label className="text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
+            <Input
+              className="flex-1"
+              placeholder="목표 연 배당금을 입력하세요"
+              type="number"
+              {...register('targetAnnualDividend', { valueAsNumber: true })}
+            />
+            <span className="text-sm text-muted-foreground">원</span>
+          </div>
+        )}
         {fields.map((field, index) => (
           <StockCard
             control={control}
@@ -212,13 +311,14 @@ export default function Page() {
             </span>
           </div>
           <div className="flex justify-center items-center gap-1">
-            <Button disabled={Math.abs(totalRatio - 100) > 0.1 || totalInvestment <= 0} type="submit">
+            <Button disabled={Math.abs(totalRatio - 100) > 0.1} type="submit">
               계산
             </Button>
             <Button
               onClick={() => {
                 reset();
                 setAnnualDividend(null);
+                setRequiredInvestment(null);
                 setMonthlyDividends(Array(12).fill(0));
               }}
               type="button"
@@ -243,6 +343,34 @@ export default function Page() {
                     {(annualDividend * (1 - 0.154)).toLocaleString('ko-KR', {
                       maximumFractionDigits: 0,
                     })}원
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
+                <div className="grid grid-cols-6 gap-2">
+                  {monthlyDividends.map((amount, index) => (
+                    <div
+                      className="flex flex-col items-center p-2 bg-white rounded border border-blue-100"
+                      key={index}
+                    >
+                      <span className="text-xs text-blue-600 font-medium">{index + 1}월</span>
+                      <span className="text-sm font-semibold text-blue-900">
+                        {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          {requiredInvestment !== null && (
+            <>
+              <div className="flex justify-center items-center gap-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-purple-700">필요한 투자금:</span>
+                  <span className="text-lg font-bold text-purple-700">
+                    {requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
                   </span>
                 </div>
               </div>
