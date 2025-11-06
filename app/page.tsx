@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
@@ -77,6 +77,11 @@ export default function Page() {
       setIsLoadingExchangeRate(false);
     }
   };
+
+  // 페이지 진입 시 환율 자동 조회
+  useEffect(() => {
+    fetchExchangeRate();
+  }, []);
 
   /** 금액을 KRW로 환산 */
   const convertToKRW = (amount: number, currency: string, exchangeRate: number): number => {
