@@ -40,6 +40,7 @@ export default function Page() {
   const watchedStocks = watch('stocks');
   const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
+  const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
 
   const onSubmit = (data: FormValues) => {
     // 조건 체크: 총 비율이 100%이고 투자금이 0보다 커야 함
@@ -50,6 +51,7 @@ export default function Page() {
 
     // 세전 연 배당금 계산
     let totalAnnualDividend = 0;
+    const monthlyDividendArray = Array(12).fill(0);
 
     data.stocks.forEach((stock) => {
       // 해당 종목에 투자된 금액
@@ -59,9 +61,21 @@ export default function Page() {
       const stockAnnualDividend = (investmentAmount * stock.yield) / 100;
 
       totalAnnualDividend += stockAnnualDividend;
+
+      // 월별 배당금 계산
+      if (stock.dividendMonths && stock.dividendMonths.length > 0) {
+        // 1회당 배당금 = 연 배당금 / 배당 지급 횟수
+        const perPaymentDividend = stockAnnualDividend / stock.dividendMonths.length;
+
+        // 각 배당 지급 월에 배당금 추가 (세후)
+        stock.dividendMonths.forEach((month) => {
+          monthlyDividendArray[month - 1] += perPaymentDividend * (1 - 0.154);
+        });
+      }
     });
 
     setAnnualDividend(totalAnnualDividend);
+    setMonthlyDividends(monthlyDividendArray);
   };
 
   return (
@@ -140,6 +154,7 @@ export default function Page() {
               onClick={() => {
                 reset();
                 setAnnualDividend(null);
+                setMonthlyDividends(Array(12).fill(0));
               }}
               type="button"
               variant="outline"
@@ -148,23 +163,41 @@ export default function Page() {
             </Button>
           </div>
           {annualDividend !== null && (
-            <div className="flex justify-center items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-green-700">세전 연 배당금:</span>
-                <span className="text-lg font-bold text-green-700">
-                  {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-                </span>
+            <>
+              <div className="flex justify-center items-center gap-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-green-700">세전 연 배당금:</span>
+                  <span className="text-lg font-bold text-green-700">
+                    {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                  </span>
+                </div>
+                <div className="h-6 w-px bg-green-300" />
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-green-700">세후 연 배당금:</span>
+                  <span className="text-lg font-bold text-green-700">
+                    {(annualDividend * (1 - 0.154)).toLocaleString('ko-KR', {
+                      maximumFractionDigits: 0,
+                    })}원
+                  </span>
+                </div>
               </div>
-              <div className="h-6 w-px bg-green-300" />
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium text-green-700">세후 연 배당금:</span>
-                <span className="text-lg font-bold text-green-700">
-                  {(annualDividend * (1 - 0.154)).toLocaleString('ko-KR', {
-                    maximumFractionDigits: 0,
-                  })}원
-                </span>
+              <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
+                <div className="grid grid-cols-6 gap-2">
+                  {monthlyDividends.map((amount, index) => (
+                    <div
+                      className="flex flex-col items-center p-2 bg-white rounded border border-blue-100"
+                      key={index}
+                    >
+                      <span className="text-xs text-blue-600 font-medium">{index + 1}월</span>
+                      <span className="text-sm font-semibold text-blue-900">
+                        {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </form>
