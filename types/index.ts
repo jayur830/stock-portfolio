@@ -4,5 +4,5 @@ export interface Stock {
   price: number;
   dividend: number;
   yield: number;
-  amount: number;
+  ratio: number;
 }
