@@ -35,6 +35,11 @@ export default function Home() {
     setList(newList);
   };
 
+  const handleDeleteStock = (index: number) => {
+    const newList = list.filter((_, i) => i !== index);
+    setList(newList);
+  };
+
   return (
     <main className="flex flex-col gap-3.5 p-4">
       <Tabs className="w-full" defaultValue="dividend">
@@ -48,6 +53,7 @@ export default function Home() {
           <StockCard
             key={index}
             onChange={(updatedStock) => handleStockChange(index, updatedStock)}
+            onDelete={() => handleDeleteStock(index)}
             stock={stock}
           />
         ))}

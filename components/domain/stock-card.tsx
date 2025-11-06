@@ -1,5 +1,7 @@
+import { X } from 'lucide-react';
 import { memo } from 'react';
 
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
@@ -15,9 +17,10 @@ import type { DividendFrequency, Stock } from '@/types';
 interface StockCardProps {
   stock: Stock;
   onChange?: (stock: Stock) => void;
+  onDelete?: () => void;
 }
 
-const StockCard = ({ stock, onChange }: StockCardProps) => {
+const StockCard = ({ stock, onChange, onDelete }: StockCardProps) => {
   const handleRatioChange = (value: number) => {
     if (onChange) {
       onChange({
@@ -28,7 +31,17 @@ const StockCard = ({ stock, onChange }: StockCardProps) => {
   };
 
   return (
-    <Card className="p-4">
+    <Card className="p-4 relative">
+      {onDelete && (
+        <Button
+          className="absolute top-2 right-2 h-6 w-6"
+          onClick={onDelete}
+          size="icon"
+          variant="ghost"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      )}
       <CardHeader>
         <Input
           className="flex-1"
