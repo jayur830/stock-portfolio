@@ -9,6 +9,7 @@ import { Slider } from '@/components/ui/slider';
 
 interface FormValues {
   totalInvestment: number;
+  exchangeRate: number;
   stocks: Array<{
     name: string;
     ticker: string;

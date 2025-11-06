@@ -20,6 +20,7 @@ interface Stock {
 
 interface FormValues {
   totalInvestment: number;
+  exchangeRate: number;
   stocks: Stock[];
 }
 
@@ -27,6 +28,7 @@ export default function Page() {
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
       totalInvestment: 0,
+      exchangeRate: 0,
       stocks: [],
     },
   });
@@ -41,6 +43,22 @@ export default function Page() {
   const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
   const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
+  const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState(false);
+
+  const fetchExchangeRate = async () => {
+    setIsLoadingExchangeRate(true);
+    try {
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      const krwRate = data.rates.KRW;
+      setValue('exchangeRate', krwRate);
+    } catch (error) {
+      console.error('환율 조회 실패:', error);
+      alert('환율 조회에 실패했습니다.');
+    } finally {
+      setIsLoadingExchangeRate(false);
+    }
+  };
 
   const onSubmit = (data: FormValues) => {
     // 조건 체크: 총 비율이 100%이고 투자금이 0보다 커야 함
@@ -80,12 +98,31 @@ export default function Page() {
 
   return (
     <main className="flex flex-col gap-3.5 p-4">
-      <Tabs className="w-full" defaultValue="dividend">
-        <TabsList>
-          <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
-          <TabsTrigger value="investment">투자금 계산</TabsTrigger>
-        </TabsList>
-      </Tabs>
+      <div className="flex items-center gap-4">
+        <Tabs className="flex-1" defaultValue="dividend">
+          <TabsList>
+            <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
+            <TabsTrigger value="investment">투자금 계산</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <div className="flex items-center gap-2">
+          <Button
+            disabled={isLoadingExchangeRate}
+            onClick={fetchExchangeRate}
+            size="sm"
+            type="button"
+            variant="outline"
+          >
+            {isLoadingExchangeRate ? '조회 중...' : '환율 조회'}
+          </Button>
+          <Input
+            className="w-32"
+            placeholder="환율"
+            type="number"
+            {...register('exchangeRate', { valueAsNumber: true })}
+          />
+        </div>
+      </div>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
           <label className="text-sm font-medium whitespace-nowrap">총 투자금</label>
