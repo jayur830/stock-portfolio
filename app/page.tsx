@@ -11,6 +11,7 @@ interface Stock {
   ticker: string;
   price: number;
   dividend: number;
+  dividendFrequency: 'monthly' | 'quarterly' | 'semi-annual' | 'annual';
   yield: number;
   ratio: number;
 }
@@ -58,6 +59,7 @@ export default function Home() {
               ticker: '',
               price: 0,
               dividend: 0,
+              dividendFrequency: 'quarterly' as const,
               yield: 0,
               ratio: 0,
             };

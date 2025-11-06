@@ -2,8 +2,15 @@ import { memo } from 'react';
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import type { Stock } from '@/types';
+import type { DividendFrequency, Stock } from '@/types';
 
 interface StockCardProps {
   stock: Stock;
@@ -33,18 +40,16 @@ const StockCard = ({ stock, onChange }: StockCardProps) => {
           type="search"
           value={stock.ticker}
         />
-        <Input
-          onChange={(e) => onChange?.({
-            ...stock,
-            name: e.target.value,
-          })}
-          placeholder="종목명"
-          type="text"
-          value={stock.name}
-        />
-      </CardHeader>
-      <CardContent className="flex flex-col gap-4">
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          <Input
+            onChange={(e) => onChange?.({
+              ...stock,
+              name: e.target.value,
+            })}
+            placeholder="종목명"
+            type="text"
+            value={stock.name}
+          />
           <Input
             onChange={(e) => onChange?.({
               ...stock,
@@ -54,15 +59,27 @@ const StockCard = ({ stock, onChange }: StockCardProps) => {
             type="number"
             value={stock.price}
           />
-          <Input
-            onChange={(e) => onChange?.({
+        </div>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex gap-2">
+          <Select
+            onValueChange={(value) => onChange?.({
               ...stock,
-              dividend: parseFloat(e.target.value) || 0,
+              dividendFrequency: value as DividendFrequency,
             })}
-            placeholder="배당"
-            type="number"
-            value={stock.dividend}
-          />
+            value={stock.dividendFrequency}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="주기" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">월배당</SelectItem>
+              <SelectItem value="quarterly">분기배당</SelectItem>
+              <SelectItem value="semi-annual">반기배당</SelectItem>
+              <SelectItem value="annual">연배당</SelectItem>
+            </SelectContent>
+          </Select>
           <Input
             onChange={(e) => onChange?.({
               ...stock,
