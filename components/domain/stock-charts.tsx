@@ -1,7 +1,7 @@
 'use client';
 
 import ReactECharts from 'echarts-for-react';
-import { useEffect, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 
 interface Stock {
   ticker: string;
@@ -27,17 +27,20 @@ interface HistoryData {
   }>;
 }
 
-export default function StockCharts({ stocks, totalInvestment, exchangeRate }: StockChartsProps) {
+const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
   const [histories, setHistories] = useState<HistoryData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
+  // ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지)
+  const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
+
   useEffect(() => {
     const fetchHistories = async () => {
-      if (stocks.length === 0) return;
+      if (!tickers) return;
 
       setIsLoading(true);
       try {
-        const symbols = stocks.map((s) => s.ticker).filter(Boolean);
+        const symbols = tickers.split(',');
         const response = await fetch('/api/stock-history', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -54,25 +57,10 @@ export default function StockCharts({ stocks, totalInvestment, exchangeRate }: S
     };
 
     fetchHistories();
-  }, [stocks]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center p-8">
-        <div className="flex flex-col items-center gap-2">
-          <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
-          <span className="text-sm text-gray-600">차트 데이터 로딩 중...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (histories.length === 0) {
-    return null;
-  }
+  }, [tickers]);
 
   // 1. 통합 포트폴리오 차트 (모든 종목 합산)
-  const combinedChartOption = (() => {
+  const combinedChartOption = useMemo(() => {
     if (histories.length === 0) return null;
 
     // 모든 날짜의 합집합 구하기
@@ -150,10 +138,10 @@ export default function StockCharts({ stocks, totalInvestment, exchangeRate }: S
         containLabel: true,
       },
     };
-  })();
+  }, [histories, stocks, exchangeRate]);
 
   // 2. 수익금 차트 (0부터 시작)
-  const profitChartOption = (() => {
+  const profitChartOption = useMemo(() => {
     if (histories.length === 0) return null;
 
     const allDates = new Set<string>();
@@ -253,23 +241,40 @@ export default function StockCharts({ stocks, totalInvestment, exchangeRate }: S
         containLabel: true,
       },
     };
-  })();
+  }, [histories, stocks, totalInvestment, exchangeRate]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="flex flex-col items-center gap-2">
+          <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
+          <span className="text-sm text-gray-600">차트 데이터 로딩 중...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (histories.length === 0) {
+    return null;
+  }
 
   return (
     <div className="flex flex-col gap-6 mt-6">
       {/* 통합 포트폴리오 차트 */}
       {combinedChartOption && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <ReactECharts option={combinedChartOption} style={{ height: '400px' }} />
+          <ReactECharts lazyUpdate notMerge={false} option={combinedChartOption} style={{ height: '400px' }} />
         </div>
       )}
 
       {/* 수익금 차트 */}
       {profitChartOption && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <ReactECharts option={profitChartOption} style={{ height: '350px' }} />
+          <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '350px' }} />
         </div>
       )}
     </div>
   );
-}
+};
+
+export default memo(StockCharts);

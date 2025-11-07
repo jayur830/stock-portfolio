@@ -431,4 +431,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   );
 };
 
-export default memo(StockCard);
+export default memo(StockCard, (prevProps, nextProps) => {
+  // index와 onDelete가 같으면 리렌더링 방지 (form 값은 Controller가 관리)
+  return prevProps.index === nextProps.index && prevProps.onDelete === nextProps.onDelete;
+});
