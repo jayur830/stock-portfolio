@@ -8,38 +8,8 @@ import StockCharts from '@/components/domain/stock-charts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-
-interface Stock {
-  /** 종목명 */
-  name: string;
-  /** 종목코드 */
-  ticker: string;
-  /** 주가 */
-  price: number;
-  /** 통화 */
-  currency: string;
-  /** 주당 배당금 */
-  dividend: number;
-  /** 배당통화 */
-  dividendCurrency: string;
-  /** 배당 지급 월 */
-  dividendMonths: number[];
-  /** 배당률 */
-  yield: number;
-  /** 비율 */
-  ratio: number;
-}
-
-interface FormValues {
-  /** 총 투자금 */
-  totalInvestment: number;
-  /** 목표 연 배당금 */
-  targetAnnualDividend: number;
-  /** 환율 */
-  exchangeRate: number;
-  /** 종목 */
-  stocks: Stock[];
-}
+import { calculateDividendYield, calculateStockAnnualDividend, calculateStockMonthlyDividends, mergeMonthlyDividends } from '@/lib/utils';
+import type { FormValues } from '@/types';
 
 export default function Page() {
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
@@ -56,12 +26,19 @@ export default function Page() {
     name: 'stocks',
   });
 
+  /** 종목 */
   const watchedStocks = watch('stocks');
+  /** 각 종목의 비율 합 */
   const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
+  /** 탭 상태 */
   const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
+  /** 연 배당금 */
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
+  /** 필요한 투자금 */
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
+  /** 월별 배당금 */
   const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
+  /** 환율 조회 중 */
   const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState(false);
 
   const fetchExchangeRate = async () => {
@@ -79,63 +56,12 @@ export default function Page() {
     }
   };
 
-  // 페이지 진입 시 환율 자동 조회
+  /** 페이지 진입 시 환율 자동 조회 */
   useEffect(() => {
     fetchExchangeRate();
   }, []);
 
-  /** 금액을 KRW로 환산 */
-  const convertToKRW = (amount: number, currency: string, exchangeRate: number): number => {
-    return currency === 'USD' ? amount * exchangeRate : amount;
-  };
-
-  /** 단일 종목의 연 배당금 계산 */
-  const calculateStockAnnualDividend = (
-    stock: Stock,
-    investmentAmount: number,
-    exchangeRate: number,
-  ): number => {
-    const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
-    const dividendInKRW = convertToKRW(stock.dividend, stock.dividendCurrency, exchangeRate);
-    const shares = investmentAmount / priceInKRW;
-    return shares * dividendInKRW;
-  };
-
-  /** 단일 종목의 월별 배당금 계산 */
-  const calculateStockMonthlyDividends = (
-    stock: Stock,
-    annualDividend: number,
-  ): Record<number, number> => {
-    if (!stock.dividendMonths || stock.dividendMonths.length === 0) {
-      return {};
-    }
-
-    return stock.dividendMonths.reduce((acc, month) => {
-      acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - 0.154);
-      return acc;
-    }, {} as Record<number, number>);
-  };
-
-  // 배당률 계산
-  const calculateDividendYield = (stock: Stock, exchangeRate: number): number => {
-    const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
-    const dividendInKRW = convertToKRW(stock.dividend, stock.dividendCurrency, exchangeRate);
-    return dividendInKRW / priceInKRW;
-  };
-
-  // 월별 배당금 배열 생성
-  const mergeMonthlyDividends = (
-    stockDividends: Array<{ monthlyDividends: Record<number, number> }>,
-  ): number[] => {
-    return stockDividends.reduce((acc, { monthlyDividends }) => {
-      Object.entries(monthlyDividends).forEach(([month, amount]) => {
-        acc[Number(month) - 1] += amount;
-      });
-      return acc;
-    }, Array(12).fill(0) as number[]);
-  };
-
-  // 폼 데이터 검증
+  /** 폼 데이터 검증 */
   const validateFormData = (data: FormValues): string | null => {
     const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
     if (Math.abs(currentTotalRatio - 100) > 0.1) {
@@ -150,9 +76,11 @@ export default function Page() {
       return '목표 연 배당금을 입력해주세요.';
     }
 
+    /** 해외주식 여부 */
     const hasUsdStock = data.stocks.some(
       (stock) => stock.currency === 'USD' || stock.dividendCurrency === 'USD',
     );
+    /** 환율 조회 여부 */
     if (hasUsdStock && (!data.exchangeRate || data.exchangeRate <= 0)) {
       return 'USD 항목이 있습니다. 환율을 먼저 조회해주세요.';
     }
@@ -160,17 +88,24 @@ export default function Page() {
     return null;
   };
 
-  // 배당금 계산: 투자금 → 배당금
+  /** 배당금 계산: 투자금 → 배당금 */
   const calculateDividendFromInvestment = (data: FormValues) => {
     const stockDividends = data.stocks.map((stock) => {
+      /** 종목별 투자금 */
       const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
+      /** 종목별 연 배당금 */
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRate);
+      /** 종목별 월별 배당금 */
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
-      return { annualDividend,
-        monthlyDividends };
+      return {
+        annualDividend,
+        monthlyDividends,
+      };
     });
 
+    /** 종목별 연 배당금 합산 */
     const totalAnnualDividend = stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+    /** 종목별 월별 배당금 합산 */
     const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
 
     setAnnualDividend(totalAnnualDividend);
@@ -178,13 +113,14 @@ export default function Page() {
     setRequiredInvestment(null);
   };
 
-  // 투자금 계산: 목표 배당금 → 필요한 투자금
+  /** 투자금 계산: 목표 배당금 → 필요한 투자금 */
   const calculateInvestmentFromDividend = (data: FormValues) => {
+    /** 각 종목별 비율에 따른 배당 수익률의 합 */
     const weightedDividendYield = data.stocks.reduce((sum, stock) => {
       const dividendYield = calculateDividendYield(stock, data.exchangeRate);
       return sum + dividendYield * (stock.ratio / 100);
     }, 0);
-
+    /** 필요한 투자금 */
     const requiredInvestmentAmount = data.targetAnnualDividend / weightedDividendYield;
 
     const stockDividends = data.stocks.map((stock) => {

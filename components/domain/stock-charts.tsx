@@ -3,15 +3,7 @@
 import ReactECharts from 'echarts-for-react';
 import { memo, useEffect, useMemo, useState } from 'react';
 
-interface Stock {
-  ticker: string;
-  name: string;
-  price: number;
-  currency: string;
-  dividend: number;
-  dividendCurrency: string;
-  ratio: number;
-}
+import type { Stock } from '@/types';
 
 interface StockChartsProps {
   stocks: Stock[];

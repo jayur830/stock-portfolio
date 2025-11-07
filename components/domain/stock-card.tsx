@@ -1,29 +1,15 @@
 import { X } from 'lucide-react';
+import type { KeyboardEvent } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
-import { Control, Controller, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
+import type { Control, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
+import { Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-
-interface FormValues {
-  totalInvestment: number;
-  targetAnnualDividend: number;
-  exchangeRate: number;
-  stocks: Array<{
-    name: string;
-    ticker: string;
-    price: number;
-    currency: string;
-    dividend: number;
-    dividendCurrency: string;
-    dividendMonths: number[];
-    yield: number;
-    ratio: number;
-  }>;
-}
+import type { FormValues } from '@/types';
 
 interface StockCardProps {
   control: Control<FormValues>;
@@ -116,7 +102,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showDropdown || searchResults.length === 0) return;
 
     switch (e.key) {
