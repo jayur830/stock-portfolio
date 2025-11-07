@@ -128,6 +128,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       yAxis: {
         type: 'value',
         name: '가격 (KRW)',
+        scale: true,
       },
       series,
       grid: {
