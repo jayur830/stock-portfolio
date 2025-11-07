@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
@@ -57,10 +57,7 @@ export default function Page() {
   });
 
   const watchedStocks = watch('stocks');
-  const totalRatio = useMemo(
-    () => watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0),
-    [watchedStocks],
-  );
+  const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
   const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
