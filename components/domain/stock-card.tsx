@@ -87,6 +87,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
     setValue(`stocks.${index}.ticker`, quote.symbol);
     setValue(`stocks.${index}.name`, quote.shortname);
     setSearchQuery(quote.symbol);
+    setSearchResults([]);
     setShowDropdown(false);
 
     // 종목 상세 정보 가져오기
@@ -134,21 +135,14 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
       )}
       <CardHeader>
         <div className="relative" ref={dropdownRef}>
-          <Controller
-            control={control}
-            name={`stocks.${index}.ticker`}
-            render={({ field }) => (
-              <Input
-                {...field}
-                className="flex-1"
-                onChange={(e) => {
-                  field.onChange(e);
-                  setSearchQuery(e.target.value);
-                }}
-                placeholder="종목검색"
-                type="search"
-              />
-            )}
+          <Input
+            className="flex-1"
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+            }}
+            placeholder="종목검색"
+            type="search"
+            value={searchQuery}
           />
           {showDropdown && searchResults.length > 0 && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
