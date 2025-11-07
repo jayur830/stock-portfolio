@@ -406,6 +406,7 @@ export default function Page() {
           {(annualDividend !== null || requiredInvestment !== null) && watchedStocks.length > 0 && (
             <StockCharts
               exchangeRate={watch('exchangeRate')}
+              key={watchedStocks.map((s) => s.ticker).filter(Boolean).join(',')}
               stocks={watchedStocks}
               totalInvestment={requiredInvestment !== null ? requiredInvestment : watch('totalInvestment')}
             />
