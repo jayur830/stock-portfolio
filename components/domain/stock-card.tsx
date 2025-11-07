@@ -45,6 +45,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   const [isSearching, setIsSearching] = useState(false);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -62,6 +63,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
     if (!searchQuery || searchQuery.length < 1) {
       setSearchResults([]);
       setShowDropdown(false);
+      setSelectedIndex(-1);
       return;
     }
 
@@ -72,6 +74,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
         const data = await response.json();
         setSearchResults(data.quotes || []);
         setShowDropdown(true);
+        setSelectedIndex(-1);
       } catch (error) {
         console.error('Failed to search stocks:', error);
         setSearchResults([]);
@@ -89,6 +92,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
     setSearchQuery(quote.symbol);
     setSearchResults([]);
     setShowDropdown(false);
+    setSelectedIndex(-1);
 
     // 종목 상세 정보 가져오기
     setIsLoadingQuote(true);
@@ -109,6 +113,32 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
       console.error('Failed to fetch stock quote:', error);
     } finally {
       setIsLoadingQuote(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showDropdown || searchResults.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : prev));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+          handleStockSelect(searchResults[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowDropdown(false);
+        setSelectedIndex(-1);
+        break;
     }
   };
 
@@ -140,15 +170,18 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
             onChange={(e) => {
               setSearchQuery(e.target.value);
             }}
+            onKeyDown={handleKeyDown}
             placeholder="종목검색"
             type="search"
             value={searchQuery}
           />
           {showDropdown && searchResults.length > 0 && (
             <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-auto">
-              {searchResults.map((quote) => (
+              {searchResults.map((quote, idx) => (
                 <button
-                  className="w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  className={`w-full px-4 py-2 text-left hover:bg-gray-100 focus:bg-gray-100 focus:outline-none ${
+                    idx === selectedIndex ? 'bg-blue-50' : ''
+                  }`}
                   key={quote.symbol}
                   onClick={() => handleStockSelect(quote)}
                   type="button"
