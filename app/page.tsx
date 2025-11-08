@@ -77,6 +77,14 @@ export default function Page() {
     }
   }, [exchangeRateData, setValue]);
 
+  /** 환율 조회 버튼 핸들러 */
+  const handleFetchExchangeRate = useCallback(async () => {
+    const result = await refetchExchangeRate();
+    if (result.data) {
+      setValue('exchangeRate', result.data);
+    }
+  }, [refetchExchangeRate, setValue]);
+
   /** 폼 데이터 검증 */
   const validateFormData = (data: FormValues): string | null => {
     const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
@@ -231,7 +239,7 @@ export default function Page() {
         <div className="flex items-center gap-2">
           <Button
             disabled={loadingExchangeRate}
-            onClick={() => refetchExchangeRate()}
+            onClick={handleFetchExchangeRate}
             size="sm"
             type="button"
             variant="outline"
