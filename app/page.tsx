@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
@@ -27,15 +27,22 @@ export default function Page() {
     name: 'stocks',
   });
 
-  /** 종목 */
-  const watchedStocks = watch('stocks');
-  /** 각 종목의 비율 합 */
-  const totalRatio = useMemo(
-    () => watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0),
-    [watchedStocks],
-  );
   /** 탭 상태 */
   const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
+  /** 비율 합 */
+  const [totalRatio, setTotalRatio] = useState(0);
+
+  // ratio 변경 시에만 totalRatio 업데이트
+  useEffect(() => {
+    const subscription = watch((value, { name }) => {
+      if (name?.includes('ratio') || name === 'stocks') {
+        const stocks = value.stocks || [];
+        const sum = stocks.reduce((acc: number, stock: any) => acc + (stock?.ratio || 0), 0);
+        setTotalRatio(sum);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch]);
   /** 연 배당금 */
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
   /** 필요한 투자금 */
@@ -46,6 +53,7 @@ export default function Page() {
   const [chartData, setChartData] = useState<{
     totalInvestment: number;
     exchangeRate: number;
+    stocks: any[];
   } | null>(null);
 
   /** 환율 조회 */
@@ -122,6 +130,7 @@ export default function Page() {
     setChartData({
       totalInvestment: data.totalInvestment,
       exchangeRate: data.exchangeRate,
+      stocks: data.stocks,
     });
   }, []);
 
@@ -150,6 +159,7 @@ export default function Page() {
     setChartData({
       totalInvestment: requiredInvestmentAmount,
       exchangeRate: data.exchangeRate,
+      stocks: data.stocks,
     });
   }, []);
 
@@ -231,6 +241,7 @@ export default function Page() {
           <Input
             className="w-32"
             placeholder="환율"
+            step="any"
             type="number"
             {...register('exchangeRate', { valueAsNumber: true })}
           />
@@ -244,6 +255,7 @@ export default function Page() {
               className="flex-1"
               maxLength={24}
               placeholder="총 투자금을 입력하세요"
+              step="any"
               type="number"
               {...register('totalInvestment', { valueAsNumber: true })}
             />
@@ -256,6 +268,7 @@ export default function Page() {
               className="flex-1"
               maxLength={24}
               placeholder="목표 연 배당금을 입력하세요"
+              step="any"
               type="number"
               {...register('targetAnnualDividend', { valueAsNumber: true })}
             />
@@ -269,6 +282,7 @@ export default function Page() {
             index={index}
             key={field.id}
             onDelete={() => remove(index)}
+            register={register}
             setValue={setValue}
           />
         ))}
@@ -364,11 +378,11 @@ export default function Page() {
               </div>
             </>
           )}
-          {(annualDividend !== null || requiredInvestment !== null) && watchedStocks.length > 0 && chartData && (
+          {(annualDividend !== null || requiredInvestment !== null) && chartData && chartData.stocks.length > 0 && (
             <StockCharts
               exchangeRate={chartData.exchangeRate}
-              key={watchedStocks.map((s) => s.ticker).filter(Boolean).join(',')}
-              stocks={watchedStocks}
+              key={chartData.stocks.map((s) => s.ticker).filter(Boolean).join(',')}
+              stocks={chartData.stocks}
               totalInvestment={chartData.totalInvestment}
             />
           )}

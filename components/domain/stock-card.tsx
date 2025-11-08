@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
-import type { Control, UseFormGetValues, UseFormSetValue } from 'react-hook-form';
+import type { Control, UseFormGetValues, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ interface StockCardProps {
   index: number;
   getValues: UseFormGetValues<FormValues>;
   setValue: UseFormSetValue<FormValues>;
+  register: UseFormRegister<FormValues>;
   onDelete?(): void;
 }
 
@@ -26,7 +27,7 @@ interface StockQuote {
   exchange: string;
 }
 
-const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardProps) => {
+const StockCard = ({ control, index, getValues, setValue, register, onDelete }: StockCardProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
@@ -205,29 +206,16 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Controller
-            control={control}
-            name={`stocks.${index}.name`}
-            render={({ field }) => (
-              <Input
-                {...field}
-                placeholder="종목명"
-                type="text"
-              />
-            )}
+          <Input
+            placeholder="종목명"
+            type="text"
+            {...register(`stocks.${index}.name`)}
           />
-          <Controller
-            control={control}
-            name={`stocks.${index}.price`}
-            render={({ field }) => (
-              <Input
-                {...field}
-                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                placeholder="가격"
-                type="number"
-                value={field.value}
-              />
-            )}
+          <Input
+            placeholder="가격"
+            step="any"
+            type="number"
+            {...register(`stocks.${index}.price`, { valueAsNumber: true })}
           />
           <Controller
             control={control}
@@ -339,18 +327,11 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
         <div className="flex gap-2">
           <div className="flex items-center gap-2">
             <span className="text-sm w-[120px]">주당 배당금: </span>
-            <Controller
-              control={control}
-              name={`stocks.${index}.dividend`}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  placeholder="주당 배당금"
-                  type="number"
-                  value={field.value}
-                />
-              )}
+            <Input
+              placeholder="주당 배당금"
+              step="any"
+              type="number"
+              {...register(`stocks.${index}.dividend`, { valueAsNumber: true })}
             />
             <Controller
               control={control}
@@ -432,7 +413,4 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   );
 };
 
-export default memo(StockCard, (prevProps, nextProps) => {
-  // index와 onDelete가 같으면 리렌더링 방지 (form 값은 Controller가 관리)
-  return prevProps.index === nextProps.index && prevProps.onDelete === nextProps.onDelete;
-});
+export default memo(StockCard);
