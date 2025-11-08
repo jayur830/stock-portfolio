@@ -1,7 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/components/domain/stock-card';
@@ -30,7 +30,10 @@ export default function Page() {
   /** 종목 */
   const watchedStocks = watch('stocks');
   /** 각 종목의 비율 합 */
-  const totalRatio = watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
+  const totalRatio = useMemo(
+    () => watchedStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0),
+    [watchedStocks],
+  );
   /** 탭 상태 */
   const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
   /** 연 배당금 */
@@ -39,6 +42,11 @@ export default function Page() {
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
   /** 월별 배당금 */
   const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
+  /** 차트에 전달할 계산 시점의 값들 */
+  const [chartData, setChartData] = useState<{
+    totalInvestment: number;
+    exchangeRate: number;
+  } | null>(null);
 
   /** 환율 조회 */
   const { data: exchangeRateData, isLoading: loadingExchangeRate, refetch: refetchExchangeRate } = useQuery({
@@ -89,7 +97,7 @@ export default function Page() {
   };
 
   /** 배당금 계산: 투자금 → 배당금 */
-  const calculateDividendFromInvestment = (data: FormValues) => {
+  const calculateDividendFromInvestment = useCallback((data: FormValues) => {
     const stockDividends = data.stocks.map((stock) => {
       /** 종목별 투자금 */
       const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
@@ -111,10 +119,14 @@ export default function Page() {
     setAnnualDividend(totalAnnualDividend);
     setMonthlyDividends(monthlyDividendArray);
     setRequiredInvestment(null);
-  };
+    setChartData({
+      totalInvestment: data.totalInvestment,
+      exchangeRate: data.exchangeRate,
+    });
+  }, []);
 
   /** 투자금 계산: 목표 배당금 → 필요한 투자금 */
-  const calculateInvestmentFromDividend = (data: FormValues) => {
+  const calculateInvestmentFromDividend = useCallback((data: FormValues) => {
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
     const weightedDividendYield = data.stocks.reduce((sum, stock) => {
       const dividendYield = calculateDividendYield(stock, data.exchangeRate);
@@ -135,9 +147,55 @@ export default function Page() {
     setRequiredInvestment(requiredInvestmentAmount);
     setMonthlyDividends(monthlyDividendArray);
     setAnnualDividend(null);
-  };
+    setChartData({
+      totalInvestment: requiredInvestmentAmount,
+      exchangeRate: data.exchangeRate,
+    });
+  }, []);
 
-  const onSubmit = (data: FormValues) => {
+  const handleAddStock = useCallback(() => {
+    const newStock = {
+      name: '',
+      ticker: '',
+      price: 0,
+      currency: 'KRW' as const,
+      dividend: 0,
+      dividendCurrency: 'KRW' as const,
+      dividendMonths: [],
+      yield: 0,
+      ratio: 0,
+    };
+
+    const currentStocks = getValues('stocks');
+    const newList = [...currentStocks, newStock];
+
+    // 모든 종목을 균등하게 재분배
+    const equalRatio = 100 / newList.length;
+    const redistributedList = newList.map((stock) => ({
+      ...stock,
+      ratio: equalRatio,
+    }));
+
+    // 기존 stocks의 ratio만 업데이트하고 새 종목 추가
+    currentStocks.forEach((_, idx) => {
+      setValue(`stocks.${idx}.ratio`, redistributedList[idx].ratio);
+    });
+    append(redistributedList[redistributedList.length - 1]);
+  }, [getValues, setValue, append]);
+
+  const handleReset = useCallback(() => {
+    reset();
+    setAnnualDividend(null);
+    setRequiredInvestment(null);
+    setMonthlyDividends(Array(12).fill(0));
+    setChartData(null);
+  }, [reset]);
+
+  const handleTabChange = useCallback((value: string) => {
+    setActiveTab(value as 'dividend' | 'investment');
+  }, []);
+
+  const onSubmit = useCallback((data: FormValues) => {
     const error = validateFormData(data);
     if (error) {
       alert(error);
@@ -149,12 +207,12 @@ export default function Page() {
     } else {
       calculateInvestmentFromDividend(data);
     }
-  };
+  }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
   return (
     <main className="flex flex-col gap-3.5 p-4">
       <div className="flex items-center gap-4">
-        <Tabs className="flex-1" onValueChange={(value) => setActiveTab(value as 'dividend' | 'investment')} value={activeTab}>
+        <Tabs className="flex-1" onValueChange={handleTabChange} value={activeTab}>
           <TabsList>
             <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
             <TabsTrigger value="investment">투자금 계산</TabsTrigger>
@@ -216,35 +274,7 @@ export default function Page() {
         ))}
         <Button
           className="border-dashed"
-          onClick={() => {
-            const newStock = {
-              name: '',
-              ticker: '',
-              price: 0,
-              currency: 'KRW',
-              dividend: 0,
-              dividendCurrency: 'KRW',
-              dividendMonths: [],
-              yield: 0,
-              ratio: 0,
-            };
-
-            const currentStocks = getValues('stocks');
-            const newList = [...currentStocks, newStock];
-
-            // 모든 종목을 균등하게 재분배
-            const equalRatio = 100 / newList.length;
-            const redistributedList = newList.map((stock) => ({
-              ...stock,
-              ratio: equalRatio,
-            }));
-
-            // 기존 stocks의 ratio만 업데이트하고 새 종목 추가
-            currentStocks.forEach((_, idx) => {
-              setValue(`stocks.${idx}.ratio`, redistributedList[idx].ratio);
-            });
-            append(redistributedList[redistributedList.length - 1]);
-          }}
+          onClick={handleAddStock}
           type="button"
           variant="outline"
         >
@@ -262,12 +292,7 @@ export default function Page() {
               계산
             </Button>
             <Button
-              onClick={() => {
-                reset();
-                setAnnualDividend(null);
-                setRequiredInvestment(null);
-                setMonthlyDividends(Array(12).fill(0));
-              }}
+              onClick={handleReset}
               type="button"
               variant="outline"
             >
@@ -339,12 +364,12 @@ export default function Page() {
               </div>
             </>
           )}
-          {(annualDividend !== null || requiredInvestment !== null) && watchedStocks.length > 0 && (
+          {(annualDividend !== null || requiredInvestment !== null) && watchedStocks.length > 0 && chartData && (
             <StockCharts
-              exchangeRate={watch('exchangeRate')}
+              exchangeRate={chartData.exchangeRate}
               key={watchedStocks.map((s) => s.ticker).filter(Boolean).join(',')}
               stocks={watchedStocks}
-              totalInvestment={requiredInvestment !== null ? requiredInvestment : watch('totalInvestment')}
+              totalInvestment={chartData.totalInvestment}
             />
           )}
         </div>

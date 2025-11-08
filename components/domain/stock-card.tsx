@@ -40,22 +40,23 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
       setDebouncedQuery('');
       setShowDropdown(false);
       setSelectedIndex(-1);
-      return;
+    } else {
+      const delayTimer = setTimeout(() => {
+        setDebouncedQuery(searchQuery);
+        setShowDropdown(true);
+        setSelectedIndex(-1);
+      }, 300);
+
+      return () => {
+        clearTimeout(delayTimer);
+      };
     }
-
-    const delayTimer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-      setShowDropdown(true);
-      setSelectedIndex(-1);
-    }, 300);
-
-    return () => clearTimeout(delayTimer);
   }, [searchQuery]);
 
   /** 종목 검색 */
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
     queryKey: ['stockSearch', debouncedQuery],
-    queryFn: async () => {
+    async queryFn() {
       const response = await fetch(`/api/stock/search?q=${encodeURIComponent(debouncedQuery)}`);
       if (!response.ok) {
         throw new Error('Failed to search stocks');
@@ -70,13 +71,12 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   /** 종목 상세 정보 조회 */
   const { data: quoteData, refetch: fetchQuote, isFetching: isLoadingQuote } = useQuery({
     queryKey: ['stockQuote', selectedSymbol],
-    queryFn: async () => {
+    async queryFn() {
       const response = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(selectedSymbol!)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch stock quote');
       }
-      const data = await response.json();
-      return data;
+      return response.json();
     },
     enabled: false, // manual query
   });
@@ -102,7 +102,9 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
     };
 
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleStockSelect = async (quote: StockQuote) => {
@@ -120,23 +122,21 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showDropdown || searchResults.length === 0) return;
 
+    e.preventDefault();
+
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault();
         setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
-        e.preventDefault();
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
       case 'Enter':
-        e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
           handleStockSelect(searchResults[selectedIndex]);
         }
         break;
       case 'Escape':
-        e.preventDefault();
         setShowDropdown(false);
         setSelectedIndex(-1);
         break;
