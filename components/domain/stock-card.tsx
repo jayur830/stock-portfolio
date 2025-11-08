@@ -32,7 +32,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
+  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // 검색어 debouncing
@@ -69,32 +69,6 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
     staleTime: 1000 * 60, // 1분
   });
 
-  /** 종목 상세 정보 조회 */
-  const { data: quoteData, refetch: fetchQuote, isFetching: isLoadingQuote } = useQuery({
-    queryKey: ['stockQuote', selectedSymbol],
-    async queryFn() {
-      const response = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(selectedSymbol!)}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch stock quote');
-      }
-      return response.json();
-    },
-    enabled: false, // manual query
-  });
-
-  /** 종목 상세 정보가 로드되면 폼에 반영 */
-  useEffect(() => {
-    if (quoteData && !quoteData.error) {
-      setValue(`stocks.${index}.price`, quoteData.price);
-      setValue(`stocks.${index}.currency`, quoteData.currency);
-      setValue(`stocks.${index}.dividend`, quoteData.dividend);
-      setValue(`stocks.${index}.dividendCurrency`, quoteData.currency);
-      if (quoteData.dividendMonths && quoteData.dividendMonths.length > 0) {
-        setValue(`stocks.${index}.dividendMonths`, quoteData.dividendMonths);
-      }
-    }
-  }, [quoteData, index, setValue]);
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -112,12 +86,33 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
     setValue(`stocks.${index}.ticker`, quote.symbol);
     setValue(`stocks.${index}.name`, quote.shortname);
     setSearchQuery(quote.symbol);
+    setDebouncedQuery(''); // 검색 재실행 방지
     setShowDropdown(false);
     setSelectedIndex(-1);
 
     // 종목 상세 정보 가져오기
-    setSelectedSymbol(quote.symbol);
-    await fetchQuote();
+    setIsLoadingQuote(true);
+    try {
+      const response = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(quote.symbol)}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch stock quote');
+      }
+      const data = await response.json();
+
+      if (data && !data.error) {
+        setValue(`stocks.${index}.price`, data.price);
+        setValue(`stocks.${index}.currency`, data.currency);
+        setValue(`stocks.${index}.dividend`, data.dividend);
+        setValue(`stocks.${index}.dividendCurrency`, data.currency);
+        if (data.dividendMonths && data.dividendMonths.length > 0) {
+          setValue(`stocks.${index}.dividendMonths`, data.dividendMonths);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch stock quote:', error);
+    } finally {
+      setIsLoadingQuote(false);
+    }
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
