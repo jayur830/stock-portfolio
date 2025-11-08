@@ -29,7 +29,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     queryKey: ['stockHistories', tickers],
     queryFn: async () => {
       const symbols = tickers.split(',');
-      const response = await fetch('/api/stock-history', {
+      const response = await fetch('/api/stock/history', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ symbols }),

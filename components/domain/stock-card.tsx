@@ -56,7 +56,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
     queryKey: ['stockSearch', debouncedQuery],
     queryFn: async () => {
-      const response = await fetch(`/api/stock-search?q=${encodeURIComponent(debouncedQuery)}`);
+      const response = await fetch(`/api/stock/search?q=${encodeURIComponent(debouncedQuery)}`);
       if (!response.ok) {
         throw new Error('Failed to search stocks');
       }
@@ -71,7 +71,7 @@ const StockCard = ({ control, index, getValues, setValue, onDelete }: StockCardP
   const { data: quoteData, refetch: fetchQuote, isFetching: isLoadingQuote } = useQuery({
     queryKey: ['stockQuote', selectedSymbol],
     queryFn: async () => {
-      const response = await fetch(`/api/stock-quote?symbol=${encodeURIComponent(selectedSymbol!)}`);
+      const response = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(selectedSymbol!)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch stock quote');
       }
