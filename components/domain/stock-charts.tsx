@@ -1,7 +1,8 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import ReactECharts from 'echarts-for-react';
-import { memo, useEffect, useMemo, useState } from 'react';
+import { memo, useMemo } from 'react';
 
 import type { Stock } from '@/types';
 
@@ -13,49 +14,43 @@ interface StockChartsProps {
 
 interface HistoryData {
   symbol: string;
-  data: Array<{
+  data: {
     date: Date;
     close: number;
-  }>;
+  }[];
 }
 
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
-  const [histories, setHistories] = useState<HistoryData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지)
+  /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
 
-  useEffect(() => {
-    const fetchHistories = async () => {
-      if (!tickers) return;
+  /** 주식 히스토리 데이터 조회 */
+  const { data: histories = [], isLoading } = useQuery({
+    queryKey: ['stockHistories', tickers],
+    queryFn: async () => {
+      const symbols = tickers.split(',');
+      const response = await fetch('/api/stock-history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbols }),
+      });
 
-      setIsLoading(true);
-      try {
-        const symbols = tickers.split(',');
-        const response = await fetch('/api/stock-history', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ symbols }),
-        });
-
-        const data = await response.json();
-        setHistories(data.histories || []);
-      } catch (error) {
-        console.error('Failed to fetch histories:', error);
-      } finally {
-        setIsLoading(false);
+      if (!response.ok) {
+        throw new Error('Failed to fetch stock histories');
       }
-    };
 
-    fetchHistories();
-  }, [tickers]);
+      const data = await response.json();
+      return (data.histories || []) as HistoryData[];
+    },
+    enabled: !!tickers, // tickers가 있을 때만 쿼리 실행
+    staleTime: 1000 * 60 * 5, // 5분
+  });
 
-  // 1. 통합 포트폴리오 차트 (모든 종목 합산)
+  /** 1. 통합 포트폴리오 차트 (모든 종목 합산) */
   const combinedChartOption = useMemo(() => {
     if (histories.length === 0) return null;
 
-    // 모든 날짜의 합집합 구하기
+    /** 모든 날짜의 합집합 구하기 */
     const allDates = new Set<string>();
     histories.forEach((h) => {
       h.data.forEach((d) => {
@@ -64,7 +59,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     });
     const sortedDates = Array.from(allDates).sort();
 
-    // 각 종목의 series 생성
+    /** 각 종목의 series 생성 */
     const series = histories.map((history) => {
       const stock = stocks.find((s) => s.ticker === history.symbol);
       const dataMap = new Map(
@@ -75,7 +70,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         const price = dataMap.get(date);
         if (!price) return null;
 
-        // USD 종목이면 KRW로 환산
+        /** USD 종목이면 KRW로 환산 */
         return stock?.currency === 'USD' ? price * exchangeRate : price;
       });
 
@@ -133,7 +128,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     };
   }, [histories, stocks, exchangeRate]);
 
-  // 2. 수익금 차트 (0부터 시작)
+  /** 2. 수익금 차트 (0부터 시작) */
   const profitChartOption = useMemo(() => {
     if (histories.length === 0) return null;
 
@@ -145,7 +140,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     });
     const sortedDates = Array.from(allDates).sort();
 
-    // 각 날짜의 총 포트폴리오 가치 계산
+    /** 각 날짜의 총 포트폴리오 가치 계산 */
     const portfolioValues = sortedDates.map((date) => {
       let totalValue = 0;
 
@@ -172,7 +167,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return totalValue;
     });
 
-    // 수익금 = 현재 가치 - 투자금 (0부터 시작)
+    /** 수익금 = 현재 가치 - 투자금 (0부터 시작) */
     const initialValue = portfolioValues[0] || totalInvestment;
     const profits = portfolioValues.map((value) => value - initialValue);
 

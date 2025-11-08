@@ -1,5 +1,6 @@
 'use client';
 
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
@@ -38,28 +39,27 @@ export default function Page() {
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
   /** 월별 배당금 */
   const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
-  /** 환율 조회 중 */
-  const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState(false);
 
-  const fetchExchangeRate = async () => {
-    setIsLoadingExchangeRate(true);
-    try {
+  /** 환율 조회 */
+  const { data: exchangeRateData, isLoading: loadingExchangeRate, refetch: refetchExchangeRate } = useQuery({
+    queryKey: ['exchangeRate'],
+    async queryFn() {
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      if (!response.ok) {
+        throw new Error('환율 조회에 실패했습니다.');
+      }
       const data = await response.json();
-      const krwRate = data.rates.KRW;
-      setValue('exchangeRate', krwRate);
-    } catch (error) {
-      console.error('환율 조회 실패:', error);
-      alert('환율 조회에 실패했습니다.');
-    } finally {
-      setIsLoadingExchangeRate(false);
-    }
-  };
+      return data.rates.KRW as number;
+    },
+    staleTime: 1000 * 60 * 60, // 1시간
+  });
 
-  /** 페이지 진입 시 환율 자동 조회 */
+  /** 환율 데이터가 변경되면 폼에 반영 */
   useEffect(() => {
-    fetchExchangeRate();
-  }, []);
+    if (exchangeRateData) {
+      setValue('exchangeRate', exchangeRateData);
+    }
+  }, [exchangeRateData, setValue]);
 
   /** 폼 데이터 검증 */
   const validateFormData = (data: FormValues): string | null => {
@@ -162,13 +162,13 @@ export default function Page() {
         </Tabs>
         <div className="flex items-center gap-2">
           <Button
-            disabled={isLoadingExchangeRate}
-            onClick={fetchExchangeRate}
+            disabled={loadingExchangeRate}
+            onClick={() => refetchExchangeRate()}
             size="sm"
             type="button"
             variant="outline"
           >
-            {isLoadingExchangeRate ? '조회 중...' : '환율 조회'}
+            {loadingExchangeRate ? '조회 중...' : '환율 조회'}
           </Button>
           <Input
             className="w-32"
