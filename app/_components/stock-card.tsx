@@ -402,6 +402,17 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
               />
             )}
           />
+          <span className="text-sm text-muted-foreground whitespace-nowrap">
+            {(() => {
+              const stock = getValues(`stocks.${index}`);
+              const totalInvestment = getValues('totalInvestment');
+              const exchangeRate = getValues('exchangeRate');
+              const investmentAmount = (totalInvestment * (stock.ratio || 0)) / 100;
+              const priceInKRW = stock.currency === 'USD' ? stock.price * exchangeRate : stock.price;
+              const quantity = priceInKRW > 0 && investmentAmount > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
+              return `${quantity.toLocaleString('ko-KR')}주`;
+            })()}
+          </span>
         </div>
       </CardContent>
     </Card>
