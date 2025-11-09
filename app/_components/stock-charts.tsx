@@ -128,9 +128,15 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     };
   }, [histories, stocks, exchangeRate]);
 
-  /** 2. 수익금 차트 (0부터 시작) */
+  /** 2. 수익금 차트 (매수일 기준) */
   const profitChartOption = useMemo(() => {
     if (histories.length === 0) return null;
+
+    // 매수일이 있는 종목만 필터링
+    const stocksWithPurchaseDate = stocks.filter((s) => s.purchaseDate);
+
+    // 매수일이 없으면 차트를 표시하지 않음
+    if (stocksWithPurchaseDate.length === 0) return null;
 
     const allDates = new Set<string>();
     histories.forEach((h) => {
@@ -140,36 +146,52 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     });
     const sortedDates = Array.from(allDates).sort();
 
-    /** 각 날짜의 총 포트폴리오 가치 계산 */
-    const portfolioValues = sortedDates.map((date) => {
-      let totalValue = 0;
+    /** 각 날짜의 총 포트폴리오 수익 계산 */
+    const profits = sortedDates.map((date) => {
+      let totalProfit = 0;
+      const currentDate = new Date(date);
 
       stocks.forEach((stock) => {
+        // 매수일이 없으면 해당 종목은 제외
+        if (!stock.purchaseDate) return;
+
+        const purchaseDate = new Date(stock.purchaseDate);
+
+        // 현재 날짜가 매수일 이전이면 수익은 0
+        if (currentDate < purchaseDate) return;
+
         const history = histories.find((h) => h.symbol === stock.ticker);
         if (!history) return;
 
-        const dataPoint = history.data.find(
+        // 매수일의 가격 찾기
+        const purchaseDateStr = purchaseDate.toISOString().split('T')[0];
+        const purchaseDataPoint = history.data.find(
+          (d) => new Date(d.date).toISOString().split('T')[0] >= purchaseDateStr,
+        );
+        if (!purchaseDataPoint) return;
+
+        // 현재 날짜의 가격 찾기
+        const currentDataPoint = history.data.find(
           (d) => new Date(d.date).toISOString().split('T')[0] === date,
         );
-        if (!dataPoint) return;
+        if (!currentDataPoint) return;
+
+        // 매수가 (KRW 기준)
+        const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
+
+        // 현재가 (KRW 기준)
+        const currentPriceInKRW = stock.currency === 'USD' ? currentDataPoint.close * exchangeRate : currentDataPoint.close;
 
         const investmentAmount = (totalInvestment * stock.ratio) / 100;
-        let priceInKRW = dataPoint.close;
-        if (stock.currency === 'USD') {
-          priceInKRW = dataPoint.close * exchangeRate;
-        }
+        const shares = investmentAmount / purchasePriceInKRW;
 
-        const shares = investmentAmount / (stock.price || 1);
-        const currentValue = shares * priceInKRW;
-        totalValue += currentValue;
+        // 수익 = (현재가 - 매수가) × 보유 수량
+        const profit = (currentPriceInKRW - purchasePriceInKRW) * shares;
+        totalProfit += profit;
       });
 
-      return totalValue;
+      return totalProfit;
     });
-
-    /** 수익금 = 현재 가치 - 투자금 (0부터 시작) */
-    const initialValue = portfolioValues[0] || totalInvestment;
-    const profits = portfolioValues.map((value) => value - initialValue);
 
     return {
       title: {
@@ -255,7 +277,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         </div>
       )}
 
-      {/* 수익금 차트 */}
+      {/* 누적 수익금 차트 */}
       {profitChartOption && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '350px' }} />

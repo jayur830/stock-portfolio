@@ -1,15 +1,20 @@
 import { useQuery } from '@tanstack/react-query';
-import { X } from 'lucide-react';
+import { format } from 'date-fns';
+import { ko } from 'date-fns/locale';
+import { CalendarIcon, X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
 import type { Control, UseFormGetValues, UseFormRegister, UseFormSetValue } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { cn } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 interface StockCardProps {
@@ -267,6 +272,42 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             step="any"
             type="number"
             {...register(`stocks.${index}.price`, { valueAsNumber: true })}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium whitespace-nowrap">매수일</label>
+          <Controller
+            control={control}
+            name={`stocks.${index}.purchaseDate`}
+            render={({ field }) => (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    className={cn(
+                      'flex-1 justify-start text-left font-normal',
+                      !field.value && 'text-muted-foreground',
+                    )}
+                    variant="outline"
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {field.value ? (
+                      format(new Date(field.value), 'PPP', { locale: ko })
+                    ) : (
+                      <span>날짜를 선택하세요</span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-auto p-0">
+                  <Calendar
+                    initialFocus
+                    locale={ko}
+                    mode="single"
+                    onSelect={field.onChange}
+                    selected={field.value ? new Date(field.value) : undefined}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
           />
         </div>
       </CardHeader>

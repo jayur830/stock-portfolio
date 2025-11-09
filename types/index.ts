@@ -17,6 +17,8 @@ export interface Stock {
   yield: number;
   /** 비율 */
   ratio: number;
+  /** 매수일 */
+  purchaseDate?: Date | string;
 }
 
 export interface FormValues {
@@ -33,5 +35,6 @@ export interface FormValues {
     dividendMonths: number[];
     yield: number;
     ratio: number;
+    purchaseDate?: Date | string;
   }>;
 }
