@@ -19,22 +19,13 @@ export interface Stock {
   ratio: number;
   /** 매수일 */
   purchaseDate?: Date | string;
+  /** 배당 입력 방식 ('amount' | 'yield') */
+  dividendInputType?: 'amount' | 'yield';
 }
 
 export interface FormValues {
   totalInvestment: number;
   targetAnnualDividend: number;
   exchangeRate: number;
-  stocks: Array<{
-    name: string;
-    ticker: string;
-    price: number;
-    currency: string;
-    dividend: number;
-    dividendCurrency: string;
-    dividendMonths: number[];
-    yield: number;
-    ratio: number;
-    purchaseDate?: Date | string;
-  }>;
+  stocks: Stock[];
 }

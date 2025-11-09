@@ -183,6 +183,7 @@ export default function Page() {
       yield: 0,
       ratio: 0,
       purchaseDate: undefined,
+      dividendInputType: 'amount' as const,
     };
 
     const currentStocks = getValues('stocks');

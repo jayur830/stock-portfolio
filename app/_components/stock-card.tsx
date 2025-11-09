@@ -267,12 +267,33 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             type="text"
             {...register(`stocks.${index}.name`)}
           />
-          <Input
-            className="flex-1"
-            placeholder="가격"
-            step="any"
-            type="number"
-            {...register(`stocks.${index}.price`, { valueAsNumber: true })}
+          <Controller
+            control={control}
+            name={`stocks.${index}.price`}
+            render={({ field }) => (
+              <Input
+                {...field}
+                className="flex-1"
+                onChange={(e) => {
+                  const priceValue = parseFloat(e.target.value) || 0;
+                  field.onChange(priceValue);
+
+                  // 배당률 모드일 때 주당 배당금 자동 업데이트
+                  const dividendInputType = getValues(`stocks.${index}.dividendInputType`);
+                  if (dividendInputType === 'yield') {
+                    const yieldValue = getValues(`stocks.${index}.yield`);
+                    if (yieldValue > 0 && priceValue > 0) {
+                      const dividendValue = (priceValue * yieldValue) / 100;
+                      setValue(`stocks.${index}.dividend`, Math.round(dividendValue * 100) / 100);
+                    }
+                  }
+                }}
+                placeholder="가격"
+                step="any"
+                type="number"
+                value={field.value || ''}
+              />
+            )}
           />
         </div>
         <div className="flex items-center gap-2">
@@ -380,18 +401,91 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium whitespace-nowrap">주당 배당금</span>
-          <Input
-            className="flex-1"
-            placeholder="주당 배당금"
-            step="any"
-            type="number"
-            {...register(`stocks.${index}.dividend`, { valueAsNumber: true })}
+          <Controller
+            control={control}
+            name={`stocks.${index}.dividendInputType`}
+            render={({ field }) => (
+              <Select
+                onValueChange={(value) => {
+                  field.onChange(value);
+                  // 입력 방식 변경 시 기존 값 초기화
+                  if (value === 'yield') {
+                    // 배당률로 변경 시, 주당 배당금이 있으면 배당률 계산
+                    const currentDividend = getValues(`stocks.${index}.dividend`);
+                    const currentPrice = getValues(`stocks.${index}.price`);
+                    if (currentDividend > 0 && currentPrice > 0) {
+                      const yieldValue = (currentDividend / currentPrice) * 100;
+                      setValue(`stocks.${index}.yield`, Math.round(yieldValue * 100) / 100);
+                    }
+                  } else {
+                    // 주당 배당금으로 변경 시, 배당률이 있으면 주당 배당금 계산
+                    const currentYield = getValues(`stocks.${index}.yield`);
+                    const currentPrice = getValues(`stocks.${index}.price`);
+                    if (currentYield > 0 && currentPrice > 0) {
+                      const dividendValue = (currentPrice * currentYield) / 100;
+                      setValue(`stocks.${index}.dividend`, Math.round(dividendValue * 100) / 100);
+                    }
+                  }
+                }}
+                value={field.value || 'amount'}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="입력 방식" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="amount">주당 배당금</SelectItem>
+                  <SelectItem value="yield">배당률</SelectItem>
+                </SelectContent>
+              </Select>
+            )}
+          />
+          <Controller
+            control={control}
+            name={`stocks.${index}.dividendInputType`}
+            render={({ field: typeField }) => {
+              const inputType = typeField.value || 'amount';
+
+              if (inputType === 'yield') {
+                return (
+                  <div className="flex items-center gap-2 flex-1 md:max-w-[180px]">
+                    <Input
+                      className="flex-1"
+                      onChange={(e) => {
+                        const yieldValue = parseFloat(e.target.value) || 0;
+                        setValue(`stocks.${index}.yield`, yieldValue);
+
+                        // 배당률 입력 시 주당 배당금 자동 계산
+                        const currentPrice = getValues(`stocks.${index}.price`);
+                        if (currentPrice > 0) {
+                          const dividendValue = (currentPrice * yieldValue) / 100;
+                          setValue(`stocks.${index}.dividend`, Math.round(dividendValue * 100) / 100);
+                        }
+                      }}
+                      placeholder="배당률"
+                      step="any"
+                      type="number"
+                      value={getValues(`stocks.${index}.yield`) || ''}
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                );
+              }
+
+              return (
+                <Input
+                  className="flex-1 md:max-w-[180px]"
+                  placeholder="주당 배당금"
+                  step="any"
+                  type="number"
+                  {...register(`stocks.${index}.dividend`, { valueAsNumber: true })}
+                />
+              );
+            }}
           />
         </div>
         <div className="flex md:flex-row flex-col md:items-center items-start gap-2">
           <label className="text-xs md:text-sm font-medium whitespace-nowrap">비율</label>
-          <div className="flex items-center gap-2 w-full md:w-[100px]">
+          <div className="flex items-center gap-2 w-full md:w-[100px] mb-3 md:mb-0">
             <Controller
               control={control}
               name={`stocks.${index}.ratio`}
@@ -416,7 +510,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             name={`stocks.${index}.ratio`}
             render={({ field }) => (
               <Slider
-                className="flex-1"
+                className="flex-1 md:max-w-[500px]"
                 max={100}
                 min={0}
                 onValueChange={(values) => field.onChange(values[0])}
