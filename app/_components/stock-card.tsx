@@ -145,7 +145,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
   };
 
   return (
-    <Card className="p-4 relative">
+    <Card className="gap-0 p-2 md:p-4 relative">
       {isLoadingQuote && (
         <div className="absolute inset-0 bg-white/80 flex items-center justify-center rounded-lg z-10">
           <div className="flex flex-col items-center gap-2">
@@ -165,7 +165,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader>
+      <CardHeader className="mt-4 p-2 md:p-4">
         <div className="relative" ref={dropdownRef}>
           <Input
             className="flex-1"
@@ -248,7 +248,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                 }}
                 value={field.value}
               >
-                <SelectTrigger className="w-24">
+                <SelectTrigger className="md:w-24 w-full">
                   <SelectValue placeholder="통화" />
                 </SelectTrigger>
                 <SelectContent>
@@ -259,7 +259,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             )}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col md:flex-row items-center gap-2">
           <Input
             className="flex-1"
             placeholder="종목명"
@@ -311,7 +311,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           />
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4 p-2 md:p-4">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
             <label className="text-sm font-medium">배당 지급 월</label>
@@ -352,7 +352,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             control={control}
             name={`stocks.${index}.dividendMonths`}
             render={({ field }) => (
-              <div className="grid grid-cols-6 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
                   const isSelected = field.value?.includes(month);
                   return (
@@ -388,26 +388,28 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             {...register(`stocks.${index}.dividend`, { valueAsNumber: true })}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium whitespace-nowrap">비율</label>
-          <Controller
-            control={control}
-            name={`stocks.${index}.ratio`}
-            render={({ field }) => (
-              <Input
-                {...field}
-                className="w-[100px]"
-                max={100}
-                min={0}
-                onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                placeholder="비율"
-                step={1}
-                type="number"
-                value={field.value?.toFixed(0) || 0}
-              />
-            )}
-          />
-          <span className="text-sm text-muted-foreground">%</span>
+        <div className="flex md:flex-row flex-col md:items-center items-start gap-2">
+          <label className="text-xs md:text-sm font-medium whitespace-nowrap">비율</label>
+          <div className="flex items-center gap-2 w-full md:w-[100px]">
+            <Controller
+              control={control}
+              name={`stocks.${index}.ratio`}
+              render={({ field }) => (
+                <Input
+                  {...field}
+                  className="w-full md:w-[100px]"
+                  max={100}
+                  min={0}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
+                  placeholder="비율"
+                  step={1}
+                  type="number"
+                  value={field.value?.toFixed(0) || 0}
+                />
+              )}
+            />
+            <span className="text-sm text-muted-foreground">%</span>
+          </div>
           <Controller
             control={control}
             name={`stocks.${index}.ratio`}
