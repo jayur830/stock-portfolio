@@ -123,21 +123,23 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (!showDropdown || searchResults.length === 0) return;
 
-    e.preventDefault();
-
     switch (e.key) {
       case 'ArrowDown':
+        e.preventDefault();
         setSelectedIndex((prev) => (prev < searchResults.length - 1 ? prev + 1 : prev));
         break;
       case 'ArrowUp':
+        e.preventDefault();
         setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
         break;
       case 'Enter':
+        e.preventDefault();
         if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
           handleStockSelect(searchResults[selectedIndex]);
         }
         break;
       case 'Escape':
+        e.preventDefault();
         setShowDropdown(false);
         setSelectedIndex(-1);
         break;
