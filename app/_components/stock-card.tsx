@@ -201,17 +201,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Input
-            placeholder="종목명"
-            type="text"
-            {...register(`stocks.${index}.name`)}
-          />
-          <Input
-            placeholder="가격"
-            step="any"
-            type="number"
-            {...register(`stocks.${index}.price`, { valueAsNumber: true })}
-          />
+          <label className="text-sm font-medium whitespace-nowrap">통화</label>
           <Controller
             control={control}
             name={`stocks.${index}.currency`}
@@ -220,23 +210,36 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                 onValueChange={(newCurrency) => {
                   const oldCurrency = field.value;
                   const currentPrice = getValues(`stocks.${index}.price`);
+                  const currentDividend = getValues(`stocks.${index}.dividend`);
                   const exchangeRate = getValues('exchangeRate');
 
-                  if (oldCurrency !== newCurrency && currentPrice > 0 && exchangeRate > 0) {
-                    let newPrice = currentPrice;
-
-                    if (oldCurrency === 'KRW' && newCurrency === 'USD') {
-                      // KRW → USD
-                      newPrice = currentPrice / exchangeRate;
-                    } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
-                      // USD → KRW
-                      newPrice = currentPrice * exchangeRate;
+                  if (oldCurrency !== newCurrency && exchangeRate > 0) {
+                    // 주가 환산
+                    if (currentPrice > 0) {
+                      let newPrice = currentPrice;
+                      if (oldCurrency === 'KRW' && newCurrency === 'USD') {
+                        newPrice = currentPrice / exchangeRate;
+                      } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
+                        newPrice = currentPrice * exchangeRate;
+                      }
+                      setValue(`stocks.${index}.price`, Math.round(newPrice * 100) / 100);
                     }
 
-                    setValue(`stocks.${index}.price`, Math.round(newPrice * 100) / 100);
+                    // 배당금 환산
+                    if (currentDividend > 0) {
+                      let newDividend = currentDividend;
+                      if (oldCurrency === 'KRW' && newCurrency === 'USD') {
+                        newDividend = currentDividend / exchangeRate;
+                      } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
+                        newDividend = currentDividend * exchangeRate;
+                      }
+                      setValue(`stocks.${index}.dividend`, Math.round(newDividend * 100) / 100);
+                    }
                   }
 
+                  // currency와 dividendCurrency를 동시에 변경
                   field.onChange(newCurrency);
+                  setValue(`stocks.${index}.dividendCurrency`, newCurrency);
                 }}
                 value={field.value}
               >
@@ -249,6 +252,21 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                 </SelectContent>
               </Select>
             )}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Input
+            className="flex-1"
+            placeholder="종목명"
+            type="text"
+            {...register(`stocks.${index}.name`)}
+          />
+          <Input
+            className="flex-1"
+            placeholder="가격"
+            step="any"
+            type="number"
+            {...register(`stocks.${index}.price`, { valueAsNumber: true })}
           />
         </div>
       </CardHeader>
@@ -319,54 +337,15 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             )}
           />
         </div>
-        <div className="flex gap-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm w-[120px]">주당 배당금: </span>
-            <Input
-              placeholder="주당 배당금"
-              step="any"
-              type="number"
-              {...register(`stocks.${index}.dividend`, { valueAsNumber: true })}
-            />
-            <Controller
-              control={control}
-              name={`stocks.${index}.dividendCurrency`}
-              render={({ field }) => (
-                <Select
-                  onValueChange={(newCurrency) => {
-                    const oldCurrency = field.value;
-                    const currentDividend = getValues(`stocks.${index}.dividend`);
-                    const exchangeRate = getValues('exchangeRate');
-
-                    if (oldCurrency !== newCurrency && currentDividend > 0 && exchangeRate > 0) {
-                      let newDividend = currentDividend;
-
-                      if (oldCurrency === 'KRW' && newCurrency === 'USD') {
-                        // KRW → USD
-                        newDividend = currentDividend / exchangeRate;
-                      } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
-                        // USD → KRW
-                        newDividend = currentDividend * exchangeRate;
-                      }
-
-                      setValue(`stocks.${index}.dividend`, Math.round(newDividend * 100) / 100);
-                    }
-
-                    field.onChange(newCurrency);
-                  }}
-                  value={field.value}
-                >
-                  <SelectTrigger className="w-24">
-                    <SelectValue placeholder="통화" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="KRW">KRW</SelectItem>
-                    <SelectItem value="USD">USD</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-medium whitespace-nowrap">주당 배당금</span>
+          <Input
+            className="flex-1"
+            placeholder="주당 배당금"
+            step="any"
+            type="number"
+            {...register(`stocks.${index}.dividend`, { valueAsNumber: true })}
+          />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium whitespace-nowrap">비율</label>
