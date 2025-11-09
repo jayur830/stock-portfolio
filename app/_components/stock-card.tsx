@@ -90,7 +90,6 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
   const handleStockSelect = async (quote: StockQuote) => {
     setValue(`stocks.${index}.ticker`, quote.symbol);
     setValue(`stocks.${index}.name`, quote.shortname);
-    setSearchQuery(quote.symbol);
     setDebouncedQuery(''); // 검색 재실행 방지
     setShowDropdown(false);
     setSelectedIndex(-1);
