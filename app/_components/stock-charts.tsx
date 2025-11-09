@@ -75,7 +75,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       });
 
       return {
-        name: stock?.name || history.symbol,
+        name: `[${history.symbol}] ${stock?.name || history.symbol}`,
         type: 'line',
         data: seriesData,
         smooth: true,
@@ -94,7 +94,9 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
             if (param.value !== null) {
-              result += `${param.marker}${param.seriesName}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW<br/>`;
+              // seriesName에서 [티커] 부분만 추출
+              const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
+              result += `${param.marker}${ticker}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW<br/>`;
             }
           });
           return result;
@@ -103,7 +105,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       legend: {
         data: histories.map((h) => {
           const stock = stocks.find((s) => s.ticker === h.symbol);
-          return stock?.name || h.symbol;
+          return `[${h.symbol}] ${stock?.name || h.symbol}`;
         }),
         top: '45px',
       },

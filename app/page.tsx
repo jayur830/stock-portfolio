@@ -354,7 +354,9 @@ export default function Page() {
                           className="flex justify-between items-center p-2 bg-white rounded border border-green-100"
                           key={index}
                         >
-                          <span className="text-sm font-medium text-green-900">{stock.name || stock.ticker}</span>
+                          <span className="text-sm font-medium text-green-900">
+                            [{stock.ticker}] {stock.name || stock.ticker}
+                          </span>
                           <span className="text-sm font-semibold text-green-700">
                             {quantity.toLocaleString('ko-KR')}주
                           </span>
@@ -405,7 +407,9 @@ export default function Page() {
                           className="flex justify-between items-center p-2 bg-white rounded border border-purple-100"
                           key={index}
                         >
-                          <span className="text-sm font-medium text-purple-900">{stock.name || stock.ticker}</span>
+                          <span className="text-sm font-medium text-purple-900">
+                            [{stock.ticker}] {stock.name || stock.ticker}
+                          </span>
                           <span className="text-sm font-semibold text-purple-700">
                             {quantity.toLocaleString('ko-KR')}주
                           </span>
