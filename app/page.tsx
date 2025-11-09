@@ -4,8 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
-import StockCard from '@/components/domain/stock-card';
-import StockCharts from '@/components/domain/stock-charts';
+import StockCard from '@/app/_components/stock-card';
+import StockCharts from '@/app/_components/stock-charts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
