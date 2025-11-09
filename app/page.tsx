@@ -340,6 +340,29 @@ export default function Page() {
                   </span>
                 </div>
               </div>
+              {chartData && chartData.stocks.length > 0 && (
+                <div className="flex flex-col gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-green-900">종목별 보유 수량</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {chartData.stocks.map((stock, index) => {
+                      const investmentAmount = (chartData.totalInvestment * (stock.ratio || 0)) / 100;
+                      const priceInKRW = stock.currency === 'USD' ? stock.price * chartData.exchangeRate : stock.price;
+                      const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
+                      return (
+                        <div
+                          className="flex justify-between items-center p-2 bg-white rounded border border-green-100"
+                          key={index}
+                        >
+                          <span className="text-sm font-medium text-green-900">{stock.name || stock.ticker}</span>
+                          <span className="text-sm font-semibold text-green-700">
+                            {quantity.toLocaleString('ko-KR')}주
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
                 <div className="grid grid-cols-6 gap-2">
@@ -368,6 +391,29 @@ export default function Page() {
                   </span>
                 </div>
               </div>
+              {chartData && chartData.stocks.length > 0 && (
+                <div className="flex flex-col gap-2 p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <h3 className="text-sm font-semibold text-purple-900">종목별 보유 수량</h3>
+                  <div className="grid grid-cols-2 gap-2">
+                    {chartData.stocks.map((stock, index) => {
+                      const investmentAmount = (chartData.totalInvestment * (stock.ratio || 0)) / 100;
+                      const priceInKRW = stock.currency === 'USD' ? stock.price * chartData.exchangeRate : stock.price;
+                      const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
+                      return (
+                        <div
+                          className="flex justify-between items-center p-2 bg-white rounded border border-purple-100"
+                          key={index}
+                        >
+                          <span className="text-sm font-medium text-purple-900">{stock.name || stock.ticker}</span>
+                          <span className="text-sm font-semibold text-purple-700">
+                            {quantity.toLocaleString('ko-KR')}주
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
                 <div className="grid grid-cols-6 gap-2">
