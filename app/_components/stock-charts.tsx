@@ -1,6 +1,7 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
 import { memo, useMemo } from 'react';
 
@@ -27,7 +28,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
   /** 주식 히스토리 데이터 조회 */
   const { data: histories = [], isLoading } = useQuery({
     queryKey: ['stockHistories', tickers],
-    queryFn: async () => {
+    async queryFn() {
       const symbols = tickers.split(',');
       const response = await fetch('/api/stock/history', {
         method: 'POST',
@@ -46,29 +47,27 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     staleTime: 1000 * 60 * 5, // 5분
   });
 
+  /** 전체 주가 데이터의 날짜를 정렬하여 메모이제이션 */
+  const sortedDates = useMemo(() => [...new Set(histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD'))))].sort(), [histories]);
+
   /** 1. 통합 포트폴리오 차트 (모든 종목 합산) */
   const combinedChartOption = useMemo(() => {
-    if (histories.length === 0) return null;
-
-    /** 모든 날짜의 합집합 구하기 */
-    const allDates = new Set<string>();
-    histories.forEach((h) => {
-      h.data.forEach((d) => {
-        allDates.add(new Date(d.date).toISOString().split('T')[0]);
-      });
-    });
-    const sortedDates = Array.from(allDates).sort();
+    if (histories.length === 0) {
+      return null;
+    }
 
     /** 각 종목의 series 생성 */
     const series = histories.map((history) => {
       const stock = stocks.find((s) => s.ticker === history.symbol);
       const dataMap = new Map(
-        history.data.map((d) => [new Date(d.date).toISOString().split('T')[0], d.close]),
+        history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
       );
 
       const seriesData = sortedDates.map((date) => {
         const price = dataMap.get(date);
-        if (!price) return null;
+        if (!price) {
+          return null;
+        }
 
         /** USD 종목이면 KRW로 환산 */
         return stock?.currency === 'USD' ? price * exchangeRate : price;
@@ -90,7 +89,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       tooltip: {
         trigger: 'axis',
-        formatter: (params: any) => {
+        formatter(params: any) {
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
             if (param.value !== null) {
@@ -111,8 +110,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       xAxis: {
         type: 'category',
-        data: sortedDates.map((d) => new Date(d).toLocaleDateString('ko-KR', { month: 'short',
-          day: 'numeric' })),
+        data: sortedDates.map((d) => dayjs(d).format('M/D')),
       },
       yAxis: {
         type: 'value',
@@ -128,66 +126,72 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         containLabel: true,
       },
     };
-  }, [histories, stocks, exchangeRate]);
+  }, [histories, sortedDates, stocks, exchangeRate]);
 
   /** 2. 수익금 차트 (매수일 기준) */
   const profitChartOption = useMemo(() => {
-    if (histories.length === 0) return null;
+    if (histories.length === 0) {
+      return null;
+    }
 
-    // 매수일이 있는 종목만 필터링
+    /** 매수일이 있는 종목만 필터링 */
     const stocksWithPurchaseDate = stocks.filter((s) => s.purchaseDate);
 
-    // 매수일이 없으면 차트를 표시하지 않음
-    if (stocksWithPurchaseDate.length === 0) return null;
-
-    const allDates = new Set<string>();
-    histories.forEach((h) => {
-      h.data.forEach((d) => {
-        allDates.add(new Date(d.date).toISOString().split('T')[0]);
-      });
-    });
-    const sortedDates = Array.from(allDates).sort();
+    /** 매수일이 없으면 차트를 표시하지 않음 */
+    if (stocksWithPurchaseDate.length === 0) {
+      return null;
+    }
 
     /** 각 날짜의 총 포트폴리오 수익 계산 */
     const profits = sortedDates.map((date) => {
       let totalProfit = 0;
-      const currentDate = new Date(date);
+      const currentDate = dayjs(date);
 
       stocks.forEach((stock) => {
-        // 매수일이 없으면 해당 종목은 제외
-        if (!stock.purchaseDate) return;
+        /** 매수일이 없으면 해당 종목은 제외 */
+        if (!stock.purchaseDate) {
+          return;
+        }
 
-        const purchaseDate = new Date(stock.purchaseDate);
+        const purchaseDate = dayjs(stock.purchaseDate);
 
-        // 현재 날짜가 매수일 이전이면 수익은 0
-        if (currentDate < purchaseDate) return;
+        /** 현재 날짜가 매수일 이전이면 수익은 0 */
+        if (currentDate.isBefore(purchaseDate, 'day')) {
+          return;
+        }
 
         const history = histories.find((h) => h.symbol === stock.ticker);
-        if (!history) return;
+        if (!history) {
+          return;
+        }
 
-        // 매수일의 가격 찾기
-        const purchaseDateStr = purchaseDate.toISOString().split('T')[0];
+        /** 매수일의 가격 찾기 */
+        const purchaseDateStr = purchaseDate.format('YYYY-MM-DD');
         const purchaseDataPoint = history.data.find(
-          (d) => new Date(d.date).toISOString().split('T')[0] >= purchaseDateStr,
+          (d) => dayjs(d.date).format('YYYY-MM-DD') >= purchaseDateStr,
         );
-        if (!purchaseDataPoint) return;
+        if (!purchaseDataPoint) {
+          return;
+        }
 
-        // 현재 날짜의 가격 찾기
+        /** 현재 날짜의 가격 찾기 */
         const currentDataPoint = history.data.find(
-          (d) => new Date(d.date).toISOString().split('T')[0] === date,
+          (d) => dayjs(d.date).format('YYYY-MM-DD') === date,
         );
-        if (!currentDataPoint) return;
+        if (!currentDataPoint) {
+          return;
+        }
 
-        // 매수가 (KRW 기준)
+        /** 매수가 (KRW 기준) */
         const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
 
-        // 현재가 (KRW 기준)
+        /** 현재가 (KRW 기준) */
         const currentPriceInKRW = stock.currency === 'USD' ? currentDataPoint.close * exchangeRate : currentDataPoint.close;
 
         const investmentAmount = (totalInvestment * stock.ratio) / 100;
         const shares = investmentAmount / purchasePriceInKRW;
 
-        // 수익 = (현재가 - 매수가) × 보유 수량
+        /** 수익 = (현재가 - 매수가) × 보유 수량 */
         const profit = (currentPriceInKRW - purchasePriceInKRW) * shares;
         totalProfit += profit;
       });
@@ -203,7 +207,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       tooltip: {
         trigger: 'axis',
-        formatter: (params: any) => {
+        formatter(params: any) {
           const param = params[0];
           const value = param.value;
           const color = value >= 0 ? '#16a34a' : '#dc2626';
@@ -212,8 +216,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       xAxis: {
         type: 'category',
-        data: sortedDates.map((d) => new Date(d).toLocaleDateString('ko-KR', { month: 'short',
-          day: 'numeric' })),
+        data: sortedDates.map((d) => dayjs(d).format('M/D')),
       },
       yAxis: {
         type: 'value',
@@ -233,16 +236,24 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
               x2: 0,
               y2: 1,
               colorStops: [
-                { offset: 0,
-                  color: 'rgba(34, 197, 94, 0.3)' },
-                { offset: 1,
-                  color: 'rgba(34, 197, 94, 0.05)' },
+                {
+                  offset: 0,
+                  color: 'rgba(34, 197, 94, 0.3)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(34, 197, 94, 0.05)',
+                },
               ],
             },
           },
-          lineStyle: { width: 2,
-            color: '#16a34a' },
-          itemStyle: { color: '#16a34a' },
+          lineStyle: {
+            width: 2,
+            color: '#16a34a',
+          },
+          itemStyle: {
+            color: '#16a34a',
+          },
         },
       ],
       grid: {
@@ -253,7 +264,9 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         containLabel: true,
       },
     };
-  }, [histories, stocks, totalInvestment, exchangeRate]);
+  }, [
+    histories, sortedDates, stocks, totalInvestment, exchangeRate,
+  ]);
 
   if (isLoading) {
     return (
