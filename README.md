@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 배당주 포트폴리오 계산기
 
-## Getting Started
+배당주 투자를 위한 포트폴리오 관리 및 배당금 계산 도구입니다.
 
-First, run the development server:
+## URL
+
+https://stock-portfolio.opentoyapp.kr
+
+## 주요 기능
+
+### 배당금 계산
+- **배당금 계산 모드**: 총 투자금을 입력하면 예상 연/월별 배당금을 계산합니다
+- **투자금 계산 모드**: 목표 연 배당금을 입력하면 필요한 투자금을 계산합니다
+- 세전/세후 배당금 자동 계산 (세율 15.4% 적용)
+  - 내년부터 배당소득 분리과세 적용 필요
+- 월별 배당금 분포 시각화
+
+### 종목 관리
+- 종목 검색 및 자동완성
+- 주가, 배당금/배당률, 배당 지급 월 관리
+- 매수일 기준 수익 추적
+- 국내/해외(USD) 주식 지원
+- 환율 자동 조회 및 환산
+- 포트폴리오 비율 설정 (슬라이더 UI)
+
+### 차트 및 분석
+- **주가 추이 차트**: 전체 포트폴리오의 주가 변동 추이
+- **누적 수익금 차트**: 매수일 기준 실현 수익 추적
+- 종목별 보유 수량 자동 계산
+- 반응형 디자인 (모바일/태블릿/데스크톱)
+
+## 기술 스택
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Form Management**: React Hook Form
+- **Data Fetching**: TanStack Query (React Query)
+- **UI Components**: Shadcn UI
+- **Charts**: ECharts
+- **Date Management**: dayjs
+- **Styling**: Tailwind CSS
+
+## 시작하기
+
+### 설치
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+yarn
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 개발 서버 실행
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+yarn dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+브라우저에서 [http://localhost:3000](http://localhost:3000)을 열어 확인할 수 있습니다.
 
-## Learn More
+## 사용 방법
 
-To learn more about Next.js, take a look at the following resources:
+### 1. 종목 추가
+1. `+` 버튼을 클릭하여 새 종목 추가
+2. 종목 검색창에서 종목명 또는 티커 입력
+3. 자동완성 목록에서 종목 선택 (자동으로 주가, 배당금 정보 입력됨)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 2. 종목 정보 입력
+- **통화**: KRW/USD 선택
+- **종목명/가격**: 수동 입력 또는 자동 입력
+- **매수일**: 날짜 선택 (누적 수익금 차트에 사용)
+- **배당 지급 월**: 월별/분기별 선택 또는 개별 선택
+- **배당 입력**:
+  - 주당 배당금: 배당금 직접 입력
+  - 배당률: 배당률(%) 입력 시 주당 배당금 자동 계산
+- **비율**: 포트폴리오 내 비중 설정 (합계 100%)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 3. 계산
+1. **배당금 계산 모드**: 총 투자금 입력 후 계산
+2. **투자금 계산 모드**: 목표 연 배당금 입력 후 계산
+3. 환율 조회 버튼으로 실시간 환율 적용 (USD 종목 포함 시)
 
-## Deploy on Vercel
+### 4. 결과 확인
+- 세전/세후 연 배당금
+- 월별 배당금 분포
+- 종목별 보유 수량
+- 주가 추이 및 누적 수익금 차트
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 주요 기능 상세
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 환율 자동 환산
+- USD 종목의 주가와 배당금을 원화로 자동 환산
+- 실시간 환율 조회 (exchangerate-api.com)
+- 통화 변경 시 주가/배당금 자동 재계산
+
+### 배당률 자동 계산
+- 배당률 모드: `주당 배당금 = 주가 × 배당률 / 100`
+- 주가 변경 시 주당 배당금 자동 업데이트
+
+### 매수일 기준 수익 계산
+- 각 종목의 매수일부터 현재까지의 주가 변동 추적
+- `수익 = (현재가 - 매수가) × 보유 수량`
+- 누적 수익금 차트로 시각화
+
+### 반응형 UI
+- 모바일: 1열 레이아웃
+- 태블릿: 3-4열 레이아웃
+- 데스크톱: 6열 레이아웃
+- 터치 친화적 UI 컴포넌트
+
+## 프로젝트 구조
+
+```
+stock-portfolio/
+├── app/
+│   ├── _components/          # 페이지 컴포넌트
+│   │   ├── stock-card.tsx    # 종목 카드
+│   │   ├── stock-charts.tsx  # 차트 컴포넌트
+│   │   ├── monthly-dividends.tsx
+│   │   └── quantity-per-stock.tsx
+│   ├── api/                  # API 라우트
+│   │   └── stock/            # 종목 검색/조회 API
+│   └── page.tsx              # 메인 페이지
+├── components/ui/            # Shadcn UI 컴포넌트
+├── lib/
+│   └── utils.ts              # 유틸리티 함수
+└── types/
+    └── index.ts              # TypeScript 타입 정의
+```
