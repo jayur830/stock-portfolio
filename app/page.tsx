@@ -1,11 +1,11 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
+import dynamic from 'next/dynamic';
 import { useCallback, useEffect, useState } from 'react';
 import { useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/app/_components/stock-card';
-import StockCharts from '@/app/_components/stock-charts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,6 +14,11 @@ import type { FormValues } from '@/types';
 
 import MonthlyDividends from './_components/monthly-dividends';
 import QuantityPerStock from './_components/quantity-per-stock';
+
+const StockCharts = dynamic(() => import('@/app/_components/stock-charts'), {
+  loading: () => <div className="flex justify-center items-center p-8 text-muted-foreground">차트 로딩 중...</div>,
+  ssr: false,
+});
 
 export default function Page() {
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
@@ -233,7 +238,7 @@ export default function Page() {
   }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
   return (
-    <main className="flex flex-col gap-3.5 p-4 overflow-x-hidden">
+    <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col gap-3.5 p-4 overflow-x-hidden">
       <div className="flex flex-col md:flex-row items-center gap-4">
         <Tabs className="flex-1 w-full" onValueChange={handleTabChange} value={activeTab}>
           <TabsList className="w-full">
@@ -252,6 +257,7 @@ export default function Page() {
             {loadingExchangeRate ? '조회 중...' : '환율 조회'}
           </Button>
           <Input
+            aria-label="환율"
             placeholder="환율"
             step="any"
             type="number"
@@ -306,6 +312,7 @@ export default function Page() {
           />
         ))}
         <Button
+          aria-label="종목 추가"
           className="border-dashed"
           onClick={handleAddStock}
           type="button"
@@ -334,7 +341,7 @@ export default function Page() {
           </div>
           {annualDividend !== null && (
             <>
-              <div className="flex md:flex-row flex-col justify-center items-center gap-4 p-2 md:p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div aria-live="polite" className="flex md:flex-row flex-col justify-center items-center gap-4 p-2 md:p-4 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-green-700">세전 연 배당금:</span>
                   <span className="text-lg font-bold text-green-700">
@@ -365,7 +372,7 @@ export default function Page() {
           )}
           {requiredInvestment !== null && (
             <>
-              <div className="flex justify-center items-center gap-4 p-2 md:p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div aria-live="polite" className="flex justify-center items-center gap-4 p-2 md:p-4 bg-purple-50 border border-purple-200 rounded-lg">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-purple-700">필요한 투자금:</span>
                   <span className="text-lg font-bold text-purple-700">
