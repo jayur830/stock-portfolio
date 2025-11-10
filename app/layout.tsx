@@ -52,6 +52,11 @@ export const metadata: Metadata = {
   alternates: {
     canonical: 'https://stock-portfolio.opentoyapp.kr',
   },
+  verification: {
+    other: {
+      'naver-site-verification': process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION,
+    },
+  },
 };
 
 export default function RootLayout({
