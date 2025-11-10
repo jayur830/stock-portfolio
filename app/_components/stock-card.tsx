@@ -206,8 +206,8 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium whitespace-nowrap">통화</label>
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <span className="text-xs md:text-sm font-medium whitespace-nowrap">통화</span>
           <Controller
             control={control}
             name={`stocks.${index}.currency`}
@@ -260,13 +260,15 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             )}
           />
         </div>
-        <div className="flex flex-col md:flex-row items-center gap-2">
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <span className="text-xs md:text-sm font-medium whitespace-nowrap">종목명</span>
           <Input
             className="flex-1"
             placeholder="종목명"
             type="text"
             {...register(`stocks.${index}.name`)}
           />
+          <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
           <Controller
             control={control}
             name={`stocks.${index}.price`}
@@ -296,8 +298,8 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             )}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium whitespace-nowrap">매수일</label>
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
+          <span className="text-xs md:text-sm font-medium whitespace-nowrap">매수일</span>
           <Controller
             control={control}
             name={`stocks.${index}.purchaseDate`}
@@ -335,46 +337,48 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
       </CardHeader>
       <CardContent className="flex flex-col gap-4 p-2 md:p-4">
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">배당 지급 월</label>
-            <Controller
-              control={control}
-              name={`stocks.${index}.dividendMonths`}
-              render={({ field }) => (
-                <>
-                  <Button
-                    className="h-7 text-xs"
-                    onClick={() => {
-                      // 월별: 모든 월 선택 (1~12)
-                      field.onChange([
-                        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                      ]);
-                    }}
-                    type="button"
-                    variant="outline"
-                  >
-                    월별
-                  </Button>
-                  <Button
-                    className="h-7 text-xs"
-                    onClick={() => {
-                      // 분기별: 3, 6, 9, 12월 선택
-                      field.onChange([3, 6, 9, 12]);
-                    }}
-                    type="button"
-                    variant="outline"
-                  >
-                    분기별
-                  </Button>
-                </>
-              )}
-            />
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="text-xs md:text-sm font-medium whitespace-nowrap">배당 지급 월</span>
+            <div className="flex gap-2">
+              <Controller
+                control={control}
+                name={`stocks.${index}.dividendMonths`}
+                render={({ field }) => (
+                  <>
+                    <Button
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        // 월별: 모든 월 선택 (1~12)
+                        field.onChange([
+                          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                        ]);
+                      }}
+                      type="button"
+                      variant="outline"
+                    >
+                      월별
+                    </Button>
+                    <Button
+                      className="h-7 text-xs"
+                      onClick={() => {
+                        // 분기별: 3, 6, 9, 12월 선택
+                        field.onChange([3, 6, 9, 12]);
+                      }}
+                      type="button"
+                      variant="outline"
+                    >
+                      분기별
+                    </Button>
+                  </>
+                )}
+              />
+            </div>
           </div>
           <Controller
             control={control}
             name={`stocks.${index}.dividendMonths`}
             render={({ field }) => (
-              <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
                   const isSelected = field.value?.includes(month);
                   return (
@@ -400,7 +404,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             )}
           />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-col md:flex-row md:items-center gap-2">
           <Controller
             control={control}
             name={`stocks.${index}.dividendInputType`}
@@ -429,7 +433,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                 }}
                 value={field.value || 'amount'}
               >
-                <SelectTrigger className="w-[120px]">
+                <SelectTrigger className="w-full md:w-[120px]">
                   <SelectValue placeholder="입력 방식" />
                 </SelectTrigger>
                 <SelectContent>

@@ -12,6 +12,9 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateDividendYield, calculateStockAnnualDividend, calculateStockMonthlyDividends, mergeMonthlyDividends } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
+import MonthlyDividends from './_components/monthly-dividends';
+import QuantityPerStock from './_components/quantity-per-stock';
+
 export default function Page() {
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
@@ -257,33 +260,40 @@ export default function Page() {
         </div>
       </div>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
-        {activeTab === 'dividend' ? (
-          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-            <label className="text-sm font-medium whitespace-nowrap">총 투자금</label>
-            <Input
-              className="flex-1"
-              maxLength={24}
-              placeholder="총 투자금을 입력하세요"
-              step="any"
-              type="number"
-              {...register('totalInvestment', { valueAsNumber: true })}
-            />
-            <span className="text-sm text-muted-foreground">원</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 p-4 bg-muted rounded-lg">
-            <label className="text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
-            <Input
-              className="flex-1"
-              maxLength={24}
-              placeholder="목표 연 배당금을 입력하세요"
-              step="any"
-              type="number"
-              {...register('targetAnnualDividend', { valueAsNumber: true })}
-            />
-            <span className="text-sm text-muted-foreground">원</span>
-          </div>
-        )}
+        <div className="flex flex-col md:flex-row md:items-center gap-2 p-4 bg-muted rounded-lg">
+          {activeTab === 'dividend' && (
+            <>
+              <label className="text-xs md:text-sm font-medium whitespace-nowrap">총 투자금</label>
+              <div className="flex items-center gap-2">
+                <Input
+                  className="flex-1"
+                  maxLength={24}
+                  placeholder="총 투자금을 입력하세요"
+                  step="any"
+                  type="number"
+                  {...register('totalInvestment', { valueAsNumber: true })}
+                />
+                <span className="text-sm text-muted-foreground">원</span>
+              </div>
+            </>
+          )}
+          {activeTab === 'investment' && (
+            <>
+              <label className="text-xs md:text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
+              <div className="flex items-center gap-2">
+                <Input
+                  className="flex-1"
+                  maxLength={24}
+                  placeholder="목표 연 배당금을 입력하세요"
+                  step="any"
+                  type="number"
+                  {...register('targetAnnualDividend', { valueAsNumber: true })}
+                />
+                <span className="text-sm text-muted-foreground">원</span>
+              </div>
+            </>
+          )}
+        </div>
         {fields.map((field, index) => (
           <StockCard
             control={control}
@@ -344,46 +354,12 @@ export default function Page() {
               {chartData && chartData.stocks.length > 0 && (
                 <div className="flex flex-col gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <h3 className="text-sm font-semibold text-green-900">종목별 보유 수량</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                    {chartData.stocks.map((stock, index) => {
-                      const investmentAmount = (chartData.totalInvestment * (stock.ratio || 0)) / 100;
-                      const priceInKRW = stock.currency === 'USD' ? stock.price * chartData.exchangeRate : stock.price;
-                      const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
-                      return (
-                        <div
-                          className="flex justify-between items-center p-2 bg-white rounded border border-green-100"
-                          key={index}
-                        >
-                          <span className="md:block hidden text-sm font-medium text-green-900">
-                            {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
-                          </span>
-                          <span className="md:hidden block text-sm font-medium text-green-900">
-                            {stock.ticker}
-                          </span>
-                          <span className="text-sm font-semibold text-green-700">
-                            {quantity.toLocaleString('ko-KR')}주
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <QuantityPerStock exchangeRate={chartData.exchangeRate} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
                 </div>
               )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                  {monthlyDividends.map((amount, index) => (
-                    <div
-                      className="flex flex-col items-center p-2 bg-white rounded border border-blue-100"
-                      key={index}
-                    >
-                      <span className="text-xs text-blue-600 font-medium">{index + 1}월</span>
-                      <span className="text-sm font-semibold text-blue-900">
-                        {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <MonthlyDividends amounts={monthlyDividends} />
               </div>
             </>
           )}
@@ -400,46 +376,12 @@ export default function Page() {
               {chartData && chartData.stocks.length > 0 && (
                 <div className="flex flex-col gap-2 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <h3 className="text-sm font-semibold text-purple-900">종목별 보유 수량</h3>
-                  <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
-                    {chartData.stocks.map((stock, index) => {
-                      const investmentAmount = (chartData.totalInvestment * (stock.ratio || 0)) / 100;
-                      const priceInKRW = stock.currency === 'USD' ? stock.price * chartData.exchangeRate : stock.price;
-                      const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
-                      return (
-                        <div
-                          className="flex justify-between items-center p-2 bg-white rounded border border-purple-100"
-                          key={index}
-                        >
-                          <span className="md:block hidden text-sm font-medium text-purple-900">
-                            {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
-                          </span>
-                          <span className="md:hidden block text-sm font-medium text-purple-900">
-                            {stock.ticker}
-                          </span>
-                          <span className="text-sm font-semibold text-purple-700">
-                            {quantity.toLocaleString('ko-KR')}주
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
+                  <QuantityPerStock exchangeRate={chartData.exchangeRate} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
                 </div>
               )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                  {monthlyDividends.map((amount, index) => (
-                    <div
-                      className="flex flex-col items-center p-2 bg-white rounded border border-blue-100"
-                      key={index}
-                    >
-                      <span className="text-xs text-blue-600 font-medium">{index + 1}월</span>
-                      <span className="text-sm font-semibold text-blue-900">
-                        {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <MonthlyDividends amounts={monthlyDividends} />
               </div>
             </>
           )}

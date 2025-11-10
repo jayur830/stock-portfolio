@@ -73,7 +73,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       });
 
       return {
-        name: `[${history.symbol}] ${stock?.name || history.symbol}`,
+        name: history.symbol,
         type: 'line',
         data: seriesData,
         smooth: true,
@@ -101,10 +101,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         },
       },
       legend: {
-        data: histories.map((h) => {
-          const stock = stocks.find((s) => s.ticker === h.symbol);
-          return `[${h.symbol}] ${stock?.name || h.symbol}`;
-        }),
+        data: histories.map((h) => h.symbol),
         top: '45px',
       },
       xAxis: {
