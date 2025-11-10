@@ -233,7 +233,7 @@ export default function Page() {
   }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
   return (
-    <main className="flex flex-col gap-3.5 p-4">
+    <main className="flex flex-col gap-3.5 p-4 overflow-x-hidden">
       <div className="flex flex-col md:flex-row items-center gap-4">
         <Tabs className="flex-1 w-full" onValueChange={handleTabChange} value={activeTab}>
           <TabsList className="w-full">
