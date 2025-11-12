@@ -27,8 +27,8 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
 
   /** 주식 히스토리 데이터 조회 */
   const { data: histories = [], isLoading } = useQuery({
-    queryKey: ['stockHistories', tickers],
-    async queryFn() {
+    queryKey: ['stockHistories', tickers] as const,
+    async queryFn({ queryKey: [, tickers] }) {
       const symbols = tickers.split(',');
       const response = await fetch('/api/stock/history', {
         method: 'POST',

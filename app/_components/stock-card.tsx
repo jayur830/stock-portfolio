@@ -61,9 +61,9 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
 
   /** 종목 검색 */
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
-    queryKey: ['stockSearch', debouncedQuery],
-    async queryFn() {
-      const response = await fetch(`/api/stock/search?q=${encodeURIComponent(debouncedQuery)}`);
+    queryKey: ['stockSearch', debouncedQuery] as const,
+    async queryFn({ queryKey: [, query] }) {
+      const response = await fetch(`/api/stock/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) {
         throw new Error('Failed to search stocks');
       }
