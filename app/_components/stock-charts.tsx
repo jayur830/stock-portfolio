@@ -21,6 +21,107 @@ interface HistoryData {
   }[];
 }
 
+/** 종목별 매수 정보 */
+interface StockPurchaseInfo {
+  purchaseDate: dayjs.Dayjs;
+  purchasePriceInKRW: number;
+  shares: number;
+  priceMap: Map<string, number>;
+}
+
+/** 헬퍼 함수: 종목별 매수 정보 및 가격 맵 생성 */
+const buildStockPurchaseInfo = (
+  stocks: Stock[],
+  histories: HistoryData[],
+  exchangeRate: number,
+  totalInvestment: number,
+): StockPurchaseInfo[] => {
+  return stocks
+    .filter((s) => s.purchaseDate)
+    .map((stock) => {
+      const history = histories.find((h) => h.symbol === stock.ticker);
+      if (!history) return null;
+
+      const purchaseDate = dayjs(stock.purchaseDate);
+      const purchaseDateStr = purchaseDate.format('YYYY-MM-DD');
+
+      // 날짜별 가격을 Map으로 변환 (O(1) 조회)
+      const priceMap = new Map(
+        history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
+      );
+
+      // 매수일 이후의 첫 가격 찾기
+      const purchaseDataPoint = history.data.find((d) => dayjs(d.date).format('YYYY-MM-DD') >= purchaseDateStr);
+      if (!purchaseDataPoint) {
+        return null;
+      }
+
+      const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
+      const investmentAmount = (totalInvestment * stock.ratio) / 100;
+      const shares = investmentAmount / purchasePriceInKRW;
+
+      return {
+        purchaseDate,
+        purchasePriceInKRW,
+        shares,
+        priceMap,
+      };
+    })
+    .filter((info): info is StockPurchaseInfo => info !== null);
+};
+
+/** 헬퍼 함수: 날짜별 총 수익 계산 (단일 루프) */
+const calculateProfitsByDate = (
+  histories: HistoryData[],
+  stockInfos: StockPurchaseInfo[],
+  exchangeRate: number,
+  stocks: Stock[],
+) => {
+  if (stockInfos.length === 0) return { dates: [],
+    profits: [] };
+
+  // 첫 매수일 찾기
+  const firstPurchaseDate = stockInfos.reduce(
+    (min, info) => (info.purchaseDate.isBefore(min) ? info.purchaseDate : min),
+    dayjs('9999-12-31'),
+  );
+
+  // 모든 날짜 추출 및 정렬
+  const allDates = histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD')));
+  const sortedDates = [...new Set(allDates)]
+    .sort()
+    .filter((dateStr) => dateStr >= firstPurchaseDate.format('YYYY-MM-DD'))
+    .map((dateStr) => dayjs(dateStr));
+
+  // 날짜별 수익 계산 (단일 루프로 통합)
+  const profits = sortedDates.map((date) => {
+    return stockInfos.reduce((totalProfit, info, index) => {
+      // 매수일 이전이면 스킵
+      if (date.isBefore(info.purchaseDate, 'day')) {
+        return totalProfit;
+      }
+
+      // Map에서 현재 날짜 가격 조회 (O(1))
+      const currentPrice = info.priceMap.get(date.format('YYYY-MM-DD'));
+      if (!currentPrice) {
+        return totalProfit;
+      }
+
+      // 해당 종목의 통화에 따라 KRW 환산
+      const stock = stocks.filter((s) => s.purchaseDate)[index];
+      const currentPriceInKRW = stock.currency === 'USD' ? currentPrice * exchangeRate : currentPrice;
+
+      // 수익 누적
+      return totalProfit + (currentPriceInKRW - info.purchasePriceInKRW) * info.shares;
+    }, 0);
+  });
+
+  return {
+    dates: sortedDates,
+    profits,
+  };
+};
+
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
@@ -130,80 +231,12 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    /** 매수일이 있는 종목만 필터링 */
-    const stocksWithPurchaseDate = stocks.filter((s) => s.purchaseDate);
-
-    /** 매수일이 없으면 차트를 표시하지 않음 */
-    if (stocksWithPurchaseDate.length === 0) {
+    const stockInfos = buildStockPurchaseInfo(stocks, histories, exchangeRate, totalInvestment);
+    if (stockInfos.length === 0) {
       return null;
     }
 
-    /** 모든 종목 통틀어 첫 매수일 */
-    const firstPurchaseDate = stocks.reduce((min, { purchaseDate }) => (dayjs(purchaseDate).format('YYYY-MM-DD') < min.format('YYYY-MM-DD') ? dayjs(purchaseDate) : min), dayjs('9999-12-31'));
-
-    /** histories에 실제로 데이터가 있는 날짜만 추출 */
-    const allDates = histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD')));
-    const uniqueDates = [...new Set(allDates)].sort();
-
-    /** 첫 매수일 이후의 날짜만 필터링 */
-    const sortedDates = uniqueDates
-      .filter((dateStr) => dateStr >= firstPurchaseDate.format('YYYY-MM-DD'))
-      .map((dateStr) => dayjs(dateStr));
-
-    /** 1. 각 종목별로 날짜별 수익 배열 생성 */
-    const stockProfitsByDate = stocksWithPurchaseDate.map((stock) => {
-      const history = histories.find((h) => h.symbol === stock.ticker);
-      if (!history) {
-        return sortedDates.map(() => 0);
-      }
-
-      const purchaseDate = dayjs(stock.purchaseDate);
-
-      /** 매수일의 가격 찾기 */
-      const purchaseDateStr = purchaseDate.format('YYYY-MM-DD');
-      const purchaseDataPoint = history.data.find(
-        (d) => dayjs(d.date).format('YYYY-MM-DD') >= purchaseDateStr,
-      );
-      if (!purchaseDataPoint) {
-        return sortedDates.map(() => 0);
-      }
-
-      /** 매수가 (KRW 기준) */
-      const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
-
-      /** 투자 금액과 보유 수량 */
-      const investmentAmount = (totalInvestment * stock.ratio) / 100;
-      const shares = investmentAmount / purchasePriceInKRW;
-
-      /** 2. 매수일부터 현재까지의 모든 주가에서 매수일 기준 주가를 차감 */
-      return sortedDates.map((date) => {
-        /** 현재 날짜가 매수일 이전이면 수익은 0 */
-        if (date.isBefore(purchaseDate, 'day')) {
-          return 0;
-        }
-
-        /** 현재 날짜의 가격 찾기 */
-        const currentDataPoint = history.data.find(
-          (d) => dayjs(d.date).isSame(date, 'day'),
-        );
-        if (!currentDataPoint) {
-          return 0;
-        }
-
-        /** 현재가 (KRW 기준) */
-        const currentPriceInKRW = stock.currency === 'USD' ? currentDataPoint.close * exchangeRate : currentDataPoint.close;
-
-        /** 수익 = (현재가 - 매수가) × 보유 수량 */
-        return (currentPriceInKRW - purchasePriceInKRW) * shares;
-      });
-    });
-
-    /** 3. 날짜별로 모든 종목의 수익 합산 */
-    const profits = sortedDates.map((_, dateIndex) => {
-      return stockProfitsByDate.reduce((totalProfit, stockProfits) => {
-        return totalProfit + stockProfits[dateIndex];
-      }, 0);
-    });
+    const { dates, profits } = calculateProfitsByDate(histories, stockInfos, exchangeRate, stocks);
 
     return {
       title: {
@@ -222,7 +255,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       xAxis: {
         type: 'category',
-        data: sortedDates.map((d) => dayjs(d).format('M/D')),
+        data: dates.map((d) => dayjs(d).format('M/D')),
       },
       yAxis: {
         type: 'value',
