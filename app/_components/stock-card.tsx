@@ -273,37 +273,72 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
             )}
           />
         </div>
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
-          <span className="text-xs md:text-sm font-medium whitespace-nowrap">매수일</span>
-          <Controller
-            control={control}
-            name={`stocks.${index}.purchaseDate`}
-            render={({ field }) => (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    className={cn(
-                      'flex-1 justify-start text-left font-normal',
-                      !field.value && 'text-muted-foreground',
-                    )}
-                    variant="outline"
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {field.value ? field.value.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent align="start" className="w-auto p-0">
-                  <Calendar
-                    initialFocus
-                    locale={ko}
-                    mode="single"
-                    onSelect={(date) => field.onChange(date ? dayjs(date) : undefined)}
-                    selected={field.value ? field.value.toDate() : undefined}
-                  />
-                </PopoverContent>
-              </Popover>
-            )}
-          />
+        <div className="flex flex-col gap-2">
+          <div className="flex flex-col md:flex-row md:items-center gap-2">
+            <span className="text-xs md:text-sm font-medium whitespace-nowrap">매수일</span>
+            <Controller
+              control={control}
+              name={`stocks.${index}.purchaseDate`}
+              render={({ field }) => (
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      className={cn(
+                        'flex-1 justify-start text-left font-normal',
+                        !field.value && 'text-muted-foreground',
+                      )}
+                      variant="outline"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {field.value ? field.value.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="start" className="w-auto p-0">
+                    <Calendar
+                      initialFocus
+                      locale={ko}
+                      mode="single"
+                      onSelect={(date) => field.onChange(date ? dayjs(date) : undefined)}
+                      selected={field.value ? field.value.toDate() : undefined}
+                    />
+                  </PopoverContent>
+                </Popover>
+              )}
+            />
+          </div>
+          <div className="flex flex-wrap gap-1 md:ml-[100px]">
+            {[
+              {
+                label: '1년 전',
+                months: 12,
+              },
+              {
+                label: '6개월 전',
+                months: 6,
+              },
+              {
+                label: '3개월 전',
+                months: 3,
+              },
+              {
+                label: '1개월 전',
+                months: 1,
+              },
+            ].map(({ label, months }) => (
+              <Button
+                className="h-7 text-xs"
+                key={label}
+                onClick={() => {
+                  setValue(`stocks.${index}.purchaseDate`, dayjs().subtract(months, 'month'));
+                }}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
         </div>
       </CardHeader>
       <CardContent className="flex flex-col gap-4 p-2 md:p-4">

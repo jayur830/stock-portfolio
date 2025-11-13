@@ -331,18 +331,30 @@ export default function Page() {
               </div>
               <div className="flex flex-wrap gap-1">
                 {[
-                  { label: '+10만',
-                    value: 100000 },
-                  { label: '+100만',
-                    value: 1000000 },
-                  { label: '+1000만',
-                    value: 10000000 },
-                  { label: '+1억',
-                    value: 100000000 },
-                  { label: '+10억',
-                    value: 1000000000 },
-                  { label: '+100억',
-                    value: 10000000000 },
+                  {
+                    label: '+10만',
+                    value: 100000,
+                  },
+                  {
+                    label: '+100만',
+                    value: 1000000,
+                  },
+                  {
+                    label: '+1000만',
+                    value: 10000000,
+                  },
+                  {
+                    label: '+1억',
+                    value: 100000000,
+                  },
+                  {
+                    label: '+10억',
+                    value: 1000000000,
+                  },
+                  {
+                    label: '+100억',
+                    value: 10000000000,
+                  },
                 ].map(({ label, value }) => (
                   <Button
                     className="h-7 text-xs"
