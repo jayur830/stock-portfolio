@@ -251,7 +251,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     /** 매매차익 차트 데이터 */
     const profits = profitList.map(([, price]) => price);
     /** xAxis 데이터 */
-    const dates = profitList.map(([date]) => date);
+    const dates = profitList.map(([date]) => dayjs(date).format('YYYY.MM.DD'));
 
     // 배당금 누적 계산
     const totalDividendMap = new Map<string, number>();
