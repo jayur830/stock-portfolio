@@ -12,16 +12,38 @@ export async function POST(request: NextRequest) {
 
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 1);
+    startDate.setFullYear(startDate.getFullYear() - 5); // 5년치 데이터 조회
 
     const historyData = await Promise.all(
       symbols.map(async (symbol: string) => {
         try {
+          // 주가 히스토리 조회
           const history = await yahooFinance.historical(symbol, {
             period1: startDate,
             period2: endDate,
             interval: '1d',
           });
+
+          // 배당 히스토리 조회
+          let dividendHistory: Array<{
+            date: Date;
+            amount: number,
+          }> = [];
+          try {
+            const dividends = await yahooFinance.historical(symbol, {
+              period1: startDate,
+              period2: endDate,
+              events: 'dividends',
+            });
+
+            dividendHistory = dividends.map((item) => ({
+              date: item.date,
+              amount: item.dividends || 0,
+            }));
+          } catch (divError) {
+            console.warn(`Failed to fetch dividend history for ${symbol}:`, divError);
+            // 배당 정보가 없어도 계속 진행
+          }
 
           return {
             symbol,
@@ -29,16 +51,18 @@ export async function POST(request: NextRequest) {
               date: item.date,
               close: item.close,
             })),
+            dividends: dividendHistory,
           };
         } catch (error) {
           console.error(`Failed to fetch history for ${symbol}:`, error);
           return {
             symbol,
             data: [],
+            dividends: [],
             error: 'Failed to fetch history',
           };
         }
-      })
+      }),
     );
 
     return NextResponse.json({ histories: historyData });
