@@ -439,7 +439,7 @@ export default function Page() {
                 </div>
               )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
+                <h3 className="text-sm font-semibold text-blue-900">예상 월별 배당금 (세후)</h3>
                 <MonthlyDividends amounts={monthlyDividends} />
               </div>
             </>
@@ -461,7 +461,7 @@ export default function Page() {
                 </div>
               )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-blue-900">월별 배당금 (세후)</h3>
+                <h3 className="text-sm font-semibold text-blue-900">예상 월별 배당금 (세후)</h3>
                 <MonthlyDividends amounts={monthlyDividends} />
               </div>
             </>
