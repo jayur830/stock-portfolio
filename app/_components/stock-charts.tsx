@@ -30,46 +30,6 @@ interface StockPurchaseInfo {
   priceMap: Map<string, number>;
 }
 
-/** 헬퍼 함수: 종목별 매수 정보 및 가격 맵 생성 */
-const buildStockPurchaseInfo = (
-  stocks: Stock[],
-  histories: HistoryData[],
-  exchangeRate: number,
-  totalInvestment: number,
-): StockPurchaseInfo[] => {
-  return stocks
-    .filter((s) => s.purchaseDate)
-    .map((stock) => {
-      const history = histories.find((h) => h.symbol === stock.ticker);
-      if (!history) return null;
-
-      const purchaseDate = stock.purchaseDate!;
-      const purchaseDateStr = purchaseDate.format('YYYY-MM-DD');
-
-      // 날짜별 가격을 Map으로 변환 (O(1) 조회)
-      const priceMap = new Map(
-        history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
-      );
-
-      // 매수일 이후의 첫 가격 찾기
-      const purchaseDataPoint = history.data.find((d) => dayjs(d.date).format('YYYY-MM-DD') >= purchaseDateStr);
-      if (!purchaseDataPoint) return null;
-
-      const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
-      const investmentAmount = (totalInvestment * stock.ratio) / 100;
-      const shares = investmentAmount / purchasePriceInKRW;
-
-      return {
-        stock,
-        purchaseDate,
-        purchasePriceInKRW,
-        shares,
-        priceMap,
-      };
-    })
-    .filter((info): info is StockPurchaseInfo => info !== null);
-};
-
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
@@ -179,7 +139,40 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    const stockInfos = buildStockPurchaseInfo(stocks, histories, exchangeRate, totalInvestment);
+    const stockInfos = stocks
+      .filter((s) => s.purchaseDate)
+      .map((stock) => {
+        const history = histories.find((h) => h.symbol === stock.ticker);
+        if (!history) {
+          return null;
+        }
+
+        const purchaseDate = stock.purchaseDate!;
+
+        // 날짜별 가격을 Map으로 변환 (O(1) 조회)
+        const priceMap = new Map(
+          history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
+        );
+
+        // 매수일 이후의 첫 가격 찾기
+        const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'));
+        if (!purchaseDataPoint) {
+          return null;
+        }
+
+        const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
+        const investmentAmount = (totalInvestment * stock.ratio) / 100;
+        const shares = investmentAmount / purchasePriceInKRW;
+
+        return {
+          stock,
+          purchaseDate,
+          purchasePriceInKRW,
+          shares,
+          priceMap,
+        };
+      })
+      .filter((info): info is StockPurchaseInfo => info != null);
     if (stockInfos.length === 0) {
       return null;
     }
@@ -220,11 +213,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           .toArray();
       })
       .forEach(({ date, price }) => {
-        if (profitMap.has(date)) {
-          profitMap.set(date, profitMap.get(date)! + price);
-        } else {
-          profitMap.set(date, price);
-        }
+        profitMap.set(date, (profitMap.get(date) || 0) + price);
       });
     const profits = profitMap.entries().map(([, price]) => price).toArray();
 
