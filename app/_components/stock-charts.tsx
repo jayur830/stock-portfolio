@@ -3,14 +3,23 @@
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import type { Stock } from '@/types';
 
 interface StockChartsProps {
   stocks: Stock[];
   totalInvestment: number;
   exchangeRate: number;
+}
+
+type TimePeriod = '1M' | '3M' | '6M' | '1Y' | '3Y' | '5Y' | '10Y';
+
+interface TimePeriodOption {
+  value: TimePeriod;
+  label: string;
+  months: number;
 }
 
 interface HistoryData {
@@ -76,6 +85,48 @@ const calculateDividendPayments = (
 };
 
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
+  /** 기간 필터 상태 */
+  const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>('1Y');
+
+  /** 기간 옵션 */
+  const periodOptions: TimePeriodOption[] = [
+    {
+      value: '1M',
+      label: '1개월',
+      months: 1,
+    },
+    {
+      value: '3M',
+      label: '3개월',
+      months: 3,
+    },
+    {
+      value: '6M',
+      label: '6개월',
+      months: 6,
+    },
+    {
+      value: '1Y',
+      label: '1년',
+      months: 12,
+    },
+    {
+      value: '3Y',
+      label: '3년',
+      months: 36,
+    },
+    {
+      value: '5Y',
+      label: '5년',
+      months: 60,
+    },
+    {
+      value: '10Y',
+      label: '10년',
+      months: 120,
+    },
+  ];
+
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
 
@@ -107,7 +158,16 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    const sortedDates = [...new Set(histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD'))))].sort();
+    let sortedDates = [...new Set(histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD'))))].sort();
+
+    /** 기간 필터 적용 */
+    if (selectedPeriod) {
+      const periodOption = periodOptions.find((p) => p.value === selectedPeriod);
+      if (periodOption) {
+        const startDate = dayjs().subtract(periodOption.months, 'month');
+        sortedDates = sortedDates.filter((date) => dayjs(date).isAfter(startDate) || dayjs(date).isSame(startDate, 'day'));
+      }
+    }
 
     /** 각 종목의 series 생성 */
     const series = histories.map((history) => {
@@ -176,7 +236,9 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         containLabel: true,
       },
     };
-  }, [histories, stocks, exchangeRate]);
+  }, [
+    histories, stocks, exchangeRate, selectedPeriod, periodOptions,
+  ]);
 
   /** 2. 수익금 차트 (매수일 기준) */
   const profitChartOption = useMemo(() => {
@@ -474,6 +536,28 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       {/* 통합 포트폴리오 차트 */}
       {combinedChartOption && (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
+          {/* 기간 선택 버튼 */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Button
+              className={selectedPeriod === null ? 'bg-blue-600 hover:bg-blue-700' : ''}
+              onClick={() => setSelectedPeriod(null)}
+              size="sm"
+              variant={selectedPeriod === null ? 'default' : 'outline'}
+            >
+              전체
+            </Button>
+            {periodOptions.map((option) => (
+              <Button
+                className={selectedPeriod === option.value ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                key={option.value}
+                onClick={() => setSelectedPeriod(option.value)}
+                size="sm"
+                variant={selectedPeriod === option.value ? 'default' : 'outline'}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
           <ReactECharts lazyUpdate notMerge={false} option={combinedChartOption} style={{ height: '400px' }} />
         </div>
       )}
