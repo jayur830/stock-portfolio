@@ -19,6 +19,10 @@ interface HistoryData {
     date: Date;
     close: number;
   }[];
+  dividends: {
+    date: Date;
+    amount: number;
+  }[];
 }
 
 /** 종목별 매수 정보 */
@@ -29,6 +33,47 @@ interface StockPurchaseInfo {
   shares: number;
   priceMap: Map<string, number>;
 }
+
+/** 배당금 계산 (실제 배당 히스토리 기반, 세후, 매수월 제외) */
+const calculateDividendPayments = (
+  stockInfo: StockPurchaseInfo,
+  dividendHistory: {
+    date: Date;
+    amount: number;
+  }[],
+  exchangeRate: number,
+): Map<string, number> => {
+  const { stock, purchaseDate, shares } = stockInfo;
+  const dividendMap = new Map<string, number>();
+
+  if (!dividendHistory || dividendHistory.length === 0) {
+    return dividendMap;
+  }
+
+  const taxRate = 0.154; // 15.4% (소득세 14% + 지방소득세 1.4%)
+
+  dividendHistory
+    .filter(({ date }) => dayjs(date).isAfter(purchaseDate, 'day') || dayjs(date).isSame(purchaseDate, 'day'))
+    .forEach((div) => {
+      const divDate = dayjs(div.date);
+      const dateStr = divDate.format('YYYY-MM-DD');
+
+      // 매수월에는 배당을 받지 못하여 0원 처리
+      if (divDate.year() === purchaseDate.year() && divDate.month() === purchaseDate.month()) {
+        dividendMap.set(dateStr, 0);
+        return;
+      }
+
+      // 실제 배당금 계산: (주당 배당금 * 보유 수량) * (1 - 세율)
+      // USD 종목이면 KRW로 환산
+      const dividendPerShare = stock.currency === 'USD' ? div.amount * exchangeRate : div.amount;
+      const afterTaxDividend = dividendPerShare * shares * (1 - taxRate);
+
+      dividendMap.set(dateStr, afterTaxDividend);
+    });
+
+  return dividendMap;
+};
 
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
@@ -100,7 +145,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         formatter(params: any) {
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
-            if (param.value !== null) {
+            if (param.value != null) {
               // seriesName에서 [티커] 부분만 추출
               const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
               result += `${param.marker}${ticker}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW<br/>`;
@@ -177,19 +222,6 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    // 첫 매수일 찾기
-    const firstPurchaseDate = stockInfos.reduce(
-      (min, info) => (info.purchaseDate.isBefore(min) ? info.purchaseDate : min),
-      dayjs('9999-12-31'),
-    );
-
-    // 모든 날짜 추출 및 정렬
-    const allDates = histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD')));
-    const dates = [...new Set(allDates)]
-      .sort()
-      .filter((dateStr) => dateStr >= firstPurchaseDate.format('YYYY-MM-DD'))
-      .map((dateStr) => dayjs(dateStr));
-
     const filteredStockInfoList = stockInfos.filter(({ purchaseDate }) => purchaseDate);
 
     /** 매매차익 로직 */
@@ -201,7 +233,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         return priceMap
           .entries()
           /** 매수일 이후의 데이터만 필터링 */
-          .filter(([date]) => dayjs(date).isSame(purchaseDate) || dayjs(date).isAfter(purchaseDate))
+          .filter(([date]) => dayjs(date).isSame(purchaseDate, 'day') || dayjs(date).isAfter(purchaseDate, 'day'))
           .map(([date, p]) => {
             const price = currency === 'USD' ? p * exchangeRate : p;
             return {
@@ -215,7 +247,73 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       .forEach(({ date, price }) => {
         profitMap.set(date, (profitMap.get(date) || 0) + price);
       });
-    const profits = profitMap.entries().map(([, price]) => price).toArray();
+    const profitList = profitMap.entries().toArray().sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1));
+    /** 매매차익 차트 데이터 */
+    const profits = profitList.map(([, price]) => price);
+    /** xAxis 데이터 */
+    const dates = profitList.map(([date]) => date);
+
+    // 배당금 누적 계산
+    const totalDividendMap = new Map<string, number>();
+    stockInfos.forEach((stockInfo) => {
+      const history = histories.find((h) => h.symbol === stockInfo.stock.ticker);
+      if (!history) {
+        return;
+      }
+
+      const dividendMap = calculateDividendPayments(stockInfo, history.dividends, exchangeRate);
+
+      // 날짜별로 배당금 누적
+      dividendMap.forEach((amount, date) => {
+        totalDividendMap.set(date, (totalDividendMap.get(date) || 0) + amount);
+      });
+    });
+
+    // 누적 배당금 계산 (각 날짜까지의 배당금 합계)
+    let cumulativeDividend = 0;
+    const cumulativeDividendMap = new Map(
+      totalDividendMap
+        .entries()
+        .toArray()
+        .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1))
+        .map(([date, amount]) => {
+          return [date, cumulativeDividend += amount];
+        }),
+    );
+
+    let prevDate = cumulativeDividendMap.keys().toArray().sort()[0];
+    /** 매매차익 + 배당 차트 데이터 */
+    const profitsWithDividends = profitMap
+      .entries()
+      .toArray()
+      .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1))
+      .map(([date, amount]) => {
+        if (cumulativeDividendMap.has(date)) {
+          prevDate = date;
+          return amount + cumulativeDividendMap.get(date)!;
+        }
+        if (dayjs(date).isAfter(prevDate, 'day')) {
+          return amount + cumulativeDividendMap.get(prevDate)!;
+        }
+        return amount;
+      });
+
+    prevDate = cumulativeDividendMap.keys().toArray().sort()[0];
+    /** 월별 배당금 누적 차트 데이터 */
+    const dividends = profitMap
+      .entries()
+      .toArray()
+      .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1))
+      .map(([date]) => {
+        if (cumulativeDividendMap.has(date)) {
+          prevDate = date;
+          return cumulativeDividendMap.get(date)!;
+        }
+        if (dayjs(date).isAfter(prevDate, 'day')) {
+          return cumulativeDividendMap.get(prevDate)!;
+        }
+        return 0;
+      });
 
     return {
       title: {
@@ -226,15 +324,23 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       tooltip: {
         trigger: 'axis',
         formatter(params: any) {
-          const param = params[0];
-          const value = param.value;
-          const color = value >= 0 ? '#16a34a' : '#dc2626';
-          return `${param.axisValue}<br/>${param.marker}<span style="color:${color}">수익: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span>`;
+          let result = `${params[0].axisValue}<br/>`;
+          params.forEach((param: any) => {
+            const value = param.value;
+            const color = value >= 0 ? '#16a34a' : '#dc2626';
+            result += `${param.marker}<span style="color:${color}">${param.seriesName}: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span><br/>`;
+          });
+          return result;
         },
+      },
+      legend: {
+        data: ['매매차익', '월별 배당 누적', '매매차익 + 배당'],
+        top: '45px',
       },
       xAxis: {
         type: 'category',
-        data: dates.map((d) => d.format('YYYY.MM.DD')),
+        // data: dates.map((d) => d.format('YYYY.MM.DD')),
+        data: dates,
       },
       yAxis: {
         type: 'value',
@@ -273,12 +379,76 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
             color: '#16a34a',
           },
         },
+        {
+          name: '월별 배당 누적',
+          type: 'line',
+          data: dividends,
+          smooth: true,
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(245, 158, 11, 0.3)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(245, 158, 11, 0.05)',
+                },
+              ],
+            },
+          },
+          lineStyle: {
+            width: 2,
+            color: '#f59e0b',
+          },
+          itemStyle: {
+            color: '#f59e0b',
+          },
+        },
+        {
+          name: '매매차익 + 배당',
+          type: 'line',
+          data: profitsWithDividends,
+          smooth: true,
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
+              colorStops: [
+                {
+                  offset: 0,
+                  color: 'rgba(59, 130, 246, 0.3)',
+                },
+                {
+                  offset: 1,
+                  color: 'rgba(59, 130, 246, 0.05)',
+                },
+              ],
+            },
+          },
+          lineStyle: {
+            width: 2,
+            color: '#3b82f6',
+          },
+          itemStyle: {
+            color: '#3b82f6',
+          },
+        },
       ],
       grid: {
         left: '3%',
         right: '4%',
         bottom: '3%',
-        top: '60px',
+        top: '100px',
         containLabel: true,
       },
     };
