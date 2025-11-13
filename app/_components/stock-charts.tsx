@@ -23,10 +23,13 @@ interface HistoryData {
 
 /** 종목별 매수 정보 */
 interface StockPurchaseInfo {
+  stock: Stock; // 원본 종목 정보
   purchaseDate: dayjs.Dayjs;
   purchasePriceInKRW: number;
   shares: number;
   priceMap: Map<string, number>;
+  dividendPerShare: number; // 주당 배당금 (KRW)
+  dividendMonths: number[]; // 배당 지급 월
 }
 
 /** 헬퍼 함수: 종목별 매수 정보 및 가격 맵 생성 */
@@ -60,66 +63,20 @@ const buildStockPurchaseInfo = (
       const investmentAmount = (totalInvestment * stock.ratio) / 100;
       const shares = investmentAmount / purchasePriceInKRW;
 
+      // 배당금을 KRW로 환산
+      const dividendPerShare = stock.dividendCurrency === 'USD' ? stock.dividend * exchangeRate : stock.dividend;
+
       return {
+        stock,
         purchaseDate,
         purchasePriceInKRW,
         shares,
         priceMap,
+        dividendPerShare,
+        dividendMonths: stock.dividendMonths || [],
       };
     })
     .filter((info): info is StockPurchaseInfo => info !== null);
-};
-
-/** 헬퍼 함수: 날짜별 총 수익 계산 (단일 루프) */
-const calculateProfitsByDate = (
-  histories: HistoryData[],
-  stockInfos: StockPurchaseInfo[],
-  exchangeRate: number,
-  stocks: Stock[],
-) => {
-  if (stockInfos.length === 0) return { dates: [],
-    profits: [] };
-
-  // 첫 매수일 찾기
-  const firstPurchaseDate = stockInfos.reduce(
-    (min, info) => (info.purchaseDate.isBefore(min) ? info.purchaseDate : min),
-    dayjs('9999-12-31'),
-  );
-
-  // 모든 날짜 추출 및 정렬
-  const allDates = histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD')));
-  const sortedDates = [...new Set(allDates)]
-    .sort()
-    .filter((dateStr) => dateStr >= firstPurchaseDate.format('YYYY-MM-DD'))
-    .map((dateStr) => dayjs(dateStr));
-
-  // 날짜별 수익 계산 (단일 루프로 통합)
-  const profits = sortedDates.map((date) => {
-    return stockInfos.reduce((totalProfit, info, index) => {
-      // 매수일 이전이면 스킵
-      if (date.isBefore(info.purchaseDate, 'day')) {
-        return totalProfit;
-      }
-
-      // Map에서 현재 날짜 가격 조회 (O(1))
-      const currentPrice = info.priceMap.get(date.format('YYYY-MM-DD'));
-      if (!currentPrice) {
-        return totalProfit;
-      }
-
-      // 해당 종목의 통화에 따라 KRW 환산
-      const stock = stocks.filter((s) => s.purchaseDate)[index];
-      const currentPriceInKRW = stock.currency === 'USD' ? currentPrice * exchangeRate : currentPrice;
-
-      // 수익 누적
-      return totalProfit + (currentPriceInKRW - info.purchasePriceInKRW) * info.shares;
-    }, 0);
-  });
-
-  return {
-    dates: sortedDates,
-    profits,
-  };
 };
 
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
@@ -207,7 +164,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       xAxis: {
         type: 'category',
-        data: sortedDates.map((d) => dayjs(d).format('M/D')),
+        data: sortedDates.map((d) => dayjs(d).format('YYYY.MM.DD')),
       },
       yAxis: {
         type: 'value',
@@ -236,7 +193,49 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    const { dates, profits } = calculateProfitsByDate(histories, stockInfos, exchangeRate, stocks);
+    // 첫 매수일 찾기
+    const firstPurchaseDate = stockInfos.reduce(
+      (min, info) => (info.purchaseDate.isBefore(min) ? info.purchaseDate : min),
+      dayjs('9999-12-31'),
+    );
+
+    // 모든 날짜 추출 및 정렬
+    const allDates = histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD')));
+    const dates = [...new Set(allDates)]
+      .sort()
+      .filter((dateStr) => dateStr >= firstPurchaseDate.format('YYYY-MM-DD'))
+      .map((dateStr) => dayjs(dateStr));
+
+    const filteredStockInfoList = stockInfos.filter(({ purchaseDate }) => purchaseDate);
+
+    /** 매매차익 로직 */
+    const profitMap = new Map<string, number>();
+    filteredStockInfoList
+      .flatMap(({ stock: { currency }, shares, purchaseDate, priceMap }) => {
+        let purchasePrice = priceMap.get(purchaseDate.format('YYYY-MM-DD'))!;
+        purchasePrice = currency === 'USD' ? purchasePrice * exchangeRate : purchasePrice;
+        return priceMap
+          .entries()
+          /** 매수일 이후의 데이터만 필터링 */
+          .filter(([date]) => dayjs(date).isSame(purchaseDate) || dayjs(date).isAfter(purchaseDate))
+          .map(([date, p]) => {
+            const price = currency === 'USD' ? p * exchangeRate : p;
+            return {
+              date,
+              /** (가격 - 매수일 가격) * 보유수량 */
+              price: (price - purchasePrice) * shares,
+            };
+          })
+          .toArray();
+      })
+      .forEach(({ date, price }) => {
+        if (profitMap.has(date)) {
+          profitMap.set(date, profitMap.get(date)! + price);
+        } else {
+          profitMap.set(date, price);
+        }
+      });
+    const profits = profitMap.entries().map(([, price]) => price).toArray();
 
     return {
       title: {
@@ -247,15 +246,16 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       tooltip: {
         trigger: 'axis',
         formatter(params: any) {
-          const param = params[0];
-          const value = param.value;
-          const color = value >= 0 ? '#16a34a' : '#dc2626';
-          return `${param.axisValue}<br/>${param.marker}<span style="color:${color}">수익: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span>`;
+          let str = `${params[0].axisValue}<br/>`;
+          params.forEach((param: any) => {
+            str += `${param.marker}<span>${param.seriesName}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span><br/>`;
+          });
+          return str;
         },
       },
       xAxis: {
         type: 'category',
-        data: dates.map((d) => dayjs(d).format('M/D')),
+        data: dates.map((d) => d.format('YYYY.MM.DD')),
       },
       yAxis: {
         type: 'value',
@@ -263,7 +263,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       },
       series: [
         {
-          name: '수익금',
+          name: '매매차익',
           type: 'line',
           data: profits,
           smooth: true,
@@ -294,6 +294,38 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
             color: '#16a34a',
           },
         },
+        // {
+        //   name: '매매차익 + 배당',
+        //   type: 'line',
+        //   data: profitsWithDividends,
+        //   smooth: true,
+        //   areaStyle: {
+        //     color: {
+        //       type: 'linear',
+        //       x: 0,
+        //       y: 0,
+        //       x2: 0,
+        //       y2: 1,
+        //       colorStops: [
+        //         {
+        //           offset: 0,
+        //           color: 'rgba(255, 165, 0, 0.3)',
+        //         },
+        //         {
+        //           offset: 1,
+        //           color: 'rgba(255, 165, 0, 0.05)',
+        //         },
+        //       ],
+        //     },
+        //   },
+        //   lineStyle: {
+        //     width: 2,
+        //     color: '#ff6b6b',
+        //   },
+        //   itemStyle: {
+        //     color: '#ff6b6b',
+        //   },
+        // },
       ],
       grid: {
         left: '3%',
