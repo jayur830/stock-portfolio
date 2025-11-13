@@ -7,10 +7,6 @@ export interface Stock {
   price: number;
   /** 통화 */
   currency: string;
-  /** 주당 배당금 */
-  dividend: number;
-  /** 배당통화 */
-  dividendCurrency: string;
   /** 배당 지급 월 */
   dividendMonths: number[];
   /** 배당률 */
@@ -19,8 +15,6 @@ export interface Stock {
   ratio: number;
   /** 매수일 */
   purchaseDate?: Date | string;
-  /** 배당 입력 방식 ('amount' | 'yield') */
-  dividendInputType?: 'amount' | 'yield';
 }
 
 export interface FormValues {

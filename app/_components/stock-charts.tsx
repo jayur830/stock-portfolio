@@ -23,13 +23,11 @@ interface HistoryData {
 
 /** 종목별 매수 정보 */
 interface StockPurchaseInfo {
-  stock: Stock; // 원본 종목 정보
+  stock: Stock;
   purchaseDate: dayjs.Dayjs;
   purchasePriceInKRW: number;
   shares: number;
   priceMap: Map<string, number>;
-  dividendPerShare: number; // 주당 배당금 (KRW)
-  dividendMonths: number[]; // 배당 지급 월
 }
 
 /** 헬퍼 함수: 종목별 매수 정보 및 가격 맵 생성 */
@@ -55,16 +53,11 @@ const buildStockPurchaseInfo = (
 
       // 매수일 이후의 첫 가격 찾기
       const purchaseDataPoint = history.data.find((d) => dayjs(d.date).format('YYYY-MM-DD') >= purchaseDateStr);
-      if (!purchaseDataPoint) {
-        return null;
-      }
+      if (!purchaseDataPoint) return null;
 
       const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
       const investmentAmount = (totalInvestment * stock.ratio) / 100;
       const shares = investmentAmount / purchasePriceInKRW;
-
-      // 배당금을 KRW로 환산
-      const dividendPerShare = stock.dividendCurrency === 'USD' ? stock.dividend * exchangeRate : stock.dividend;
 
       return {
         stock,
@@ -72,8 +65,6 @@ const buildStockPurchaseInfo = (
         purchasePriceInKRW,
         shares,
         priceMap,
-        dividendPerShare,
-        dividendMonths: stock.dividendMonths || [],
       };
     })
     .filter((info): info is StockPurchaseInfo => info !== null);
@@ -246,11 +237,10 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       tooltip: {
         trigger: 'axis',
         formatter(params: any) {
-          let str = `${params[0].axisValue}<br/>`;
-          params.forEach((param: any) => {
-            str += `${param.marker}<span>${param.seriesName}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span><br/>`;
-          });
-          return str;
+          const param = params[0];
+          const value = param.value;
+          const color = value >= 0 ? '#16a34a' : '#dc2626';
+          return `${param.axisValue}<br/>${param.marker}<span style="color:${color}">수익: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span>`;
         },
       },
       xAxis: {
@@ -294,38 +284,6 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
             color: '#16a34a',
           },
         },
-        // {
-        //   name: '매매차익 + 배당',
-        //   type: 'line',
-        //   data: profitsWithDividends,
-        //   smooth: true,
-        //   areaStyle: {
-        //     color: {
-        //       type: 'linear',
-        //       x: 0,
-        //       y: 0,
-        //       x2: 0,
-        //       y2: 1,
-        //       colorStops: [
-        //         {
-        //           offset: 0,
-        //           color: 'rgba(255, 165, 0, 0.3)',
-        //         },
-        //         {
-        //           offset: 1,
-        //           color: 'rgba(255, 165, 0, 0.05)',
-        //         },
-        //       ],
-        //     },
-        //   },
-        //   lineStyle: {
-        //     width: 2,
-        //     color: '#ff6b6b',
-        //   },
-        //   itemStyle: {
-        //     color: '#ff6b6b',
-        //   },
-        // },
       ],
       grid: {
         left: '3%',

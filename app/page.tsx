@@ -109,9 +109,7 @@ export default function Page() {
     }
 
     /** 해외주식 여부 */
-    const hasUsdStock = data.stocks.some(
-      (stock) => stock.currency === 'USD' || stock.dividendCurrency === 'USD',
-    );
+    const hasUsdStock = data.stocks.some((stock) => stock.currency === 'USD');
     /** 환율 조회 여부 */
     if (hasUsdStock && (!data.exchangeRate || data.exchangeRate <= 0)) {
       return 'USD 항목이 있습니다. 환율을 먼저 조회해주세요.';

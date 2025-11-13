@@ -30,9 +30,9 @@ export function calculateStockAnnualDividend(
   exchangeRate: number,
 ): number {
   const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
-  const dividendInKRW = convertToKRW(stock.dividend, stock.dividendCurrency, exchangeRate);
   const shares = investmentAmount / priceInKRW;
-  return shares * dividendInKRW;
+  const dividendPerShare = priceInKRW * (stock.yield / 100);
+  return shares * dividendPerShare;
 }
 
 /** 단일 종목의 월별 배당금 계산 */
@@ -59,11 +59,7 @@ export function calculateDividendYield(
   /** 환율 */
   exchangeRate: number,
 ): number {
-  /** 종목의 현재가를 KRW로 환산 */
-  const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
-  /** 종목의 배당금을 KRW로 환산 */
-  const dividendInKRW = convertToKRW(stock.dividend, stock.dividendCurrency, exchangeRate);
-  return dividendInKRW / priceInKRW;
+  return stock.yield / 100;
 }
 
 /** 월별 배당금 배열 생성 */
