@@ -1,3 +1,5 @@
+import type { Dayjs } from 'dayjs';
+
 export interface Stock {
   /** 종목명 */
   name: string;
@@ -14,7 +16,7 @@ export interface Stock {
   /** 비율 */
   ratio: number;
   /** 매수일 */
-  purchaseDate?: Date | string;
+  purchaseDate?: Dayjs;
 }
 
 export interface FormValues {

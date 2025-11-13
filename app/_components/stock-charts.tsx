@@ -43,7 +43,7 @@ const buildStockPurchaseInfo = (
       const history = histories.find((h) => h.symbol === stock.ticker);
       if (!history) return null;
 
-      const purchaseDate = dayjs(stock.purchaseDate);
+      const purchaseDate = stock.purchaseDate!;
       const purchaseDateStr = purchaseDate.format('YYYY-MM-DD');
 
       // 날짜별 가격을 Map으로 변환 (O(1) 조회)

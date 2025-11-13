@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import dayjs from 'dayjs';
 import { CalendarIcon, X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
@@ -289,11 +289,7 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                     variant="outline"
                   >
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {field.value ? (
-                      format(new Date(field.value), 'PPP', { locale: ko })
-                    ) : (
-                      <span>날짜를 선택하세요</span>
-                    )}
+                    {field.value ? field.value.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-auto p-0">
@@ -301,8 +297,8 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                     initialFocus
                     locale={ko}
                     mode="single"
-                    onSelect={field.onChange}
-                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? dayjs(date) : undefined)}
+                    selected={field.value ? field.value.toDate() : undefined}
                   />
                 </PopoverContent>
               </Popover>
