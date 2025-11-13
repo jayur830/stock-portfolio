@@ -264,36 +264,100 @@ export default function Page() {
         </div>
       </div>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col md:flex-row md:items-center gap-2 p-4 bg-muted rounded-lg">
+        <div className="flex flex-col gap-2 p-4 bg-muted rounded-lg">
           {activeTab === 'dividend' && (
             <>
-              <label className="text-xs md:text-sm font-medium whitespace-nowrap">총 투자금</label>
-              <div className="flex items-center gap-2">
-                <Input
-                  className="flex-1"
-                  maxLength={24}
-                  placeholder="총 투자금을 입력하세요"
-                  step="any"
-                  type="number"
-                  {...register('totalInvestment', { valueAsNumber: true })}
-                />
-                <span className="text-sm text-muted-foreground">원</span>
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <label className="text-xs md:text-sm font-medium whitespace-nowrap">총 투자금</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="flex-1"
+                    maxLength={24}
+                    placeholder="총 투자금을 입력하세요"
+                    step="any"
+                    type="number"
+                    {...register('totalInvestment', { valueAsNumber: true })}
+                  />
+                  <span className="text-sm text-muted-foreground">원</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  { label: '+10만',
+                    value: 100000 },
+                  { label: '+100만',
+                    value: 1000000 },
+                  { label: '+1000만',
+                    value: 10000000 },
+                  { label: '+1억',
+                    value: 100000000 },
+                  { label: '+10억',
+                    value: 1000000000 },
+                  { label: '+100억',
+                    value: 10000000000 },
+                ].map(({ label, value }) => (
+                  <Button
+                    className="h-7 text-xs"
+                    key={label}
+                    onClick={() => {
+                      const current = getValues('totalInvestment') || 0;
+                      setValue('totalInvestment', current + value);
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    {label}
+                  </Button>
+                ))}
               </div>
             </>
           )}
           {activeTab === 'investment' && (
             <>
-              <label className="text-xs md:text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
-              <div className="flex items-center gap-2">
-                <Input
-                  className="flex-1"
-                  maxLength={24}
-                  placeholder="목표 연 배당금을 입력하세요"
-                  step="any"
-                  type="number"
-                  {...register('targetAnnualDividend', { valueAsNumber: true })}
-                />
-                <span className="text-sm text-muted-foreground">원</span>
+              <div className="flex flex-col md:flex-row md:items-center gap-2">
+                <label className="text-xs md:text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    className="flex-1"
+                    maxLength={24}
+                    placeholder="목표 연 배당금을 입력하세요"
+                    step="any"
+                    type="number"
+                    {...register('targetAnnualDividend', { valueAsNumber: true })}
+                  />
+                  <span className="text-sm text-muted-foreground">원</span>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-1">
+                {[
+                  { label: '+10만',
+                    value: 100000 },
+                  { label: '+100만',
+                    value: 1000000 },
+                  { label: '+1000만',
+                    value: 10000000 },
+                  { label: '+1억',
+                    value: 100000000 },
+                  { label: '+10억',
+                    value: 1000000000 },
+                  { label: '+100억',
+                    value: 10000000000 },
+                ].map(({ label, value }) => (
+                  <Button
+                    className="h-7 text-xs"
+                    key={label}
+                    onClick={() => {
+                      const current = getValues('targetAnnualDividend') || 0;
+                      setValue('targetAnnualDividend', current + value);
+                    }}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                  >
+                    {label}
+                  </Button>
+                ))}
               </div>
             </>
           )}
