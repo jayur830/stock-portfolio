@@ -100,11 +100,11 @@ export default function Page() {
       return '총 비율이 100%가 되어야 합니다.';
     }
 
-    if (activeTab === 'dividend' && data.totalInvestment <= 0) {
+    if (activeTab === 'dividend' && (data.totalInvestment == null || isNaN(data.totalInvestment) || data.totalInvestment <= 0)) {
       return '총 투자금을 입력해주세요.';
     }
 
-    if (activeTab === 'investment' && data.targetAnnualDividend <= 0) {
+    if (activeTab === 'investment' && (data.targetAnnualDividend == null || isNaN(data.targetAnnualDividend) || data.targetAnnualDividend <= 0)) {
       return '목표 연 배당금을 입력해주세요.';
     }
 
