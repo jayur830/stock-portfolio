@@ -96,8 +96,8 @@ export default function Page() {
   /** 폼 데이터 검증 */
   const validateFormData = (data: FormValues): string | null => {
     const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
-    if (Math.abs(currentTotalRatio - 100) > 0.1) {
-      return '총 비율이 100%가 되어야 합니다.';
+    if (currentTotalRatio > 100) {
+      return '총 비율이 100% 이하가 되어야 합니다.';
     }
 
     if (activeTab === 'dividend' && (data.totalInvestment == null || isNaN(data.totalInvestment) || data.totalInvestment <= 0)) {
@@ -402,7 +402,7 @@ export default function Page() {
             </span>
           </div>
           <div className="flex justify-center items-center gap-1">
-            <Button disabled={Math.abs(totalRatio - 100) > 0.1} type="submit">
+            <Button disabled={totalRatio > 100} type="submit">
               계산
             </Button>
             <Button
