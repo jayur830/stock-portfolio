@@ -35,11 +35,8 @@ export async function GET(request: NextRequest) {
         );
         dividendMonths = Array.from(months).sort((a, b) => a - b);
 
-        // 연간 배당금 계산 (최근 배당금 * 배당 횟수)
-        if (dividendHistory.length > 0) {
-          const recentDividend = dividendHistory[0].dividends || 0;
-          annualDividend = recentDividend * dividendHistory.length;
-        }
+        // 연간 배당금 계산 (최근 1년간 실제 지급된 배당금의 총합)
+        annualDividend = dividendHistory.reduce((sum, div) => sum + (div.dividends || 0), 0);
       }
     } catch (divError) {
       console.warn('Failed to fetch dividend history:', divError);
@@ -50,11 +47,16 @@ export async function GET(request: NextRequest) {
     const isKorean = quote.exchange === 'KRW' || quote.exchange === 'KSC' || quote.exchange === 'KOE';
     const currency = isKorean ? 'KRW' : 'USD';
 
+    // 배당률 계산 (배당금 / 주가 * 100)
+    const price = quote.regularMarketPrice || 0;
+    const yieldRate = price > 0 ? Math.round((annualDividend / price) * 100 * 10000) / 10000 : 0;
+
     return NextResponse.json({
       symbol: quote.symbol,
-      price: quote.regularMarketPrice || 0,
+      price,
       currency,
       dividend: annualDividend,
+      yield: yieldRate,
       dividendMonths,
       exchange: quote.exchange,
     });
