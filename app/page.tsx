@@ -9,7 +9,7 @@ import StockCard from '@/app/_components/stock-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { calculateDividendYield, calculateStockAnnualDividend, calculateStockMonthlyDividends, mergeMonthlyDividends } from '@/lib/utils';
+import { calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, mergeMonthlyDividends } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import MonthlyDividends from './_components/monthly-dividends';
@@ -42,14 +42,13 @@ export default function Page() {
 
   // ratio 변경 시에만 totalRatio 업데이트
   useEffect(() => {
-    const subscription = watch((value, { name }) => {
+    return watch((value, { name }) => {
       if (name?.includes('ratio') || name === 'stocks') {
         const stocks = value.stocks || [];
         const sum = stocks.reduce((acc: number, stock: any) => acc + (stock?.ratio || 0), 0);
         setTotalRatio(sum);
       }
-    });
-    return () => subscription.unsubscribe();
+    }).unsubscribe;
   }, [watch]);
   /** 연 배당금 */
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
@@ -152,7 +151,7 @@ export default function Page() {
   const calculateInvestmentFromDividend = useCallback((data: FormValues) => {
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
     const weightedDividendYield = data.stocks.reduce((sum, stock) => {
-      const dividendYield = calculateDividendYield(stock, data.exchangeRate);
+      const dividendYield = stock.yield / 100;
       return sum + dividendYield * (stock.ratio / 100);
     }, 0);
     /** 필요한 투자금 */
@@ -283,18 +282,30 @@ export default function Page() {
               </div>
               <div className="flex flex-wrap gap-1">
                 {[
-                  { label: '+10만',
-                    value: 100000 },
-                  { label: '+100만',
-                    value: 1000000 },
-                  { label: '+1000만',
-                    value: 10000000 },
-                  { label: '+1억',
-                    value: 100000000 },
-                  { label: '+10억',
-                    value: 1000000000 },
-                  { label: '+100억',
-                    value: 10000000000 },
+                  {
+                    label: '+10만',
+                    value: 100000,
+                  },
+                  {
+                    label: '+100만',
+                    value: 1000000,
+                  },
+                  {
+                    label: '+1000만',
+                    value: 10000000,
+                  },
+                  {
+                    label: '+1억',
+                    value: 100000000,
+                  },
+                  {
+                    label: '+10억',
+                    value: 1000000000,
+                  },
+                  {
+                    label: '+100억',
+                    value: 10000000000,
+                  },
                 ].map(({ label, value }) => (
                   <Button
                     className="h-7 text-xs"
@@ -426,7 +437,7 @@ export default function Page() {
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium text-green-700">세후 연 배당금:</span>
                   <span className="text-lg font-bold text-green-700">
-                    {(annualDividend * (1 - 0.154)).toLocaleString('ko-KR', {
+                    {(annualDividend * (1 - DIVIDEND_TAX_RATE)).toLocaleString('ko-KR', {
                       maximumFractionDigits: 0,
                     })}원
                   </span>
@@ -469,7 +480,6 @@ export default function Page() {
           {(annualDividend !== null || requiredInvestment !== null) && chartData && chartData.stocks.length > 0 && (
             <StockCharts
               exchangeRate={chartData.exchangeRate}
-              key={chartData.stocks.map((s) => s.ticker).filter(Boolean).join(',')}
               stocks={chartData.stocks}
               totalInvestment={chartData.totalInvestment}
             />

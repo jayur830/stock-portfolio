@@ -8,6 +8,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/** 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
+export const DIVIDEND_TAX_RATE = 0.154;
+
 /** 금액을 KRW로 환산 */
 export function convertToKRW(
   /** 금액 */
@@ -47,19 +50,9 @@ export function calculateStockMonthlyDividends(
   }
 
   return stock.dividendMonths.reduce((acc, month) => {
-    acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - 0.154);
+    acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - DIVIDEND_TAX_RATE);
     return acc;
   }, {} as Record<number, number>);
-}
-
-/** 배당 수익률 계산 */
-export function calculateDividendYield(
-  /** 종목 */
-  stock: Stock,
-  /** 환율 */
-  exchangeRate: number,
-): number {
-  return stock.yield / 100;
 }
 
 /** 월별 배당금 배열 생성 */

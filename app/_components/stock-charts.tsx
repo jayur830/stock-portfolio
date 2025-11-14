@@ -6,6 +6,7 @@ import ReactECharts from 'echarts-for-react';
 import { memo, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
+import { DIVIDEND_TAX_RATE } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 interface StockChartsProps {
@@ -59,8 +60,6 @@ const calculateDividendPayments = (
     return dividendMap;
   }
 
-  const taxRate = 0.154; // 15.4% (소득세 14% + 지방소득세 1.4%)
-
   dividendHistory
     .filter(({ date }) => dayjs(date).isAfter(purchaseDate, 'day') || dayjs(date).isSame(purchaseDate, 'day'))
     .forEach((div) => {
@@ -68,7 +67,7 @@ const calculateDividendPayments = (
       const dateStr = divDate.format('YYYY-MM-DD');
 
       // 매수월에는 배당을 받지 못하여 0원 처리
-      if (divDate.year() === purchaseDate.year() && divDate.month() === purchaseDate.month()) {
+      if (divDate.format('YYYY-MM') === purchaseDate.format('YYYY-MM')) {
         dividendMap.set(dateStr, 0);
         return;
       }
@@ -76,7 +75,7 @@ const calculateDividendPayments = (
       // 실제 배당금 계산: (주당 배당금 * 보유 수량) * (1 - 세율)
       // USD 종목이면 KRW로 환산
       const dividendPerShare = stock.currency === 'USD' ? div.amount * exchangeRate : div.amount;
-      const afterTaxDividend = dividendPerShare * shares * (1 - taxRate);
+      const afterTaxDividend = dividendPerShare * shares * (1 - DIVIDEND_TAX_RATE);
 
       dividendMap.set(dateStr, afterTaxDividend);
     });
