@@ -8,8 +8,11 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
+/** 국내 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
 export const DIVIDEND_TAX_RATE = 0.154;
+
+/** 해외 배당소득세율 (미국 등) 15% */
+export const FOREIGN_DIVIDEND_TAX_RATE = 0.15;
 
 /** 분리과세 기준 금액 */
 export const SEPARATE_TAX_THRESHOLD = 20000000; // 2,000만원
@@ -103,8 +106,11 @@ export function calculateStockMonthlyDividends(
     return {};
   }
 
+  /** 통화에 따라 세율 선택 */
+  const taxRate = stock.currency === 'USD' ? FOREIGN_DIVIDEND_TAX_RATE : DIVIDEND_TAX_RATE;
+
   return stock.dividendMonths.reduce((acc, month) => {
-    acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - DIVIDEND_TAX_RATE);
+    acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - taxRate);
     return acc;
   }, {} as Record<number, number>);
 }
@@ -125,17 +131,26 @@ export function mergeMonthlyDividends(
 
 /**
  * 종합소득세 추가 납부세액 계산
- * @param annualDividendIncome 연간 배당소득(세전)
+ * @param annualDividendIncome 연간 배당소득(세전) - 국내 + 해외 전체
+ * @param foreignDividendIncome 해외 배당소득(세전)
  * @returns 추가 납부세액 (양수: 납부, 음수: 환급), null이면 분리과세 종결
  */
-export function calculateComprehensiveTax(annualDividendIncome: number): number | null {
+export function calculateComprehensiveTax(
+  annualDividendIncome: number,
+  foreignDividendIncome: number = 0,
+): number | null {
   /** 2,000만원 이하면 분리과세로 종결 */
   if (annualDividendIncome <= SEPARATE_TAX_THRESHOLD) {
     return null;
   }
 
-  /** 이미 원천징수된 세액 (15.4%) */
-  const withheldTax = annualDividendIncome * DIVIDEND_TAX_RATE;
+  /** 국내 배당소득 */
+  const domesticDividendIncome = annualDividendIncome - foreignDividendIncome;
+
+  /** 이미 원천징수된 세액 */
+  const domesticWithheldTax = domesticDividendIncome * DIVIDEND_TAX_RATE; // 국내: 15.4%
+  const foreignWithheldTax = foreignDividendIncome * FOREIGN_DIVIDEND_TAX_RATE; // 해외: 15%
+  const totalWithheldTax = domesticWithheldTax + foreignWithheldTax;
 
   /** 2,000만원 이하: 분리과세 선택 (15.4%) */
   const separateTax = SEPARATE_TAX_THRESHOLD * DIVIDEND_TAX_RATE;
@@ -152,6 +167,12 @@ export function calculateComprehensiveTax(annualDividendIncome: number): number 
   /** 총 세액 = 분리과세분 + 종합과세분(소득세 + 지방소득세) */
   const totalTax = separateTax + incomeTax + localTax;
 
-  /** 추가 납부세액 = 총 세액 - 이미 원천징수된 세액 */
-  return totalTax - withheldTax;
+  /** 외국납부세액공제: 해외에서 이미 낸 세금 중 공제 가능한 금액 */
+  /** 공제한도 = (해외소득 / 총소득) * 산출세액 */
+  const foreignTaxCreditLimit = (foreignDividendIncome / annualDividendIncome) * totalTax;
+  /** 실제 공제액 = min(해외 납부세액, 공제한도) */
+  const foreignTaxCredit = Math.min(foreignWithheldTax, foreignTaxCreditLimit);
+
+  /** 추가 납부세액 = 총 세액 - 이미 원천징수된 세액 - 외국납부세액공제 */
+  return totalTax - totalWithheldTax - foreignTaxCredit;
 }
