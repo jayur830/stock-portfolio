@@ -538,10 +538,10 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           {/* 기간 선택 버튼 */}
           <div className="flex flex-wrap gap-2 mb-4">
             <Button
-              className={selectedPeriod === null ? 'bg-blue-600 hover:bg-blue-700' : ''}
+              className={selectedPeriod == null ? 'bg-blue-600 hover:bg-blue-700' : ''}
               onClick={() => setSelectedPeriod(null)}
               size="sm"
-              variant={selectedPeriod === null ? 'default' : 'outline'}
+              variant={selectedPeriod == null ? 'default' : 'outline'}
             >
               전체
             </Button>

@@ -11,6 +11,60 @@ export function cn(...inputs: ClassValue[]) {
 /** 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
 export const DIVIDEND_TAX_RATE = 0.154;
 
+/** 분리과세 기준 금액 */
+export const SEPARATE_TAX_THRESHOLD = 20000000; // 2,000만원
+
+/** 종합소득세 누진세율 구간 */
+export const TAX_BRACKETS: {
+  /** 구간 상한액 */
+  limit: number;
+  /** 구간 세율 */
+  rate: number;
+  /** 구간 누진공제액 */
+  deduction: number;
+}[] = [
+  {
+    limit: 14000000,
+    rate: 0.06,
+    deduction: 0,
+  },
+  {
+    limit: 50000000,
+    rate: 0.15,
+    deduction: 1260000,
+  },
+  {
+    limit: 88000000,
+    rate: 0.24,
+    deduction: 5760000,
+  },
+  {
+    limit: 150000000,
+    rate: 0.35,
+    deduction: 15440000,
+  },
+  {
+    limit: 300000000,
+    rate: 0.38,
+    deduction: 19940000,
+  },
+  {
+    limit: 500000000,
+    rate: 0.40,
+    deduction: 25940000,
+  },
+  {
+    limit: 1000000000,
+    rate: 0.42,
+    deduction: 35940000,
+  },
+  {
+    limit: Infinity,
+    rate: 0.45,
+    deduction: 65940000,
+  },
+];
+
 /** 금액을 KRW로 환산 */
 export function convertToKRW(
   /** 금액 */
@@ -67,4 +121,37 @@ export function mergeMonthlyDividends(
     });
     return acc;
   }, Array(12).fill(0) as number[]);
+}
+
+/**
+ * 종합소득세 추가 납부세액 계산
+ * @param annualDividendIncome 연간 배당소득(세전)
+ * @returns 추가 납부세액 (양수: 납부, 음수: 환급), null이면 분리과세 종결
+ */
+export function calculateComprehensiveTax(annualDividendIncome: number): number | null {
+  /** 2,000만원 이하면 분리과세로 종결 */
+  if (annualDividendIncome <= SEPARATE_TAX_THRESHOLD) {
+    return null;
+  }
+
+  /** 이미 원천징수된 세액 (15.4%) */
+  const withheldTax = annualDividendIncome * DIVIDEND_TAX_RATE;
+
+  /** 2,000만원 이하: 분리과세 선택 (15.4%) */
+  const separateTax = SEPARATE_TAX_THRESHOLD * DIVIDEND_TAX_RATE;
+
+  /** 2,000만원 초과분 */
+  const excessIncome = annualDividendIncome - SEPARATE_TAX_THRESHOLD;
+  /** 누진세율 구간 찾기 */
+  const bracket = TAX_BRACKETS.find((b) => excessIncome <= b.limit)!;
+  /** 소득세 = 초과분 * 세율 - 누진공제 */
+  const incomeTax = excessIncome * bracket.rate - bracket.deduction;
+  /** 지방소득세 = 소득세 * 지방소득세율 (10%) */
+  const localTax = incomeTax * 0.1;
+
+  /** 총 세액 = 분리과세분 + 종합과세분(소득세 + 지방소득세) */
+  const totalTax = separateTax + incomeTax + localTax;
+
+  /** 추가 납부세액 = 총 세액 - 이미 원천징수된 세액 */
+  return totalTax - withheldTax;
 }
