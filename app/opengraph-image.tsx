@@ -18,69 +18,21 @@ export default async function Image() {
     (
       <div
         style={{
-          fontSize: 64,
-          background: 'linear-gradient(to bottom right, #059669, #10b981)',
+          display: 'flex',
+          justifyContent: 'center',
+          backgroundColor: '#FFFFFF',
+          alignItems: 'center',
           width: '100%',
           height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'white',
-          fontWeight: 'bold',
-          padding: '80px',
         }}
       >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: '24px',
-          }}
-        >
-          <div
-            style={{
-              fontSize: 80,
-              fontWeight: 900,
-              textAlign: 'center',
-              lineHeight: 1.2,
-            }}
-          >
-            배당주 포트폴리오
-          </div>
-          <div
-            style={{
-              fontSize: 80,
-              fontWeight: 900,
-              textAlign: 'center',
-              lineHeight: 1.2,
-            }}
-          >
-            계산기
-          </div>
-          <div
-            style={{
-              fontSize: 32,
-              fontWeight: 400,
-              textAlign: 'center',
-              opacity: 0.9,
-              marginTop: '20px',
-            }}
-          >
-            배당금 자동 계산 | 국내/해외 주식 지원
-          </div>
-          <div
-            style={{
-              fontSize: 28,
-              fontWeight: 300,
-              textAlign: 'center',
-              opacity: 0.8,
-            }}
-          >
-            stock-portfolio.opentoyapp.kr
-          </div>
-        </div>
+        <svg fill="none" height="227" viewBox="0 0 227 227" width="227" xmlns="http://www.w3.org/2000/svg">
+          <rect fill="black" height="27" rx="4" width="51" y="200" />
+          <rect fill="black" height="50" rx="4" width="53" x="57" y="177" />
+          <rect fill="black" height="104" rx="4" width="54" x="116" y="123" />
+          <rect fill="black" height="164" rx="4" width="51" x="176" y="63" />
+          <path d="M215 7L163.847 16.1291L197.329 55.8646L215 7ZM18 173L20.8997 176.441L186.929 36.5384L184.029 33.0972L181.13 29.656L15.1003 169.559L18 173Z" fill="black" />
+        </svg>
       </div>
     ),
     {
