@@ -486,12 +486,15 @@ export default function Page() {
                           </div>
                         </div>
                       </div>
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 bg-red-50 border border-red-200 rounded-md p-3">
-                        <span className="text-sm font-semibold text-red-900">
+                      <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
+                        annualDividendAdditionalTax >= 0 ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+                      }`}
+                      >
+                        <span className={`text-sm font-semibold ${annualDividendAdditionalTax >= 0 ? 'text-red-900' : 'text-green-900'}`}>
                           {annualDividendAdditionalTax >= 0 ? '내년 추가 납부 예정' : '내년 환급 예정'}
                         </span>
-                        <span className="text-base md:text-lg font-bold text-red-600">
-                          {Math.abs(annualDividendAdditionalTax).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+                        <span className={`text-base md:text-lg font-bold ${annualDividendAdditionalTax >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                          {annualDividendAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
                         </span>
                       </div>
                     </>
@@ -579,12 +582,15 @@ export default function Page() {
                                 </div>
                               </div>
                             </div>
-                            <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-2 bg-red-50 border border-red-200 rounded-md p-3">
-                              <span className="text-sm font-semibold text-red-900">
+                            <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
+                              requiredInvestmentAdditionalTax >= 0 ? 'bg-red-50 border border-red-200' : 'bg-green-50 border border-green-200'
+                            }`}
+                            >
+                              <span className={`text-sm font-semibold ${requiredInvestmentAdditionalTax >= 0 ? 'text-red-900' : 'text-green-900'}`}>
                                 {requiredInvestmentAdditionalTax >= 0 ? '내년 추가 납부 예정' : '내년 환급 예정'}
                               </span>
-                              <span className="text-base md:text-lg font-bold text-red-600">
-                                {Math.abs(requiredInvestmentAdditionalTax).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+                              <span className={`text-base md:text-lg font-bold ${requiredInvestmentAdditionalTax >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+                                {requiredInvestmentAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
                               </span>
                             </div>
                           </>
