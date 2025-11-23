@@ -122,7 +122,7 @@ export default function Page() {
   }, [refetchExchangeRate, setValue]);
 
   /** 폼 데이터 검증 */
-  const validateFormData = (data: FormValues): string | null => {
+  const validateFormData = useCallback((data: FormValues): string | null => {
     const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
     if (currentTotalRatio > 100) {
       return '총 비율이 100% 이하가 되어야 합니다.';
@@ -144,7 +144,7 @@ export default function Page() {
     }
 
     return null;
-  };
+  }, []);
 
   /** 배당금 계산: 투자금 → 배당금 */
   const calculateDividendFromInvestment = useCallback((data: FormValues) => {
