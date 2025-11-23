@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
@@ -33,7 +34,6 @@ interface StockQuote {
 
 const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
@@ -47,23 +47,18 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const dividendMonths = stock.dividendMonths || [];
 
   // 검색어 debouncing
+  const debouncedQuery = useDebounce(searchQuery, 300);
+
+  // debounced query 변경 시 dropdown 상태 업데이트
   useEffect(() => {
-    if (!searchQuery || searchQuery.length < 1) {
-      setDebouncedQuery('');
+    if (!debouncedQuery || debouncedQuery.length < 1) {
       setShowDropdown(false);
       setSelectedIndex(-1);
     } else {
-      const delayTimer = setTimeout(() => {
-        setDebouncedQuery(searchQuery);
-        setShowDropdown(true);
-        setSelectedIndex(-1);
-      }, 300);
-
-      return () => {
-        clearTimeout(delayTimer);
-      };
+      setShowDropdown(true);
+      setSelectedIndex(-1);
     }
-  }, [searchQuery]);
+  }, [debouncedQuery]);
 
   /** 종목 검색 */
   const { data: searchResults = [], isLoading: isSearching } = useQuery({
@@ -94,7 +89,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   }, []);
 
   const handleStockSelect = async (quote: StockQuote) => {
-    setDebouncedQuery(''); // 검색 재실행 방지
+    setSearchQuery(''); // 검색 재실행 방지
     setShowDropdown(false);
     setSelectedIndex(-1);
 
