@@ -286,8 +286,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
     /** 매매차익 로직 */
     const profitMap = new Map<string, number>();
     stockInfos
-      .flatMap(({ stock: { currency }, shares, purchaseDate, priceMap }) => {
-        const purchasePrice = convertToKRW(priceMap.get(purchaseDate.format('YYYY-MM-DD'))!, currency, exchangeRate);
+      .flatMap(({ stock: { currency }, shares, purchaseDate, purchasePriceInKRW, priceMap }) => {
         return priceMap
           .entries()
           /** 매수일 이후의 데이터만 필터링 */
@@ -297,7 +296,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
             return {
               date,
               /** (가격 - 매수일 가격) * 보유수량 */
-              price: (price - purchasePrice) * shares,
+              price: (price - purchasePriceInKRW) * shares,
             };
           })
           .toArray();
@@ -392,7 +391,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         },
       },
       legend: {
-        data: ['매매차익', '월별 배당 누적', '매매차익 + 배당'],
+        data: ['매매차익', '월별 배당 수익', '매매차익 + 배당 수익 누적'],
         top: '45px',
       },
       xAxis: {
@@ -470,7 +469,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           },
         },
         {
-          name: '매매차익 + 배당',
+          name: '매매차익 + 배당 수익 누적',
           type: 'line',
           data: profitsWithDividends,
           smooth: true,
