@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
+import CalculateButton from './_components/calculate-button';
 import MonthlyDividends from './_components/monthly-dividends';
 import QuantityPerStock from './_components/quantity-per-stock';
 
@@ -27,7 +28,7 @@ export default function Page() {
   const searchParamsObject = Object.fromEntries(searchParams.entries());
   const activeTab = (searchParams.get('tab') || 'dividend') as 'dividend' | 'investment';
 
-  const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
+  const { control, getValues, handleSubmit, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
       totalInvestment: +(searchParams.get('totalInvestment') || '0'),
       targetAnnualDividend: +(searchParams.get('targetAnnualDividend') || '0'),
@@ -53,12 +54,6 @@ export default function Page() {
     }
   }, [pathname, searchParams, searchParamsObject]);
 
-  /** 탭 상태 */
-  // const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
-  /** 비율 합 */
-  const [totalRatio, setTotalRatio] = useState(0);
-
-  // ratio 변경 시에만 totalRatio 업데이트
   useEffect(() => {
     return watch((value, { name, type }) => {
       if (type === 'change') {
@@ -72,11 +67,6 @@ export default function Page() {
                 [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
               },
             );
-            break;
-          case 'stocks':
-            const stocks = value.stocks || [];
-            const sum = stocks.reduce((acc: number, stock: any) => acc + (stock?.ratio || 0), 0);
-            setTotalRatio(sum);
             break;
           default:
             break;
@@ -257,9 +247,13 @@ export default function Page() {
     }));
 
     // 기존 stocks의 ratio만 업데이트하고 새 종목 추가
-    currentStocks.forEach((_, idx) => {
-      setValue(`stocks.${idx}.ratio`, redistributedList[idx].ratio);
-    });
+    setValue(
+      'stocks',
+      currentStocks.map((stock, i) => ({
+        ...stock,
+        ratio: redistributedList[i].ratio,
+      })),
+    );
     append(redistributedList[redistributedList.length - 1]);
   }, [getValues, setValue, append]);
 
@@ -289,10 +283,15 @@ export default function Page() {
       return;
     }
 
-    if (activeTab === 'dividend') {
-      calculateDividendFromInvestment(data);
-    } else {
-      calculateInvestmentFromDividend(data);
+    switch (activeTab) {
+      case 'dividend':
+        calculateDividendFromInvestment(data);
+        break;
+      case 'investment':
+        calculateInvestmentFromDividend(data);
+        break;
+      default:
+        break;
     }
   }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
@@ -472,12 +471,9 @@ export default function Page() {
         {fields.map((field, index) => (
           <StockCard
             control={control}
-            getValues={getValues}
             index={index}
             key={field.id}
             onDelete={() => remove(index)}
-            register={register}
-            setValue={setValue}
           />
         ))}
         <Button
@@ -492,14 +488,21 @@ export default function Page() {
         <div className="flex flex-col gap-2 mt-2">
           <div className="flex justify-center items-center gap-2 text-sm">
             <span className="text-muted-foreground">총 비율:</span>
-            <span className={`font-semibold ${totalRatio === 100 ? 'text-green-600' : totalRatio > 100 ? 'text-red-600' : 'text-yellow-600'}`}>
-              {totalRatio.toFixed(1)}%
-            </span>
+            <Controller
+              control={control}
+              name="stocks"
+              render={({ field: { value: stocks } }) => {
+                const totalRatio = stocks.reduce((acc, { ratio }) => acc + (ratio || 0), 0);
+                return (
+                  <span className={`font-semibold ${totalRatio === 100 ? 'text-green-600' : totalRatio > 100 ? 'text-red-600' : 'text-yellow-600'}`}>
+                    {totalRatio.toFixed(1)}%
+                  </span>
+                );
+              }}
+            />
           </div>
           <div className="flex justify-center items-center gap-1">
-            <Button disabled={totalRatio > 100} type="submit">
-              계산
-            </Button>
+            <CalculateButton control={control} />
             <Button
               onClick={handleReset}
               type="button"

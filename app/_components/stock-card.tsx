@@ -4,8 +4,8 @@ import dayjs from 'dayjs';
 import { CalendarIcon, X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
-import type { Control, UseFormGetValues, UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import { Controller } from 'react-hook-form';
+import type { Control } from 'react-hook-form';
+import { Controller, useController } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
@@ -20,9 +20,6 @@ import type { FormValues } from '@/types';
 interface StockCardProps {
   control: Control<FormValues>;
   index: number;
-  getValues: UseFormGetValues<FormValues>;
-  setValue: UseFormSetValue<FormValues>;
-  register: UseFormRegister<FormValues>;
   onDelete?(): void;
 }
 
@@ -32,13 +29,20 @@ interface StockQuote {
   exchange: string;
 }
 
-const StockCard = ({ control, index, getValues, setValue, register, onDelete }: StockCardProps) => {
+const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const { field: { value: stocks, onChange: onChangeStocks } } = useController({
+    control,
+    name: 'stocks',
+  });
+  const stock = stocks[index];
+  const dividendMonths = stock.dividendMonths || [];
 
   // 검색어 debouncing
   useEffect(() => {
@@ -88,8 +92,6 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
   }, []);
 
   const handleStockSelect = async (quote: StockQuote) => {
-    setValue(`stocks.${index}.ticker`, quote.symbol);
-    setValue(`stocks.${index}.name`, quote.shortname);
     setDebouncedQuery(''); // 검색 재실행 방지
     setShowDropdown(false);
     setSelectedIndex(-1);
@@ -104,15 +106,61 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
       const data = await response.json();
 
       if (data && !data.error) {
-        setValue(`stocks.${index}.price`, data.price);
-        setValue(`stocks.${index}.currency`, data.currency);
-        setValue(`stocks.${index}.yield`, data.yield);
-        if (data.dividendMonths && data.dividendMonths.length > 0) {
-          setValue(`stocks.${index}.dividendMonths`, data.dividendMonths);
-        }
+        onChangeStocks(
+          stocks.map((s, i) => {
+            if (i !== index) {
+              return s;
+            }
+
+            const defaultStock = {
+              ...s,
+              ticker: quote.symbol,
+              name: quote.shortname,
+              price: data.price,
+              currency: data.currency,
+              yield: data.yield,
+            };
+
+            if (data.dividendMonths && data.dividendMonths.length > 0) {
+              return {
+                ...defaultStock,
+                dividendMonths: data.dividendMonths,
+              };
+            }
+
+            return defaultStock;
+          }),
+        );
+      } else {
+        onChangeStocks(
+          stocks.map((s, i) => {
+            if (i === index) {
+              return {
+                ...s,
+                ticker: quote.symbol,
+                name: quote.shortname,
+              };
+            }
+
+            return s;
+          }),
+        );
       }
     } catch (error) {
       console.error('Failed to fetch stock quote:', error);
+      onChangeStocks(
+        stocks.map((s, i) => {
+          if (i === index) {
+            return {
+              ...s,
+              ticker: quote.symbol,
+              name: quote.shortname,
+            };
+          }
+
+          return s;
+        }),
+      );
     } finally {
       setIsLoadingQuote(false);
     }
@@ -209,13 +257,12 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">통화</span>
           <Controller
             control={control}
-            name={`stocks.${index}.currency`}
-            render={({ field }) => (
+            name="exchangeRate"
+            render={({ field: { value: exchangeRate } }) => (
               <Select
                 onValueChange={(newCurrency) => {
-                  const oldCurrency = field.value;
-                  const currentPrice = getValues(`stocks.${index}.price`);
-                  const exchangeRate = getValues('exchangeRate');
+                  const oldCurrency = stock.currency;
+                  const currentPrice = stock.price;
 
                   if (oldCurrency !== newCurrency && exchangeRate > 0) {
                     // 주가 환산
@@ -226,13 +273,23 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                       } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
                         newPrice = currentPrice * exchangeRate;
                       }
-                      setValue(`stocks.${index}.price`, Math.round(newPrice * 100) / 100);
+                      onChangeStocks(
+                        stocks.map((s, i) => (i === index ? {
+                          ...s,
+                          price: Math.round(newPrice * 100) / 100,
+                        } : s)),
+                      );
                     }
                   }
 
-                  field.onChange(newCurrency);
+                  onChangeStocks(
+                    stocks.map((s, i) => (i === index ? {
+                      ...s,
+                      currency: newCurrency,
+                    } : s)),
+                  );
                 }}
-                value={field.value}
+                value={stock.currency}
               >
                 <SelectTrigger className="md:w-24 w-full">
                   <SelectValue placeholder="통화" />
@@ -249,62 +306,68 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">종목명</span>
           <Input
             className="flex-1"
+            onChange={(e) => {
+              onChangeStocks(
+                stocks.map((s, i) => (i === index ? {
+                  ...s,
+                  name: e.target.value,
+                } : s)),
+              );
+            }}
             placeholder="종목명"
             type="text"
-            {...register(`stocks.${index}.name`)}
+            value={stock.name}
           />
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
-          <Controller
-            control={control}
-            name={`stocks.${index}.price`}
-            render={({ field }) => (
-              <Input
-                {...field}
-                className="flex-1"
-                onChange={(e) => {
-                  const priceValue = parseFloat(e.target.value) || 0;
-                  field.onChange(priceValue);
-                }}
-                placeholder="가격"
-                step="any"
-                type="number"
-                value={field.value || ''}
-              />
-            )}
+          <Input
+            className="flex-1"
+            onChange={(e) => {
+              onChangeStocks(
+                stocks.map((s, i) => (i === index ? {
+                  ...s,
+                  price: parseFloat(e.target.value) || 0,
+                } : s)),
+              );
+            }}
+            placeholder="가격"
+            step="any"
+            type="number"
+            value={stock.price || ''}
           />
         </div>
         <div className="flex flex-col gap-2">
           <div className="flex flex-col md:flex-row md:items-center gap-2">
             <span className="text-xs md:text-sm font-medium whitespace-nowrap">매수일</span>
-            <Controller
-              control={control}
-              name={`stocks.${index}.purchaseDate`}
-              render={({ field }) => (
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      className={cn(
-                        'flex-1 justify-start text-left font-normal',
-                        !field.value && 'text-muted-foreground',
-                      )}
-                      variant="outline"
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {field.value ? field.value.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="start" className="w-auto p-0">
-                    <Calendar
-                      initialFocus
-                      locale={ko}
-                      mode="single"
-                      onSelect={(date) => field.onChange(date ? dayjs(date) : undefined)}
-                      selected={field.value ? field.value.toDate() : undefined}
-                    />
-                  </PopoverContent>
-                </Popover>
-              )}
-            />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  className={cn(
+                    'flex-1 justify-start text-left font-normal',
+                    !stock.purchaseDate && 'text-muted-foreground',
+                  )}
+                  variant="outline"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {stock.purchaseDate ? stock.purchaseDate.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-auto p-0">
+                <Calendar
+                  autoFocus
+                  locale={ko}
+                  mode="single"
+                  onSelect={(date) => {
+                    onChangeStocks(
+                      stocks.map((s, i) => (i === index ? {
+                        ...s,
+                        purchaseDate: date ? dayjs(date) : undefined,
+                      } : s)),
+                    );
+                  }}
+                  selected={stock.purchaseDate ? stock.purchaseDate.toDate() : undefined}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
           <div className="flex flex-wrap gap-1 md:ml-[100px]">
             {[
@@ -329,7 +392,12 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
                 className="h-7 text-xs"
                 key={label}
                 onClick={() => {
-                  setValue(`stocks.${index}.purchaseDate`, dayjs().subtract(months, 'month'));
+                  onChangeStocks(
+                    stocks.map((s, i) => (i === index ? ({
+                      ...s,
+                      purchaseDate: dayjs().subtract(months, 'month'),
+                    }) : s)),
+                  );
                 }}
                 size="sm"
                 type="button"
@@ -346,79 +414,96 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
           <div className="flex flex-col md:flex-row md:items-center gap-2">
             <span className="text-xs md:text-sm font-medium whitespace-nowrap">배당 지급 월</span>
             <div className="flex gap-2">
-              <Controller
-                control={control}
-                name={`stocks.${index}.dividendMonths`}
-                render={({ field }) => (
-                  <>
-                    <Button
-                      className="h-7 text-xs"
-                      onClick={() => {
-                        // 월별: 모든 월 선택 (1~12)
-                        field.onChange([
-                          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                        ]);
-                      }}
-                      type="button"
-                      variant="outline"
-                    >
-                      월별
-                    </Button>
-                    <Button
-                      className="h-7 text-xs"
-                      onClick={() => {
-                        // 분기별: 3, 6, 9, 12월 선택
-                        field.onChange([3, 6, 9, 12]);
-                      }}
-                      type="button"
-                      variant="outline"
-                    >
-                      분기별
-                    </Button>
-                  </>
-                )}
-              />
+              <Button
+                className="h-7 text-xs"
+                onClick={() => {
+                  // 월별: 모든 월 선택 (1~12)
+                  onChangeStocks(
+                    stocks.map((s, i) => (i === index ? {
+                      ...s,
+                      dividendMonths: [
+                        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+                      ],
+                    } : s)),
+                  );
+                }}
+                type="button"
+                variant="outline"
+              >
+                월별
+              </Button>
+              <Button
+                className="h-7 text-xs"
+                onClick={() => {
+                  // 분기별: 3, 6, 9, 12월 선택
+                  onChangeStocks(
+                    stocks.map((s, i) => (i === index ? {
+                      ...s,
+                      dividendMonths: [3, 6, 9, 12],
+                    } : s)),
+                  );
+                }}
+                type="button"
+                variant="outline"
+              >
+                분기별
+              </Button>
             </div>
           </div>
-          <Controller
-            control={control}
-            name={`stocks.${index}.dividendMonths`}
-            render={({ field }) => (
-              <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
-                {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
-                  const isSelected = field.value?.includes(month);
-                  return (
-                    <Button
-                      className={`h-8 text-xs ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
-                      key={month}
-                      onClick={() => {
-                        const currentMonths = field.value || [];
-                        if (isSelected) {
-                          field.onChange(currentMonths.filter((m) => m !== month));
-                        } else {
-                          field.onChange([...currentMonths, month].sort((a, b) => a - b));
+          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
+              const isSelected = dividendMonths.includes(month);
+              return (
+                <Button
+                  className={`h-8 text-xs ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                  key={month}
+                  onClick={() => {
+                    onChangeStocks(
+                      stocks.map((s, i) => {
+                        if (index !== i) {
+                          return s;
                         }
-                      }}
-                      type="button"
-                      variant={isSelected ? 'default' : 'outline'}
-                    >
-                      {month}월
-                    </Button>
-                  );
-                })}
-              </div>
-            )}
-          />
+
+                        if (isSelected) {
+                          return {
+                            ...s,
+                            dividendMonths: s.dividendMonths.filter((m) => m !== month),
+                          };
+                        }
+
+                        return {
+                          ...s,
+                          dividendMonths: [...s.dividendMonths, month].sort((a, b) => a - b),
+                        };
+                      }),
+                    );
+                  }}
+                  type="button"
+                  variant={isSelected ? 'default' : 'outline'}
+                >
+                  {month}월
+                </Button>
+              );
+            })}
+          </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center gap-2">
           <label className="text-xs md:text-sm font-medium whitespace-nowrap">배당률</label>
           <div className="flex items-center gap-2 flex-1 md:max-w-[180px]">
             <Input
               className="flex-1"
+              onChange={(e) => {
+                onChangeStocks(
+                  stocks.map((s, i) => (i === index ? {
+                    ...s,
+                    yield: +e.target.value,
+                  } : s)),
+                );
+              }}
               placeholder="배당률"
               step="any"
               type="number"
-              {...register(`stocks.${index}.yield`, { valueAsNumber: true })}
+              value={stock.yield || ''}
             />
             <span className="text-sm text-muted-foreground">%</span>
           </div>
@@ -426,38 +511,36 @@ const StockCard = ({ control, index, getValues, setValue, register, onDelete }: 
         <div className="flex md:flex-row flex-col md:items-center items-start gap-2">
           <label className="text-xs md:text-sm font-medium whitespace-nowrap">비율</label>
           <div className="flex items-center gap-2 w-full md:w-[100px] mb-3 md:mb-0">
-            <Controller
-              control={control}
-              name={`stocks.${index}.ratio`}
-              render={({ field }) => (
-                <Input
-                  {...field}
-                  className="w-full md:w-[100px]"
-                  max={100}
-                  min={0}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
-                  placeholder="비율"
-                  step={1}
-                  type="number"
-                  value={field.value?.toFixed(0) || 0}
-                />
-              )}
+            <Input
+              className="w-full md:w-[100px]"
+              max={100}
+              min={0}
+              onChange={(e) => {
+                onChangeStocks(stocks.map((s, i) => (i === index ? {
+                  ...s,
+                  ratio: parseFloat(e.target.value) || 0,
+                } : s)));
+              }}
+              placeholder="비율"
+              step={1}
+              type="number"
+              value={stock.ratio.toFixed(0) || 0}
             />
             <span className="text-sm text-muted-foreground">%</span>
           </div>
-          <Controller
-            control={control}
-            name={`stocks.${index}.ratio`}
-            render={({ field }) => (
-              <Slider
-                className="flex-1 md:max-w-[500px]"
-                max={100}
-                min={0}
-                onValueChange={(values) => field.onChange(values[0])}
-                step={1}
-                value={[field.value || 0]}
-              />
-            )}
+          <Slider
+            className="flex-1 md:max-w-[500px]"
+            max={100}
+            min={0}
+            onValueChange={([value]) => {
+              const newStocks = stocks.map((s, i) => (i === index ? {
+                ...s,
+                ratio: value,
+              } : s));
+              onChangeStocks(newStocks);
+            }}
+            step={1}
+            value={[stock.ratio || 0]}
           />
         </div>
       </CardContent>

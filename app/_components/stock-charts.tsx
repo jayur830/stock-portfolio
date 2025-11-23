@@ -83,48 +83,48 @@ const calculateDividendPayments = (
   return dividendMap;
 };
 
+/** 기간 옵션 */
+const periodOptions: TimePeriodOption[] = [
+  {
+    value: '1M',
+    label: '1개월',
+    months: 1,
+  },
+  {
+    value: '3M',
+    label: '3개월',
+    months: 3,
+  },
+  {
+    value: '6M',
+    label: '6개월',
+    months: 6,
+  },
+  {
+    value: '1Y',
+    label: '1년',
+    months: 12,
+  },
+  {
+    value: '3Y',
+    label: '3년',
+    months: 36,
+  },
+  {
+    value: '5Y',
+    label: '5년',
+    months: 60,
+  },
+  {
+    value: '10Y',
+    label: '10년',
+    months: 120,
+  },
+];
+
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
   /** 기간 필터 상태 */
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>('1Y');
-
-  /** 기간 옵션 */
-  const periodOptions: TimePeriodOption[] = [
-    {
-      value: '1M',
-      label: '1개월',
-      months: 1,
-    },
-    {
-      value: '3M',
-      label: '3개월',
-      months: 3,
-    },
-    {
-      value: '6M',
-      label: '6개월',
-      months: 6,
-    },
-    {
-      value: '1Y',
-      label: '1년',
-      months: 12,
-    },
-    {
-      value: '3Y',
-      label: '3년',
-      months: 36,
-    },
-    {
-      value: '5Y',
-      label: '5년',
-      months: 60,
-    },
-    {
-      value: '10Y',
-      label: '10년',
-      months: 120,
-    },
-  ];
 
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
