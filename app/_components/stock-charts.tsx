@@ -360,18 +360,18 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       });
 
     prevDate = cumulativeDividendMap.keys().toArray().sort()[0];
-    /** 월별 배당금 누적 차트 데이터 */
+    /** 월별 배당금 차트 데이터 */
     const dividends = profitMap
       .entries()
       .toArray()
       .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1))
       .map(([date]) => {
-        if (cumulativeDividendMap.has(date)) {
+        if (totalDividendMap.has(date)) {
           prevDate = date;
-          return cumulativeDividendMap.get(date)!;
+          return totalDividendMap.get(date)!;
         }
         if (dayjs(date).isAfter(prevDate, 'day')) {
-          return cumulativeDividendMap.get(prevDate)!;
+          return totalDividendMap.get(prevDate)!;
         }
         return 0;
       });
@@ -441,7 +441,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           },
         },
         {
-          name: '월별 배당 누적',
+          name: '월별 배당 수익',
           type: 'line',
           data: dividends,
           smooth: true,
