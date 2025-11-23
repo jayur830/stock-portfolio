@@ -1,4 +1,7 @@
-import { Control, useController } from 'react-hook-form';
+'use client';
+
+import type { Control } from 'react-hook-form';
+import { useController } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { FormValues } from '@/types';
