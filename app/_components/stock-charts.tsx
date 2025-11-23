@@ -6,7 +6,7 @@ import ReactECharts from 'echarts-for-react';
 import { memo, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { DIVIDEND_TAX_RATE } from '@/lib/utils';
+import { convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 interface StockChartsProps {
@@ -74,7 +74,7 @@ const calculateDividendPayments = (
 
       // 실제 배당금 계산: (주당 배당금 * 보유 수량) * (1 - 세율)
       // USD 종목이면 KRW로 환산
-      const dividendPerShare = stock.currency === 'USD' ? div.amount * exchangeRate : div.amount;
+      const dividendPerShare = convertToKRW(div.amount, stock.currency, exchangeRate);
       const afterTaxDividend = dividendPerShare * shares * (1 - DIVIDEND_TAX_RATE);
 
       dividendMap.set(dateStr, afterTaxDividend);
@@ -182,7 +182,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         }
 
         /** USD 종목이면 KRW로 환산 */
-        return stock?.currency === 'USD' ? price * exchangeRate : price;
+        return stock ? convertToKRW(price, stock.currency, exchangeRate) : price;
       });
 
       return {
@@ -266,7 +266,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           return null;
         }
 
-        const purchasePriceInKRW = stock.currency === 'USD' ? purchaseDataPoint.close * exchangeRate : purchaseDataPoint.close;
+        const purchasePriceInKRW = convertToKRW(purchaseDataPoint.close, stock.currency, exchangeRate);
         const investmentAmount = (totalInvestment * stock.ratio) / 100;
         const shares = investmentAmount / purchasePriceInKRW;
 
@@ -283,20 +283,17 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    const filteredStockInfoList = stockInfos.filter(({ purchaseDate }) => purchaseDate);
-
     /** 매매차익 로직 */
     const profitMap = new Map<string, number>();
-    filteredStockInfoList
+    stockInfos
       .flatMap(({ stock: { currency }, shares, purchaseDate, priceMap }) => {
-        let purchasePrice = priceMap.get(purchaseDate.format('YYYY-MM-DD'))!;
-        purchasePrice = currency === 'USD' ? purchasePrice * exchangeRate : purchasePrice;
+        const purchasePrice = convertToKRW(priceMap.get(purchaseDate.format('YYYY-MM-DD'))!, currency, exchangeRate);
         return priceMap
           .entries()
           /** 매수일 이후의 데이터만 필터링 */
           .filter(([date]) => dayjs(date).isSame(purchaseDate, 'day') || dayjs(date).isAfter(purchaseDate, 'day'))
           .map(([date, p]) => {
-            const price = currency === 'USD' ? p * exchangeRate : p;
+            const price = convertToKRW(p, currency, exchangeRate);
             return {
               date,
               /** (가격 - 매수일 가격) * 보유수량 */

@@ -1,3 +1,4 @@
+import { convertToKRW } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 export interface QuantityPerStockProps {
@@ -12,7 +13,7 @@ export default function QuantityPerStock({ stocks, totalInvestment, exchangeRate
     <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
       {stocks.map((stock, index) => {
         const investmentAmount = (totalInvestment * (stock.ratio || 0)) / 100;
-        const priceInKRW = stock.currency === 'USD' ? stock.price * exchangeRate : stock.price;
+        const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
         const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
         return (
           <div
