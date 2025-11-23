@@ -22,10 +22,15 @@ const StockCharts = dynamic(() => import('@/app/_components/stock-charts'), {
 });
 
 export default function Page() {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsObject = Object.fromEntries(searchParams.entries());
+  const activeTab = (searchParams.get('tab') || 'dividend') as 'dividend' | 'investment';
+
   const { control, getValues, handleSubmit, register, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
-      totalInvestment: 0,
-      targetAnnualDividend: 0,
+      totalInvestment: +(searchParams.get('totalInvestment') || '0'),
+      targetAnnualDividend: +(searchParams.get('targetAnnualDividend') || '0'),
       exchangeRate: 0,
       stocks: [],
     },
@@ -36,16 +41,17 @@ export default function Page() {
     name: 'stocks',
   });
 
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const searchParamsObject = Object.fromEntries(searchParams.entries());
-  const activeTab = (searchParams.get('tab') || 'dividend') as 'dividend' | 'investment';
-
   useLayoutEffect(() => {
     if (!searchParams.has('tab')) {
-      setSearchParams(pathname, { tab: 'dividend' });
+      setSearchParams(
+        pathname,
+        {
+          ...searchParamsObject,
+          tab: 'dividend',
+        },
+      );
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, searchParamsObject]);
 
   /** 탭 상태 */
   // const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
@@ -54,14 +60,30 @@ export default function Page() {
 
   // ratio 변경 시에만 totalRatio 업데이트
   useEffect(() => {
-    return watch((value, { name }) => {
-      if (name?.includes('ratio') || name === 'stocks') {
-        const stocks = value.stocks || [];
-        const sum = stocks.reduce((acc: number, stock: any) => acc + (stock?.ratio || 0), 0);
-        setTotalRatio(sum);
+    return watch((value, { name, type }) => {
+      if (type === 'change') {
+        switch (name) {
+          case 'totalInvestment':
+          case 'targetAnnualDividend':
+            setSearchParams(
+              pathname,
+              {
+                ...searchParamsObject,
+                [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
+              },
+            );
+            break;
+          case 'stocks':
+            const stocks = value.stocks || [];
+            const sum = stocks.reduce((acc: number, stock: any) => acc + (stock?.ratio || 0), 0);
+            setTotalRatio(sum);
+            break;
+          default:
+            break;
+        }
       }
     }).unsubscribe;
-  }, [watch]);
+  }, [watch, pathname, searchParamsObject]);
   /** 연 배당금 */
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
   /** 해외 연 배당금 */
@@ -251,9 +273,14 @@ export default function Page() {
   }, [reset]);
 
   const handleTabChange = useCallback((value: string) => {
-    setSearchParams(pathname, { tab: value });
-    // setActiveTab(value as 'dividend' | 'investment');
-  }, [pathname]);
+    setSearchParams(
+      pathname,
+      {
+        ...searchParamsObject,
+        tab: value,
+      },
+    );
+  }, [pathname, searchParamsObject]);
 
   const onSubmit = useCallback((data: FormValues) => {
     const error = validateFormData(data);
