@@ -2,14 +2,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
-import { useCallback, useEffect, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/app/_components/stock-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, mergeMonthlyDividends } from '@/lib/utils';
+import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import MonthlyDividends from './_components/monthly-dividends';
@@ -35,8 +36,19 @@ export default function Page() {
     name: 'stocks',
   });
 
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const searchParamsObject = Object.fromEntries(searchParams.entries());
+  const activeTab = (searchParams.get('tab') || 'dividend') as 'dividend' | 'investment';
+
+  useLayoutEffect(() => {
+    if (!searchParams.has('tab')) {
+      setSearchParams(pathname, { tab: 'dividend' });
+    }
+  }, [pathname, searchParams]);
+
   /** 탭 상태 */
-  const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
+  // const [activeTab, setActiveTab] = useState<'dividend' | 'investment'>('dividend');
   /** 비율 합 */
   const [totalRatio, setTotalRatio] = useState(0);
 
@@ -239,8 +251,9 @@ export default function Page() {
   }, [reset]);
 
   const handleTabChange = useCallback((value: string) => {
-    setActiveTab(value as 'dividend' | 'investment');
-  }, []);
+    setSearchParams(pathname, { tab: value });
+    // setActiveTab(value as 'dividend' | 'investment');
+  }, [pathname]);
 
   const onSubmit = useCallback((data: FormValues) => {
     const error = validateFormData(data);

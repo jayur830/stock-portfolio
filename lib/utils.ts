@@ -8,6 +8,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * URL 파라미터 설정
+ * @param params URLSearchParams의 인자 타입
+ */
+/** @client */
+export function setSearchParams(pathname: string, params: { [key: string]: string | number | boolean | null | undefined }) {
+  const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, value]) => value != null && value !== ''));
+  const qs = new URLSearchParams(filteredParams as any);
+  window.history.replaceState({}, '', `${pathname}${qs ? `?${qs}` : ''}`);
+}
+
 /** 국내 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
 export const DIVIDEND_TAX_RATE = 0.154;
 
