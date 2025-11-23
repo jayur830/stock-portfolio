@@ -31,7 +31,7 @@ export const metadata: Metadata = {
   keywords: [
     '배당주', '배당금 계산', '포트폴리오', '주식 투자', '배당률', '월배당', '배당 계산기', '주식 계산기', '배당 포트폴리오',
   ],
-  authors: [{ name: 'OpenToyApp' }],
+  authors: [{ name: 'opentoyapp' }],
   openGraph: {
     title: '배당주 포트폴리오 계산기',
     description: '배당주 투자를 위한 포트폴리오 관리 및 배당금 계산 도구',

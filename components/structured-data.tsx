@@ -13,7 +13,7 @@ const structuredData = {
   },
   author: {
     '@type': 'Organization',
-    name: 'OpenToyApp',
+    name: 'opentoyapp',
     url: 'https://stock-portfolio.opentoyapp.kr',
   },
   featureList: [
