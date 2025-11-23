@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/app/_components/stock-card';
@@ -22,7 +22,7 @@ const StockCharts = dynamic(() => import('@/app/_components/stock-charts'), {
   ssr: false,
 });
 
-export default function Page() {
+function PageContent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsObject = Object.fromEntries(searchParams.entries());
@@ -717,5 +717,13 @@ export default function Page() {
         </div>
       </form>
     </main>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="flex justify-center items-center min-h-screen">로딩 중...</div>}>
+      <PageContent />
+    </Suspense>
   );
 }
