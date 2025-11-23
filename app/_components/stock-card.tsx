@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { ko } from 'date-fns/locale';
 import dayjs from 'dayjs';
 import { CalendarIcon, X } from 'lucide-react';
@@ -36,7 +36,6 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
-  const [isLoadingQuote, setIsLoadingQuote] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const { field: { value: stocks, onChange: onChangeStocks } } = useController({
@@ -75,33 +74,16 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
     staleTime: 1000 * 60, // 1분
   });
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowDropdown(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
-
-  const handleStockSelect = async (quote: StockQuote) => {
-    setSearchQuery(''); // 검색 재실행 방지
-    setShowDropdown(false);
-    setSelectedIndex(-1);
-
-    // 종목 상세 정보 가져오기
-    setIsLoadingQuote(true);
-    try {
+  /** 종목 상세 정보 조회 */
+  const { mutate: fetchStockQuote, isPending: isLoadingQuote } = useMutation({
+    async mutationFn(quote: StockQuote) {
       const response = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(quote.symbol)}`);
       if (!response.ok) {
         throw new Error('Failed to fetch stock quote');
       }
-      const data = await response.json();
-
+      return response.json();
+    },
+    onSuccess(data, quote) {
       if (data && !data.error) {
         onChangeStocks(
           stocks.map((s, i) => {
@@ -143,7 +125,8 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           }),
         );
       }
-    } catch (error) {
+    },
+    onError(error, quote) {
       console.error('Failed to fetch stock quote:', error);
       onChangeStocks(
         stocks.map((s, i) => {
@@ -158,9 +141,29 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           return s;
         }),
       );
-    } finally {
-      setIsLoadingQuote(false);
-    }
+    },
+  });
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleStockSelect = (quote: StockQuote) => {
+    setSearchQuery(''); // 검색 재실행 방지
+    setShowDropdown(false);
+    setSelectedIndex(-1);
+
+    // 종목 상세 정보 가져오기
+    fetchStockQuote(quote);
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
