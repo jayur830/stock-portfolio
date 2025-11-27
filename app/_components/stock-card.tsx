@@ -261,32 +261,32 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             render={({ field: { value: exchangeRate } }) => (
               <Select
                 onValueChange={(newCurrency) => {
-                  const oldCurrency = stock.currency;
-                  const currentPrice = stock.price;
-
-                  if (oldCurrency !== newCurrency && exchangeRate > 0) {
-                    // 주가 환산
-                    if (currentPrice > 0) {
-                      let newPrice = currentPrice;
-                      if (oldCurrency === 'KRW' && newCurrency === 'USD') {
-                        newPrice = currentPrice / exchangeRate;
-                      } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
-                        newPrice = currentPrice * exchangeRate;
-                      }
-                      onChangeStocks(
-                        stocks.map((s, i) => (i === index ? {
-                          ...s,
-                          price: Math.round(newPrice * 100) / 100,
-                        } : s)),
-                      );
-                    }
-                  }
-
                   onChangeStocks(
-                    stocks.map((s, i) => (i === index ? {
-                      ...s,
-                      currency: newCurrency,
-                    } : s)),
+                    stocks.map((s, i) => {
+                      if (i !== index) {
+                        return s;
+                      }
+
+                      const oldCurrency = s.currency;
+                      const currentPrice = s.price;
+                      let newPrice = currentPrice;
+
+                      // 통화 변경 시 주가 환산
+                      if (oldCurrency !== newCurrency && exchangeRate > 0 && currentPrice > 0) {
+                        if (oldCurrency === 'KRW' && newCurrency === 'USD') {
+                          newPrice = currentPrice / exchangeRate;
+                        } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
+                          newPrice = currentPrice * exchangeRate;
+                        }
+                        newPrice = Math.round(newPrice * 100) / 100;
+                      }
+
+                      return {
+                        ...s,
+                        currency: newCurrency,
+                        price: newPrice,
+                      };
+                    }),
                   );
                 }}
                 value={stock.currency}
