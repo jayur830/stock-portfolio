@@ -307,12 +307,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <Input
             className="flex-1"
             onChange={(e) => {
-              onChangeStocks(
-                stocks.map((s, i) => (i === index ? {
-                  ...s,
-                  name: e.target.value,
-                } : s)),
-              );
+              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, name: e.target.value } : s)));
             }}
             placeholder="종목명"
             type="text"
@@ -322,12 +317,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <Input
             className="flex-1"
             onChange={(e) => {
-              onChangeStocks(
-                stocks.map((s, i) => (i === index ? {
-                  ...s,
-                  price: parseFloat(e.target.value) || 0,
-                } : s)),
-              );
+              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)));
             }}
             placeholder="가격"
             step="any"
@@ -357,12 +347,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   locale={ko}
                   mode="single"
                   onSelect={(date) => {
-                    onChangeStocks(
-                      stocks.map((s, i) => (i === index ? {
-                        ...s,
-                        purchaseDate: date ? dayjs(date) : undefined,
-                      } : s)),
-                    );
+                    onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, purchaseDate: date ? dayjs(date) : undefined } : s)));
                   }}
                   selected={stock.purchaseDate ? stock.purchaseDate.toDate() : undefined}
                 />
@@ -380,12 +365,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 className="h-7 text-xs"
                 key={label}
                 onClick={() => {
-                  onChangeStocks(
-                    stocks.map((s, i) => (i === index ? ({
-                      ...s,
-                      purchaseDate: dayjs().subtract(months, 'month'),
-                    }) : s)),
-                  );
+                  onChangeStocks(stocks.map((s, i) => (i === index ? ({ ...s, purchaseDate: dayjs().subtract(months, 'month') }) : s)));
                 }}
                 size="sm"
                 type="button"
@@ -424,12 +404,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 className="h-7 text-xs"
                 onClick={() => {
                   // 분기별: 3, 6, 9, 12월 선택
-                  onChangeStocks(
-                    stocks.map((s, i) => (i === index ? {
-                      ...s,
-                      dividendMonths: [3, 6, 9, 12],
-                    } : s)),
-                  );
+                  onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, dividendMonths: [3, 6, 9, 12] } : s)));
                 }}
                 type="button"
                 variant="outline"
@@ -481,12 +456,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             <Input
               className="flex-1"
               onChange={(e) => {
-                onChangeStocks(
-                  stocks.map((s, i) => (i === index ? {
-                    ...s,
-                    yield: +e.target.value,
-                  } : s)),
-                );
+                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, yield: +e.target.value } : s)));
               }}
               placeholder="3.00"
               step="any"
@@ -504,10 +474,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               max={100}
               min={0}
               onChange={(e) => {
-                onChangeStocks(stocks.map((s, i) => (i === index ? {
-                  ...s,
-                  ratio: parseFloat(e.target.value) || 0,
-                } : s)));
+                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: parseFloat(e.target.value) || 0 } : s)));
               }}
               placeholder="비율"
               step={1}
@@ -521,11 +488,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             max={100}
             min={0}
             onValueChange={([value]) => {
-              const newStocks = stocks.map((s, i) => (i === index ? {
-                ...s,
-                ratio: value,
-              } : s));
-              onChangeStocks(newStocks);
+              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: value } : s)));
             }}
             step={1}
             value={[stock.ratio || 0]}

@@ -44,45 +44,6 @@ interface StockPurchaseInfo {
   priceMap: Map<string, number>;
 }
 
-/** 배당금 계산 (실제 배당 히스토리 기반, 세후, 매수월 제외) */
-const calculateDividendPayments = (
-  stockInfo: StockPurchaseInfo,
-  dividendHistory: {
-    date: Date;
-    amount: number;
-  }[],
-  exchangeRate: number,
-): Map<string, number> => {
-  const { stock, purchaseDate, shares } = stockInfo;
-  const dividendMap = new Map<string, number>();
-
-  if (!dividendHistory || dividendHistory.length === 0) {
-    return dividendMap;
-  }
-
-  dividendHistory
-    .filter(({ date }) => dayjs(date).isAfter(purchaseDate, 'day') || dayjs(date).isSame(purchaseDate, 'day'))
-    .forEach((div) => {
-      const divDate = dayjs(div.date);
-      const dateStr = divDate.format('YYYY-MM-DD');
-
-      // 매수월에는 배당을 받지 못하여 0원 처리
-      if (divDate.format('YYYY-MM') === purchaseDate.format('YYYY-MM')) {
-        dividendMap.set(dateStr, 0);
-        return;
-      }
-
-      // 실제 배당금 계산: (주당 배당금 * 보유 수량) * (1 - 세율)
-      // USD 종목이면 KRW로 환산
-      const dividendPerShare = convertToKRW(div.amount, stock.currency, exchangeRate);
-      const afterTaxDividend = dividendPerShare * shares * (1 - DIVIDEND_TAX_RATE);
-
-      dividendMap.set(dateStr, afterTaxDividend);
-    });
-
-  return dividendMap;
-};
-
 /** 기간 옵션 */
 const periodOptions: TimePeriodOption[] = [
   { value: '1M', label: '1개월', months: 1 },
@@ -215,13 +176,26 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
       return null;
     }
 
-    const stockInfos = stocks
-      .filter((s) => s.purchaseDate)
-      .map((stock) => {
-        const history = histories.find((h) => h.symbol === stock.ticker);
-        if (!history) {
-          return null;
+    const stockInfoList = stocks
+      .filter((s) => {
+        if (!s.purchaseDate) {
+          return false;
         }
+
+        const history = histories.find((h) => h.symbol === s.ticker);
+        if (!history) {
+          return false;
+        }
+
+        const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(s.purchaseDate, 'day'));
+        if (!purchaseDataPoint) {
+          return false;
+        }
+
+        return true;
+      })
+      .map((stock) => {
+        const history = histories.find((h) => h.symbol === stock.ticker)!;
 
         const purchaseDate = stock.purchaseDate!;
 
@@ -231,10 +205,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         );
 
         // 매수일 이후의 첫 가격 찾기
-        const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'));
-        if (!purchaseDataPoint) {
-          return null;
-        }
+        const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'))!;
 
         const purchasePriceInKRW = convertToKRW(purchaseDataPoint.close, stock.currency, exchangeRate);
         const investmentAmount = (totalInvestment * stock.ratio) / 100;
@@ -247,15 +218,14 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           shares,
           priceMap,
         };
-      })
-      .filter((info): info is StockPurchaseInfo => info != null);
-    if (stockInfos.length === 0) {
+      });
+    if (stockInfoList.length === 0) {
       return null;
     }
 
     /** 매매차익 로직 */
     const profitMap = new Map<string, number>();
-    stockInfos
+    stockInfoList
       .flatMap(({ stock: { currency }, shares, purchaseDate, purchasePriceInKRW, priceMap }) => {
         return priceMap
           .entries()
@@ -282,13 +252,36 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
 
     // 배당금 누적 계산
     const totalDividendMap = new Map<string, number>();
-    stockInfos.forEach((stockInfo) => {
-      const history = histories.find((h) => h.symbol === stockInfo.stock.ticker);
+    stockInfoList.forEach((stockInfo) => {
+      const { stock, purchaseDate, shares } = stockInfo;
+      const history = histories.find((h) => h.symbol === stock.ticker);
       if (!history) {
         return;
       }
 
-      const dividendMap = calculateDividendPayments(stockInfo, history.dividends, exchangeRate);
+      const dividendMap = new Map<string, number>();
+
+      if (history.dividends && history.dividends.length > 0) {
+        history.dividends
+          .filter(({ date }) => dayjs(date).isAfter(purchaseDate, 'day') || dayjs(date).isSame(purchaseDate, 'day'))
+          .forEach((div) => {
+            const divDate = dayjs(div.date);
+            const dateStr = divDate.format('YYYY-MM-DD');
+
+            // 매수월에는 배당을 받지 못하여 0원 처리
+            if (divDate.format('YYYY-MM') === purchaseDate.format('YYYY-MM')) {
+              dividendMap.set(dateStr, 0);
+              return;
+            }
+
+            // 실제 배당금 계산: (주당 배당금 * 보유 수량) * (1 - 세율)
+            // USD 종목이면 KRW로 환산
+            const dividendPerShare = convertToKRW(div.amount, stock.currency, exchangeRate);
+            const afterTaxDividend = dividendPerShare * shares * (1 - DIVIDEND_TAX_RATE);
+
+            dividendMap.set(dateStr, afterTaxDividend);
+          });
+      }
 
       // 날짜별로 배당금 누적
       dividendMap.forEach((amount, date) => {
