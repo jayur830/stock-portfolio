@@ -8,7 +8,7 @@ export interface Stock {
   /** 주가 */
   price: number;
   /** 통화 */
-  currency: string;
+  currency: 'KRW' | 'USD';
   /** 배당 지급 월 */
   dividendMonths: number[];
   /** 배당률 */

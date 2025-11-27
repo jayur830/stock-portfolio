@@ -16,7 +16,7 @@ export function cn(...inputs: ClassValue[]) {
 export function setSearchParams(pathname: string, params: { [key: string]: string | number | boolean | null | undefined }) {
   const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, value]) => value != null && value !== ''));
   const qs = new URLSearchParams(filteredParams as any);
-  window.history.replaceState({}, '', `${pathname}${qs ? `?${qs}` : ''}`);
+  window.history.replaceState({}, '', `${pathname === '/' ? '' : pathname}${qs ? `?${qs}` : ''}`);
 }
 
 /** 국내 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
@@ -84,7 +84,7 @@ export function convertToKRW(
   /** 금액 */
   amount: number,
   /** 통화 */
-  currency: string,
+  currency: Stock['currency'],
   /** 환율 */
   exchangeRate: number,
 ): number {
@@ -103,7 +103,7 @@ export function calculateStockAnnualDividend(
   const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
   const shares = investmentAmount / priceInKRW;
   const dividendPerShare = priceInKRW * (stock.yield / 100);
-  return shares * dividendPerShare;
+  return Math.floor(shares * dividendPerShare);
 }
 
 /** 단일 종목의 월별 배당금 계산 */
@@ -121,7 +121,7 @@ export function calculateStockMonthlyDividends(
   const taxRate = stock.currency === 'USD' ? FOREIGN_DIVIDEND_TAX_RATE : DIVIDEND_TAX_RATE;
 
   return stock.dividendMonths.reduce((acc, month) => {
-    acc[month] = (annualDividend / stock.dividendMonths.length) * (1 - taxRate);
+    acc[month] = +((annualDividend / stock.dividendMonths.length) * (1 - taxRate)).toFixed(2);
     return acc;
   }, {} as Record<number, number>);
 }
@@ -131,13 +131,15 @@ export function mergeMonthlyDividends(
   /** 종목별 월별 배당금 */
   stockDividends: Array<{ monthlyDividends: Record<number, number> }>,
 ): number[] {
-  return stockDividends.reduce((acc, { monthlyDividends }) => {
+  return stockDividends
+    .reduce((acc, { monthlyDividends }) => {
     /** reduce로 리팩토링 */
-    Object.entries(monthlyDividends).forEach(([month, amount]) => {
-      acc[Number(month) - 1] += amount;
-    });
-    return acc;
-  }, Array(12).fill(0) as number[]);
+      Object.entries(monthlyDividends).forEach(([month, amount]) => {
+        acc[Number(month) - 1] += amount;
+      });
+      return acc;
+    }, Array(12).fill(0) as number[])
+    .map((value) => +value.toFixed(2));
 }
 
 /**
@@ -168,15 +170,30 @@ export function calculateComprehensiveTax(
 
   /** 2,000만원 초과분 */
   const excessIncome = annualDividendIncome - SEPARATE_TAX_THRESHOLD;
+
+  /** 초과분 중 국내/해외 배당 비율로 구분 */
+  const domesticRatio = domesticDividendIncome / annualDividendIncome;
+  const domesticExcess = excessIncome * domesticRatio;
+  const foreignExcess = excessIncome * (1 - domesticRatio);
+
+  /** 배당세액공제: 국내 배당만 Gross-up (11% 가산) */
+  const grossUpDomestic = domesticExcess * 1.11;
+
+  /** 종합과세 과세표준 = Gross-up 국내 배당 + 해외 배당 */
+  const comprehensiveIncome = grossUpDomestic + foreignExcess;
+
   /** 누진세율 구간 찾기 */
-  const bracket = TAX_BRACKETS.find((b) => excessIncome <= b.limit)!;
-  /** 소득세 = 초과분 * 세율 - 누진공제 */
-  const incomeTax = excessIncome * bracket.rate - bracket.deduction;
+  const bracket = TAX_BRACKETS.find((b) => comprehensiveIncome <= b.limit)!;
+  /** 소득세 = 과세표준 * 세율 - 누진공제 */
+  const incomeTax = comprehensiveIncome * bracket.rate - bracket.deduction;
   /** 지방소득세 = 소득세 * 지방소득세율 (10%) */
   const localTax = incomeTax * 0.1;
 
-  /** 총 세액 = 분리과세분 + 종합과세분(소득세 + 지방소득세) */
-  const totalTax = separateTax + incomeTax + localTax;
+  /** 배당세액공제 = Gross-up 금액 * 15% (일반기업 기준) */
+  const dividendTaxCredit = grossUpDomestic * 0.15;
+
+  /** 총 세액 = 분리과세분 + 종합과세분(소득세 + 지방소득세) - 배당세액공제 */
+  const totalTax = separateTax + incomeTax + localTax - dividendTaxCredit;
 
   /** 외국납부세액공제: 해외에서 이미 낸 세금 중 공제 가능한 금액 */
   /** 공제한도 = (해외소득 / 총소득) * 산출세액 */
@@ -185,5 +202,5 @@ export function calculateComprehensiveTax(
   const foreignTaxCredit = Math.min(foreignWithheldTax, foreignTaxCreditLimit);
 
   /** 추가 납부세액 = 총 세액 - 이미 원천징수된 세액 - 외국납부세액공제 */
-  return totalTax - totalWithheldTax - foreignTaxCredit;
+  return Math.round(totalTax - totalWithheldTax - foreignTaxCredit);
 }
