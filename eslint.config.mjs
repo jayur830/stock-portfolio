@@ -125,7 +125,7 @@ const eslintConfig = [
       '@stylistic/no-whitespace-before-property': 'error',
       '@stylistic/object-curly-newline': 'error',
       '@stylistic/object-curly-spacing': ['error', 'always'],
-      '@stylistic/object-property-newline': 'error',
+      // '@stylistic/object-property-newline': 'error',
       '@stylistic/operator-linebreak': ['error', 'none'],
       '@stylistic/padded-blocks': ['error', 'never'],
       '@stylistic/quote-props': ['error', 'as-needed'],
