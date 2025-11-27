@@ -85,41 +85,13 @@ const calculateDividendPayments = (
 
 /** 기간 옵션 */
 const periodOptions: TimePeriodOption[] = [
-  {
-    value: '1M',
-    label: '1개월',
-    months: 1,
-  },
-  {
-    value: '3M',
-    label: '3개월',
-    months: 3,
-  },
-  {
-    value: '6M',
-    label: '6개월',
-    months: 6,
-  },
-  {
-    value: '1Y',
-    label: '1년',
-    months: 12,
-  },
-  {
-    value: '3Y',
-    label: '3년',
-    months: 36,
-  },
-  {
-    value: '5Y',
-    label: '5년',
-    months: 60,
-  },
-  {
-    value: '10Y',
-    label: '10년',
-    months: 120,
-  },
+  { value: '1M', label: '1개월', months: 1 },
+  { value: '3M', label: '3개월', months: 3 },
+  { value: '6M', label: '6개월', months: 6 },
+  { value: '1Y', label: '1년', months: 12 },
+  { value: '3Y', label: '3년', months: 36 },
+  { value: '5Y', label: '5년', months: 60 },
+  { value: '10Y', label: '10년', months: 120 },
 ];
 
 const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {

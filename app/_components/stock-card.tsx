@@ -371,22 +371,10 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           </div>
           <div className="flex flex-wrap gap-1 md:ml-[100px]">
             {[
-              {
-                label: '1년 전',
-                months: 12,
-              },
-              {
-                label: '6개월 전',
-                months: 6,
-              },
-              {
-                label: '3개월 전',
-                months: 3,
-              },
-              {
-                label: '1개월 전',
-                months: 1,
-              },
+              { label: '1년 전', months: 12 },
+              { label: '6개월 전', months: 6 },
+              { label: '3개월 전', months: 3 },
+              { label: '1개월 전', months: 1 },
             ].map(({ label, months }) => (
               <Button
                 className="h-7 text-xs"
@@ -488,7 +476,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           </div>
         </div>
         <div className="flex flex-col md:flex-row md:items-center gap-2">
-          <label className="text-xs md:text-sm font-medium whitespace-nowrap">배당률</label>
+          <label className="text-xs md:text-sm font-medium whitespace-nowrap">연 배당률</label>
           <div className="flex items-center gap-2 flex-1 md:max-w-[180px]">
             <Input
               className="flex-1"
@@ -500,7 +488,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   } : s)),
                 );
               }}
-              placeholder="배당률"
+              placeholder="3.00"
               step="any"
               type="number"
               value={stock.yield || ''}
