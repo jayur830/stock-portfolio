@@ -207,9 +207,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         containLabel: true,
       },
     };
-  }, [
-    histories, stocks, exchangeRate, selectedPeriod, periodOptions,
-  ]);
+  }, [histories, stocks, exchangeRate, selectedPeriod]);
 
   /** 2. 수익금 차트 (매수일 기준) */
   const profitChartOption = useMemo(() => {
