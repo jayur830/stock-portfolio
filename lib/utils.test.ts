@@ -129,6 +129,22 @@ describe('@/lib/utils', () => {
 
   /** {@link calculateStockMonthlyDividends} */
   it('calculateStockMonthlyDividends()', () => {
+    expect(
+      calculateStockMonthlyDividends(
+        {
+          name: 'AST SpaceMobile, Inc.',
+          ticker: 'ASTS',
+          currency: 'USD',
+          dividendMonths: [],
+          price: 55.52,
+          yield: 0,
+          ratio: 1,
+          purchaseDate: dayjs('2024-01-01'),
+        },
+        10000,
+      ),
+    ).toEqual({});
+
     expect(calculateStockMonthlyDividends(TQQQ, 10000)).toEqual({
       3: 2125,
       6: 2125,
