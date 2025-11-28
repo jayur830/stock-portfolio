@@ -105,15 +105,15 @@ function PageContent() {
       const data = await response.json();
       // KRW 기준으로 다른 통화의 환율을 계산 (1 외화 = X KRW)
       return {
-        USD: 1 / data.rates.USD,
-        EUR: 1 / data.rates.EUR,
-        JPY: 1 / data.rates.JPY,
-        GBP: 1 / data.rates.GBP,
-        CNY: 1 / data.rates.CNY,
-        AUD: 1 / data.rates.AUD,
-        CAD: 1 / data.rates.CAD,
-        CHF: 1 / data.rates.CHF,
-        HKD: 1 / data.rates.HKD,
+        USD: +(1 / data.rates.USD).toFixed(2),
+        EUR: +(1 / data.rates.EUR).toFixed(2),
+        JPY: +(1 / data.rates.JPY).toFixed(2),
+        GBP: +(1 / data.rates.GBP).toFixed(2),
+        CNY: +(1 / data.rates.CNY).toFixed(2),
+        AUD: +(1 / data.rates.AUD).toFixed(2),
+        CAD: +(1 / data.rates.CAD).toFixed(2),
+        CHF: +(1 / data.rates.CHF).toFixed(2),
+        HKD: +(1 / data.rates.HKD).toFixed(2),
       } as { [key: string]: number };
     },
     staleTime: 1000 * 60 * 60, // 1시간
