@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     const startDate = new Date();
     startDate.setFullYear(startDate.getFullYear() - 5); // 5년치 데이터 조회
 
-    const historyData = await Promise.all(
+    const histories = await Promise.all(
       symbols.map(async (symbol: string) => {
         try {
           // 주가 히스토리 조회
@@ -23,12 +23,11 @@ export async function POST(request: NextRequest) {
             period2: endDate,
             interval: '1d',
           });
+          const data = history.map((item) => ({
+            date: item.date,
+            close: item.close,
+          }));
 
-          // 배당 히스토리 조회
-          let dividendHistory: Array<{
-            date: Date;
-            amount: number,
-          }> = [];
           try {
             const dividends = await yahooFinance.historical(symbol, {
               period1: startDate,
@@ -36,23 +35,23 @@ export async function POST(request: NextRequest) {
               events: 'dividends',
             });
 
-            dividendHistory = dividends.map((item) => ({
-              date: item.date,
-              amount: item.dividends || 0,
-            }));
+            return {
+              symbol,
+              data,
+              dividends: dividends.map((item) => ({
+                date: item.date,
+                amount: item.dividends || 0,
+              })),
+            };
           } catch (divError) {
             console.warn(`Failed to fetch dividend history for ${symbol}:`, divError);
             // 배당 정보가 없어도 계속 진행
+            return {
+              symbol,
+              data,
+              dividends: [],
+            };
           }
-
-          return {
-            symbol,
-            data: history.map((item) => ({
-              date: item.date,
-              close: item.close,
-            })),
-            dividends: dividendHistory,
-          };
         } catch (error) {
           console.error(`Failed to fetch history for ${symbol}:`, error);
           return {
@@ -65,7 +64,7 @@ export async function POST(request: NextRequest) {
       }),
     );
 
-    return NextResponse.json({ histories: historyData });
+    return NextResponse.json({ histories });
   } catch (error) {
     console.error('Stock history error:', error);
     return NextResponse.json({

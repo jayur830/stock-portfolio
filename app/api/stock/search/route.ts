@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     });
 
     const quotes = searchResults.quotes
-      ?.filter((quote) => quote.quoteType === 'EQUITY' || quote.quoteType === 'ETF')
+      .filter((quote) => quote.quoteType === 'EQUITY' || quote.quoteType === 'ETF')
       .map((quote) => ({
         symbol: quote.symbol,
         shortname: quote.shortname || quote.longname || quote.symbol,

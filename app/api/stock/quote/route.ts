@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     const startDate = new Date();
     startDate.setFullYear(startDate.getFullYear() - 1);
 
-    let dividendMonths: number[] = [];
+    const dividendMonths: number[] = [];
     let annualDividend = 0;
 
     try {
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         const months = new Set(
           dividendHistory.map((div) => new Date(div.date).getMonth() + 1),
         );
-        dividendMonths = Array.from(months).sort((a, b) => a - b);
+        dividendMonths.push(...Array.from(months).sort((a, b) => a - b));
 
         // 연간 배당금 계산 (최근 1년간 실제 지급된 배당금의 총합)
         annualDividend = dividendHistory.reduce((sum, div) => sum + (div.dividends || 0), 0);
