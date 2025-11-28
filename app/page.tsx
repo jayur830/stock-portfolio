@@ -340,7 +340,7 @@ function PageContent() {
             'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
           ];
           return (
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
               {currencies.map((currency) => (
                 <div className="flex flex-col gap-1.5" key={currency}>
                   <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
