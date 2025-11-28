@@ -95,7 +95,7 @@ export function calculateStockMonthlyDividends(
   }
 
   /** 통화에 따라 세율 선택 */
-  const taxRate = stock.currency === 'USD' ? FOREIGN_DIVIDEND_TAX_RATE : DIVIDEND_TAX_RATE;
+  const taxRate = stock.currency !== 'KRW' ? FOREIGN_DIVIDEND_TAX_RATE : DIVIDEND_TAX_RATE;
 
   return stock.dividendMonths.reduce((acc, month) => {
     acc[month] = +((annualDividend / stock.dividendMonths.length) * (1 - taxRate)).toFixed(2);
