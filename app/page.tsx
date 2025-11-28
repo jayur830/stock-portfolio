@@ -34,7 +34,7 @@ function PageContent() {
     defaultValues: {
       totalInvestment: +(searchParams.get('totalInvestment') || '0'),
       targetAnnualDividend: +(searchParams.get('targetAnnualDividend') || '0'),
-      exchangeRate: 0,
+      exchangeRates: {},
       stocks: [],
     },
   });
@@ -87,7 +87,7 @@ function PageContent() {
   /** 차트에 전달할 계산 시점의 값들 */
   const [chartData, setChartData] = useState<{
     totalInvestment: number;
-    exchangeRate: number;
+    exchangeRates: { [key: string]: number };
     stocks: any[];
   } | null>(null);
 
@@ -96,14 +96,25 @@ function PageContent() {
 
   /** 환율 조회 */
   const { data: exchangeRateData, isLoading: loadingExchangeRate, refetch: refetchExchangeRate } = useQuery({
-    queryKey: ['exchangeRate'],
+    queryKey: ['exchangeRates'],
     async queryFn() {
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/KRW');
       if (!response.ok) {
         throw new Error('환율 조회에 실패했습니다.');
       }
       const data = await response.json();
-      return data.rates.KRW as number;
+      // KRW 기준으로 다른 통화의 환율을 계산 (1 외화 = X KRW)
+      return {
+        USD: 1 / data.rates.USD,
+        EUR: 1 / data.rates.EUR,
+        JPY: 1 / data.rates.JPY,
+        GBP: 1 / data.rates.GBP,
+        CNY: 1 / data.rates.CNY,
+        AUD: 1 / data.rates.AUD,
+        CAD: 1 / data.rates.CAD,
+        CHF: 1 / data.rates.CHF,
+        HKD: 1 / data.rates.HKD,
+      } as { [key: string]: number };
     },
     staleTime: 1000 * 60 * 60, // 1시간
   });
@@ -111,7 +122,7 @@ function PageContent() {
   /** 환율 데이터가 변경되면 폼에 반영 */
   useEffect(() => {
     if (exchangeRateData) {
-      setValue('exchangeRate', exchangeRateData);
+      setValue('exchangeRates', exchangeRateData);
     }
   }, [exchangeRateData, setValue]);
 
@@ -119,7 +130,7 @@ function PageContent() {
   const handleFetchExchangeRate = useCallback(async () => {
     const result = await refetchExchangeRate();
     if (result.data) {
-      setValue('exchangeRate', result.data);
+      setValue('exchangeRates', result.data);
     }
   }, [refetchExchangeRate, setValue]);
 
@@ -138,11 +149,20 @@ function PageContent() {
       return '목표 연 배당금을 입력해주세요.';
     }
 
-    /** 해외주식 여부 */
-    const hasUsdStock = data.stocks.some((stock) => stock.currency === 'USD');
+    /** 외화 종목이 있는지 확인 */
+    const foreignCurrencies = data.stocks
+      .map((stock) => stock.currency)
+      .filter((currency) => currency !== 'KRW');
+    const uniqueForeignCurrencies = Array.from(new Set(foreignCurrencies));
+
     /** 환율 조회 여부 */
-    if (hasUsdStock && (!data.exchangeRate || data.exchangeRate <= 0)) {
-      return 'USD 항목이 있습니다. 환율을 먼저 조회해주세요.';
+    if (uniqueForeignCurrencies.length > 0) {
+      const missingRates = uniqueForeignCurrencies.filter(
+        (currency) => !data.exchangeRates || !data.exchangeRates[currency] || data.exchangeRates[currency] <= 0,
+      );
+      if (missingRates.length > 0) {
+        return `${missingRates.join(', ')} 통화의 환율을 먼저 조회해주세요.`;
+      }
     }
 
     return null;
@@ -154,13 +174,13 @@ function PageContent() {
       /** 종목별 투자금 */
       const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
       /** 종목별 연 배당금 */
-      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRate);
+      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       /** 종목별 월별 배당금 */
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
       return {
         annualDividend,
         monthlyDividends,
-        isForeign: stock.currency === 'USD',
+        isForeign: stock.currency !== 'KRW',
       };
     });
 
@@ -179,7 +199,7 @@ function PageContent() {
     setRequiredInvestment(null);
     setChartData({
       totalInvestment: data.totalInvestment,
-      exchangeRate: data.exchangeRate,
+      exchangeRates: data.exchangeRates,
       stocks: data.stocks,
     });
   }, []);
@@ -196,12 +216,12 @@ function PageContent() {
 
     const stockDividends = data.stocks.map((stock) => {
       const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
-      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRate);
+      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
       return {
         annualDividend,
         monthlyDividends,
-        isForeign: stock.currency === 'USD',
+        isForeign: stock.currency !== 'KRW',
       };
     });
 
@@ -218,7 +238,7 @@ function PageContent() {
     setAnnualDividend(null);
     setChartData({
       totalInvestment: requiredInvestmentAmount,
-      exchangeRate: data.exchangeRate,
+      exchangeRates: data.exchangeRates,
       stocks: data.stocks,
     });
   }, []);
@@ -300,32 +320,51 @@ function PageContent() {
             <TabsTrigger value="investment">투자금 계산</TabsTrigger>
           </TabsList>
         </Tabs>
-        <div className="flex w-full md:w-[200px] items-center gap-2">
-          <Button
-            disabled={loadingExchangeRate}
-            onClick={handleFetchExchangeRate}
-            size="sm"
-            type="button"
-            variant="outline"
-          >
-            {loadingExchangeRate ? '조회 중...' : '환율 조회'}
-          </Button>
-          <Controller
-            control={control}
-            name="exchangeRate"
-            render={({ field: { onChange, value, ...field } }) => (
-              <Input
-                aria-label="환율"
-                placeholder="환율"
-                step="any"
-                type="number"
-                {...field}
-                onChange={(e) => onChange(e.target.valueAsNumber)}
-                value={value || ''}
-              />
-            )}
-          />
-        </div>
+        <Button
+          className="w-full md:w-auto"
+          disabled={loadingExchangeRate}
+          onClick={handleFetchExchangeRate}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          {loadingExchangeRate ? '조회 중...' : '환율 조회'}
+        </Button>
+      </div>
+
+      <Controller
+        control={control}
+        name="exchangeRates"
+        render={({ field: { onChange, value: exchangeRates } }) => {
+          const currencies = [
+            'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
+          ];
+          return (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              {currencies.map((currency) => (
+                <div className="flex flex-col gap-1.5" key={currency}>
+                  <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
+                  <Input
+                    onChange={(e) => {
+                      const newValue = e.target.valueAsNumber;
+                      onChange({
+                        ...exchangeRates,
+                        [currency]: isNaN(newValue) ? 0 : newValue,
+                      });
+                    }}
+                    placeholder="0"
+                    step="any"
+                    type="number"
+                    value={exchangeRates?.[currency as keyof typeof exchangeRates] || ''}
+                  />
+                </div>
+              ))}
+            </div>
+          );
+        }}
+      />
+      <div className="flex flex-col md:flex-row items-center gap-4">
+        <div className="hidden" />
       </div>
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2 p-4 bg-muted rounded-lg">
@@ -493,7 +532,7 @@ function PageContent() {
               {chartData && chartData.stocks.length > 0 && (
                 <div className="flex flex-col gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
                   <h3 className="text-sm font-semibold text-green-900">종목별 보유 수량</h3>
-                  <QuantityPerStock exchangeRate={chartData.exchangeRate} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
+                  <QuantityPerStock exchangeRates={chartData.exchangeRates} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
                 </div>
               )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -630,7 +669,7 @@ function PageContent() {
               {chartData && chartData.stocks.length > 0 && (
                 <div className="flex flex-col gap-2 p-4 bg-purple-50 border border-purple-200 rounded-lg">
                   <h3 className="text-sm font-semibold text-purple-900">종목별 보유 수량</h3>
-                  <QuantityPerStock exchangeRate={chartData.exchangeRate} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
+                  <QuantityPerStock exchangeRates={chartData.exchangeRates} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
                 </div>
               )}
               <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -777,7 +816,7 @@ function PageContent() {
           )}
           {(annualDividend != null || requiredInvestment != null) && chartData && chartData.stocks.length > 0 && (
             <StockCharts
-              exchangeRate={chartData.exchangeRate}
+              exchangeRates={chartData.exchangeRates}
               stocks={chartData.stocks}
               totalInvestment={chartData.totalInvestment}
             />

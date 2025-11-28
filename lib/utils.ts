@@ -53,10 +53,19 @@ export function convertToKRW(
   amount: number,
   /** 통화 */
   currency: Stock['currency'],
-  /** 환율 */
-  exchangeRate: number,
+  /** 환율 정보 */
+  exchangeRates: { [key: string]: number },
 ): number {
-  return currency === 'USD' ? amount * exchangeRate : amount;
+  if (currency === 'KRW') {
+    return amount;
+  }
+
+  const rate = exchangeRates[currency];
+  if (!rate || rate <= 0) {
+    return 0;
+  }
+
+  return amount * rate;
 }
 
 /** 단일 종목의 연 배당금 계산 */
@@ -65,10 +74,10 @@ export function calculateStockAnnualDividend(
   stock: Stock,
   /** 투자금 */
   investmentAmount: number,
-  /** 환율 */
-  exchangeRate: number,
+  /** 환율 정보 */
+  exchangeRates: { [key: string]: number },
 ): number {
-  const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
+  const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRates);
   const shares = investmentAmount / priceInKRW;
   const dividendPerShare = priceInKRW * (stock.yield / 100);
   return Math.floor(shares * dividendPerShare);
