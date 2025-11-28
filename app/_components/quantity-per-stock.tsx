@@ -4,16 +4,16 @@ import type { Stock } from '@/types';
 export interface QuantityPerStockProps {
   stocks: Stock[];
   totalInvestment: number;
-  exchangeRate: number;
+  exchangeRates: { [key: string]: number };
 }
 
 /** 종목별 보유 수량 */
-export default function QuantityPerStock({ stocks, totalInvestment, exchangeRate }: QuantityPerStockProps) {
+export default function QuantityPerStock({ stocks, totalInvestment, exchangeRates }: QuantityPerStockProps) {
   return (
     <div className="grid md:grid-cols-2 grid-cols-1 gap-2">
       {stocks.map((stock, index) => {
         const investmentAmount = (totalInvestment * (stock.ratio || 0)) / 100;
-        const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRate);
+        const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRates);
         const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
         return (
           <div

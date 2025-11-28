@@ -12,7 +12,7 @@ import type { Stock } from '@/types';
 interface StockChartsProps {
   stocks: Stock[];
   totalInvestment: number;
-  exchangeRate: number;
+  exchangeRates: { [key: string]: number };
 }
 
 type TimePeriod = '1M' | '3M' | '6M' | '1Y' | '3Y' | '5Y' | '10Y';
@@ -35,15 +35,6 @@ interface HistoryData {
   }[];
 }
 
-/** 종목별 매수 정보 */
-interface StockPurchaseInfo {
-  stock: Stock;
-  purchaseDate: dayjs.Dayjs;
-  purchasePriceInKRW: number;
-  shares: number;
-  priceMap: Map<string, number>;
-}
-
 /** 기간 옵션 */
 const periodOptions: TimePeriodOption[] = [
   { value: '1M', label: '1개월', months: 1 },
@@ -55,7 +46,7 @@ const periodOptions: TimePeriodOption[] = [
   { value: '10Y', label: '10년', months: 120 },
 ];
 
-const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps) => {
+const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProps) => {
   /** 기간 필터 상태 */
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>('1Y');
 
@@ -114,8 +105,8 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           return null;
         }
 
-        /** USD 종목이면 KRW로 환산 */
-        return stock ? convertToKRW(price, stock.currency, exchangeRate) : price;
+        /** 외화 종목이면 KRW로 환산 */
+        return stock ? convertToKRW(price, stock.currency, exchangeRates) : price;
       });
 
       return {
@@ -168,7 +159,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         containLabel: true,
       },
     };
-  }, [histories, stocks, exchangeRate, selectedPeriod]);
+  }, [histories, stocks, exchangeRates, selectedPeriod]);
 
   /** 2. 수익금 차트 (매수일 기준) */
   const profitChartOption = useMemo(() => {
@@ -207,7 +198,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         // 매수일 이후의 첫 가격 찾기
         const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'))!;
 
-        const purchasePriceInKRW = convertToKRW(purchaseDataPoint.close, stock.currency, exchangeRate);
+        const purchasePriceInKRW = convertToKRW(purchaseDataPoint.close, stock.currency, exchangeRates);
         const investmentAmount = (totalInvestment * stock.ratio) / 100;
         const shares = investmentAmount / purchasePriceInKRW;
 
@@ -232,7 +223,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
           /** 매수일 이후의 데이터만 필터링 */
           .filter(([date]) => dayjs(date).isSame(purchaseDate, 'day') || dayjs(date).isAfter(purchaseDate, 'day'))
           .map(([date, p]) => {
-            const price = convertToKRW(p, currency, exchangeRate);
+            const price = convertToKRW(p, currency, exchangeRates);
             return {
               date,
               /** (가격 - 매수일 가격) * 보유수량 */
@@ -276,7 +267,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
 
             // 실제 배당금 계산: (주당 배당금 * 보유 수량) * (1 - 세율)
             // USD 종목이면 KRW로 환산
-            const dividendPerShare = convertToKRW(div.amount, stock.currency, exchangeRate);
+            const dividendPerShare = convertToKRW(div.amount, stock.currency, exchangeRates);
             const afterTaxDividend = dividendPerShare * shares * (1 - DIVIDEND_TAX_RATE);
 
             dividendMap.set(dateStr, afterTaxDividend);
@@ -472,7 +463,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRate }: StockChartsProps
         containLabel: true,
       },
     };
-  }, [histories, stocks, totalInvestment, exchangeRate]);
+  }, [histories, stocks, totalInvestment, exchangeRates]);
 
   if (isLoading) {
     return (

@@ -57,32 +57,44 @@ describe('@/lib/utils', () => {
   /** {@link convertToKRW} */
   it('convertToKRW()', () => {
     // KRW - 환율 무관하게 원래 금액 반환
-    expect(convertToKRW(1000, 'KRW', 1)).toBe(1000);
-    expect(convertToKRW(1000, 'KRW', 1300)).toBe(1000);
+    expect(convertToKRW(1000, 'KRW', { USD: 1 })).toBe(1000);
+    expect(convertToKRW(1000, 'KRW', { USD: 1300 })).toBe(1000);
 
     // USD - 환율 적용
-    expect(convertToKRW(1000, 'USD', 1)).toBe(1000);
-    expect(convertToKRW(1000, 'USD', 1.2)).toBe(1200);
-    expect(convertToKRW(100, 'USD', 1300)).toBe(130000);
-    expect(convertToKRW(50.5, 'USD', 1300)).toBe(65650);
+    expect(convertToKRW(1000, 'USD', { USD: 1 })).toBe(1000);
+    expect(convertToKRW(1000, 'USD', { USD: 1.2 })).toBe(1200);
+    expect(convertToKRW(100, 'USD', { USD: 1300 })).toBe(130000);
+    expect(convertToKRW(50.5, 'USD', { USD: 1300 })).toBe(65650);
 
     // 환율이 1보다 작은 경우
-    expect(convertToKRW(1000, 'USD', 0.5)).toBe(500);
+    expect(convertToKRW(1000, 'USD', { USD: 0.5 })).toBe(500);
 
     // 환율이 0인 경우
-    expect(convertToKRW(1000, 'USD', 0)).toBe(0);
+    expect(convertToKRW(1000, 'USD', { USD: 0 })).toBe(0);
 
     // 금액이 0인 경우
-    expect(convertToKRW(0, 'USD', 1300)).toBe(0);
-    expect(convertToKRW(0, 'KRW', 1)).toBe(0);
+    expect(convertToKRW(0, 'USD', { USD: 1300 })).toBe(0);
+    expect(convertToKRW(0, 'KRW', { USD: 1 })).toBe(0);
 
     // 소수점이 있는 금액
-    expect(convertToKRW(123.45, 'USD', 1300)).toBe(160485);
-    expect(convertToKRW(99.99, 'KRW', 1)).toBe(99.99);
+    expect(convertToKRW(123.45, 'USD', { USD: 1300 })).toBe(160485);
+    expect(convertToKRW(99.99, 'KRW', { USD: 1 })).toBe(99.99);
 
     // 매우 큰 금액
-    expect(convertToKRW(1000000, 'USD', 1300)).toBe(1300000000);
-    expect(convertToKRW(1000000, 'KRW', 1)).toBe(1000000);
+    expect(convertToKRW(1000000, 'USD', { USD: 1300 })).toBe(1300000000);
+    expect(convertToKRW(1000000, 'KRW', { USD: 1 })).toBe(1000000);
+
+    // EUR - 유로 환율 적용
+    expect(convertToKRW(100, 'EUR', { EUR: 1400 })).toBe(140000);
+    expect(convertToKRW(50.25, 'EUR', { EUR: 1400 })).toBe(70350);
+
+    // JPY - 엔화 환율 적용 (일반적으로 낮은 환율)
+    expect(convertToKRW(1000, 'JPY', { JPY: 9.5 })).toBe(9500);
+    expect(convertToKRW(10000, 'JPY', { JPY: 9.5 })).toBe(95000);
+
+    // 환율 정보가 없는 경우
+    expect(convertToKRW(1000, 'USD', {})).toBe(0);
+    expect(convertToKRW(1000, 'EUR', { USD: 1300 })).toBe(0);
   });
 
   const TQQQ: Stock = {
@@ -122,9 +134,9 @@ describe('@/lib/utils', () => {
 
   /** {@link calculateStockAnnualDividend} */
   it('calculateStockAnnualDividend()', () => {
-    expect(calculateStockAnnualDividend(TQQQ, 10000, 1)).toBe(250);
-    expect(calculateStockAnnualDividend(JEPQ, 10000, 1)).toBe(1020);
-    expect(calculateStockAnnualDividend(SGOV, 10000, 1.2)).toBe(420);
+    expect(calculateStockAnnualDividend(TQQQ, 10000, { USD: 1 })).toBe(250);
+    expect(calculateStockAnnualDividend(JEPQ, 10000, { USD: 1 })).toBe(1020);
+    expect(calculateStockAnnualDividend(SGOV, 10000, { USD: 1.2 })).toBe(420);
   });
 
   /** {@link calculateStockMonthlyDividends} */
@@ -263,9 +275,9 @@ describe('@/lib/utils', () => {
     ]);
 
     /** 실제 Stock 데이터 활용 */
-    const tqqqMonthly = calculateStockMonthlyDividends(TQQQ, calculateStockAnnualDividend(TQQQ, 10000, 1));
-    const jepqMonthly = calculateStockMonthlyDividends(JEPQ, calculateStockAnnualDividend(JEPQ, 10000, 1));
-    const sgovMonthly = calculateStockMonthlyDividends(SGOV, calculateStockAnnualDividend(SGOV, 10000, 1.2));
+    const tqqqMonthly = calculateStockMonthlyDividends(TQQQ, calculateStockAnnualDividend(TQQQ, 10000, { USD: 1 }));
+    const jepqMonthly = calculateStockMonthlyDividends(JEPQ, calculateStockAnnualDividend(JEPQ, 10000, { USD: 1 }));
+    const sgovMonthly = calculateStockMonthlyDividends(SGOV, calculateStockAnnualDividend(SGOV, 10000, { USD: 1.2 }));
 
     /** 실제 계산된 값 사용 */
     const merged = mergeMonthlyDividends([

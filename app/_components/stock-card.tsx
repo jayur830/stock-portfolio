@@ -257,10 +257,10 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">통화</span>
           <Controller
             control={control}
-            name="exchangeRate"
-            render={({ field: { value: exchangeRate } }) => (
+            name="exchangeRates"
+            render={({ field: { value: exchangeRates } }) => (
               <Select
-                onValueChange={(newCurrency) => {
+                onValueChange={(newCurrency: any) => {
                   onChangeStocks(
                     stocks.map((s, i) => {
                       if (i !== index) {
@@ -272,11 +272,19 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                       let newPrice = currentPrice;
 
                       // 통화 변경 시 주가 환산
-                      if (oldCurrency !== newCurrency && exchangeRate > 0 && currentPrice > 0) {
-                        if (oldCurrency === 'KRW' && newCurrency === 'USD') {
-                          newPrice = currentPrice / exchangeRate;
-                        } else if (oldCurrency === 'USD' && newCurrency === 'KRW') {
-                          newPrice = currentPrice * exchangeRate;
+                      if (oldCurrency !== newCurrency && currentPrice > 0 && exchangeRates) {
+                        const oldRate = exchangeRates[oldCurrency as keyof typeof exchangeRates];
+                        const newRate = exchangeRates[newCurrency as keyof typeof exchangeRates];
+
+                        if (oldCurrency === 'KRW' && newRate && newRate > 0) {
+                          // KRW -> 외화
+                          newPrice = currentPrice / newRate;
+                        } else if (newCurrency === 'KRW' && oldRate && oldRate > 0) {
+                          // 외화 -> KRW
+                          newPrice = currentPrice * oldRate;
+                        } else if (oldRate && oldRate > 0 && newRate && newRate > 0) {
+                          // 외화 -> 외화 (KRW를 거쳐서 환산)
+                          newPrice = (currentPrice * oldRate) / newRate;
                         }
                         newPrice = Math.round(newPrice * 100) / 100;
                       }
@@ -297,6 +305,14 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 <SelectContent>
                   <SelectItem value="KRW">KRW</SelectItem>
                   <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="JPY">JPY</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem value="CNY">CNY</SelectItem>
+                  <SelectItem value="AUD">AUD</SelectItem>
+                  <SelectItem value="CAD">CAD</SelectItem>
+                  <SelectItem value="CHF">CHF</SelectItem>
+                  <SelectItem value="HKD">HKD</SelectItem>
                 </SelectContent>
               </Select>
             )}
