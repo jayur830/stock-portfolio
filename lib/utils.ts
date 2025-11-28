@@ -22,8 +22,21 @@ export function setSearchParams(pathname: string, params: { [key: string]: strin
 /** 국내 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
 export const DIVIDEND_TAX_RATE = 0.154;
 
-/** 해외 배당소득세율 (미국 등) 15% */
-export const FOREIGN_DIVIDEND_TAX_RATE = 0.15;
+/** 국가별 배당소득세율 */
+export const FOREIGN_TAX_RATES: { [key: string]: number } = {
+  USD: 0.15, // 미국
+  EUR: 0.26375, // 유럽 (독일 기준, 국가마다 상이)
+  JPY: 0.15315, // 일본
+  GBP: 0.0, // 영국 (배당세 면제)
+  CNY: 0.10, // 중국
+  AUD: 0.0, // 호주 (배당세 면제)
+  CAD: 0.25, // 캐나다
+  CHF: 0.35, // 스위스
+  HKD: 0.0, // 홍콩 (배당세 없음)
+};
+
+/** 해외 배당소득세율 (미국 기준, 하위 호환성) */
+export const FOREIGN_DIVIDEND_TAX_RATE = FOREIGN_TAX_RATES.USD;
 
 /** 분리과세 기준 금액 */
 export const SEPARATE_TAX_THRESHOLD = 20000000; // 2,000만원
@@ -95,7 +108,7 @@ export function calculateStockMonthlyDividends(
   }
 
   /** 통화에 따라 세율 선택 */
-  const taxRate = stock.currency !== 'KRW' ? FOREIGN_DIVIDEND_TAX_RATE : DIVIDEND_TAX_RATE;
+  const taxRate = stock.currency === 'KRW' ? DIVIDEND_TAX_RATE : (FOREIGN_TAX_RATES[stock.currency] ?? FOREIGN_DIVIDEND_TAX_RATE);
 
   return stock.dividendMonths.reduce((acc, month) => {
     acc[month] = +((annualDividend / stock.dividendMonths.length) * (1 - taxRate)).toFixed(2);
@@ -123,11 +136,13 @@ export function mergeMonthlyDividends(
  * 종합소득세 추가 납부세액 계산
  * @param annualDividendIncome 연간 배당소득(세전) - 국내 + 해외 전체
  * @param foreignDividendIncome 해외 배당소득(세전)
+ * @param averageForeignTaxRate 평균 해외 배당소득세율 (가중평균)
  * @returns 추가 납부세액 (양수: 납부, 음수: 환급), null이면 분리과세 종결
  */
 export function calculateComprehensiveTax(
   annualDividendIncome: number,
   foreignDividendIncome: number = 0,
+  averageForeignTaxRate: number = FOREIGN_DIVIDEND_TAX_RATE,
 ): number | null {
   /** 2,000만원 이하면 분리과세로 종결 */
   if (annualDividendIncome <= SEPARATE_TAX_THRESHOLD) {
@@ -139,8 +154,7 @@ export function calculateComprehensiveTax(
 
   /** 이미 원천징수된 세액 */
   const domesticWithheldTax = domesticDividendIncome * DIVIDEND_TAX_RATE; // 국내: 15.4%
-  const foreignWithheldTax = foreignDividendIncome * FOREIGN_DIVIDEND_TAX_RATE; // 해외: 15%
-  const totalWithheldTax = domesticWithheldTax + foreignWithheldTax;
+  const foreignWithheldTax = foreignDividendIncome * averageForeignTaxRate; // 해외: 국가별 세율 (외국납부세액공제 계산용)
 
   /** 2,000만원 이하: 분리과세 선택 (15.4%) */
   const separateTax = SEPARATE_TAX_THRESHOLD * DIVIDEND_TAX_RATE;
@@ -178,6 +192,6 @@ export function calculateComprehensiveTax(
   /** 실제 공제액 = min(해외 납부세액, 공제한도) */
   const foreignTaxCredit = Math.min(foreignWithheldTax, foreignTaxCreditLimit);
 
-  /** 추가 납부세액 = 총 세액 - 이미 원천징수된 세액 - 외국납부세액공제 */
-  return Math.round(totalTax - totalWithheldTax - foreignTaxCredit);
+  /** 추가 납부세액 = 총 세액 - 국내 원천징수 - 외국납부세액공제 */
+  return Math.round(totalTax - domesticWithheldTax - foreignTaxCredit);
 }

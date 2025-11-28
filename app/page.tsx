@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
+import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import CalculateButton from './_components/calculate-button';
@@ -80,6 +80,8 @@ function PageContent() {
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
   /** 해외 연 배당금 */
   const [foreignAnnualDividend, setForeignAnnualDividend] = useState<number>(0);
+  /** 평균 해외 배당소득세율 (가중평균) */
+  const [averageForeignTaxRate, setAverageForeignTaxRate] = useState<number>(0.15);
   /** 필요한 투자금 */
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
   /** 월별 배당금 */
@@ -92,7 +94,7 @@ function PageContent() {
   } | null>(null);
 
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
-  const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignAnnualDividend) : null;
+  const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignAnnualDividend, averageForeignTaxRate) : null;
 
   /** 환율 조회 */
   const { data: exchangeRateData, isLoading: loadingExchangeRate, refetch: refetchExchangeRate } = useQuery({
@@ -177,10 +179,13 @@ function PageContent() {
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       /** 종목별 월별 배당금 */
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
+      /** 종목별 세율 */
+      const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
       return {
         annualDividend,
         monthlyDividends,
         isForeign: stock.currency !== 'KRW',
+        taxRate,
       };
     });
 
@@ -190,11 +195,16 @@ function PageContent() {
     const totalForeignAnnualDividend = stockDividends
       .filter(({ isForeign }) => isForeign)
       .reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+    /** 평균 해외 배당소득세율 (가중평균) */
+    const avgForeignTaxRate = totalForeignAnnualDividend > 0 ? stockDividends
+      .filter(({ isForeign }) => isForeign)
+      .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / totalForeignAnnualDividend : 0.15;
     /** 종목별 월별 배당금 합산 */
     const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
 
     setAnnualDividend(totalAnnualDividend);
     setForeignAnnualDividend(totalForeignAnnualDividend);
+    setAverageForeignTaxRate(avgForeignTaxRate);
     setMonthlyDividends(monthlyDividendArray);
     setRequiredInvestment(null);
     setChartData({
@@ -218,10 +228,13 @@ function PageContent() {
       const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
+      /** 종목별 세율 */
+      const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
       return {
         annualDividend,
         monthlyDividends,
         isForeign: stock.currency !== 'KRW',
+        taxRate,
       };
     });
 
@@ -231,9 +244,14 @@ function PageContent() {
     const totalForeignAnnualDividend = stockDividends
       .filter(({ isForeign }) => isForeign)
       .reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+    /** 평균 해외 배당소득세율 (가중평균) */
+    const avgForeignTaxRate = totalForeignAnnualDividend > 0 ? stockDividends
+      .filter(({ isForeign }) => isForeign)
+      .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / totalForeignAnnualDividend : 0.15;
 
     setRequiredInvestment(requiredInvestmentAmount);
     setForeignAnnualDividend(totalForeignAnnualDividend);
+    setAverageForeignTaxRate(avgForeignTaxRate);
     setMonthlyDividends(monthlyDividendArray);
     setAnnualDividend(null);
     setChartData({
