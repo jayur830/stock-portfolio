@@ -156,16 +156,13 @@ export function calculateComprehensiveTax(
   const domesticWithheldTax = domesticDividendIncome * DIVIDEND_TAX_RATE; // 국내: 15.4%
   const foreignWithheldTax = foreignDividendIncome * averageForeignTaxRate; // 해외: 국가별 세율 (외국납부세액공제 계산용)
 
-  /** 2,000만원 이하: 분리과세 선택 (15.4%) */
-  const separateTax = SEPARATE_TAX_THRESHOLD * DIVIDEND_TAX_RATE;
+  /** 분리과세: 국내 배당 중 2,000만원 이하만 해당 (해외 배당은 무조건 종합과세) */
+  const domesticSeparateTaxIncome = Math.min(domesticDividendIncome, SEPARATE_TAX_THRESHOLD);
+  const separateTax = domesticSeparateTaxIncome * DIVIDEND_TAX_RATE;
 
-  /** 2,000만원 초과분 */
-  const excessIncome = annualDividendIncome - SEPARATE_TAX_THRESHOLD;
-
-  /** 초과분 중 국내/해외 배당 비율로 구분 */
-  const domesticRatio = domesticDividendIncome / annualDividendIncome;
-  const domesticExcess = excessIncome * domesticRatio;
-  const foreignExcess = excessIncome * (1 - domesticRatio);
+  /** 종합과세 대상: 국내 배당 중 2,000만원 초과 + 해외 배당 전액 */
+  const domesticExcess = Math.max(0, domesticDividendIncome - SEPARATE_TAX_THRESHOLD);
+  const foreignExcess = foreignDividendIncome; // 해외 배당은 전액 종합과세
 
   /** 배당세액공제: 국내 배당만 Gross-up (11% 가산) */
   const grossUpDomestic = domesticExcess * 1.11;

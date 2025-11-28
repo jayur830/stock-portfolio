@@ -335,11 +335,11 @@ describe('@/lib/utils', () => {
     expect(calculateComprehensiveTax(100000000)).toBe(-8436000);
 
     /** 국내 + 해외 배당 혼합 */
-    expect(calculateComprehensiveTax(80000000, 40000000)).toBe(-1929900);
-    expect(calculateComprehensiveTax(100000000, 100000000)).toBe(2864000);
+    expect(calculateComprehensiveTax(80000000, 40000000)).toBe(-1242600);
+    expect(calculateComprehensiveTax(100000000, 100000000)).toBe(6516000);
 
     /** 고액 배당 (납부세액 발생) */
     expect(calculateComprehensiveTax(1000000000)).toBe(151837000);
-    expect(calculateComprehensiveTax(1000000000, 1000000000)).toBe(266306000);
+    expect(calculateComprehensiveTax(1000000000, 1000000000)).toBe(272466000);
   });
 });
