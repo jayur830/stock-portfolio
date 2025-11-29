@@ -422,7 +422,7 @@ function PageContent() {
                         className="h-7 text-xs"
                         key={label}
                         onClick={() => {
-                          onChange(current + value);
+                          onChange(isNaN(current) ? value : current + value);
                         }}
                         size="sm"
                         type="button"
@@ -473,7 +473,7 @@ function PageContent() {
                         className="h-7 text-xs"
                         key={label}
                         onClick={() => {
-                          onChange(current + value);
+                          onChange(isNaN(current) ? value : current + value);
                         }}
                         size="sm"
                         type="button"
