@@ -298,13 +298,19 @@ function PageContent() {
   }, [getValues, setValue, append]);
 
   const handleReset = useCallback(() => {
-    reset();
+    const currentExchangeRates = getValues('exchangeRates');
+    reset({
+      totalInvestment: 0,
+      targetAnnualDividend: 0,
+      exchangeRates: currentExchangeRates,
+      stocks: [],
+    });
     setAnnualDividend(null);
     setForeignAnnualDividend(0);
     setRequiredInvestment(null);
     setMonthlyDividends(Array(12).fill(0));
     setChartData(null);
-  }, [reset]);
+  }, [reset, getValues]);
 
   const handleTabChange = useCallback((value: string) => {
     setSearchParams(pathname, { ...searchParamsObject, tab: value });
