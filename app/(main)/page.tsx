@@ -339,33 +339,32 @@ function PageContent() {
     <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col gap-3.5 p-4 overflow-x-hidden">
       <div className="flex flex-col md:flex-row items-center gap-4">
         <Tabs className="flex-1 w-full" onValueChange={handleTabChange} value={activeTab}>
-          <TabsList className="w-full">
+          <TabsList className="w-full sm:w-fit">
             <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
             <TabsTrigger value="investment">투자금 계산</TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button
-          className="w-full md:w-auto"
-          disabled={loadingExchangeRate}
-          onClick={handleFetchExchangeRate}
-          size="sm"
-          type="button"
-          variant="outline"
-        >
-          {loadingExchangeRate ? '조회 중...' : '환율 조회'}
-        </Button>
       </div>
 
+      <Button
+        className="w-full sm:w-fit"
+        disabled={loadingExchangeRate}
+        onClick={handleFetchExchangeRate}
+        size="sm"
+        type="button"
+        variant="outline"
+      >
+        {loadingExchangeRate ? '조회 중...' : '환율 조회'}
+      </Button>
       <Controller
         control={control}
         name="exchangeRates"
         render={({ field: { onChange, value: exchangeRates } }) => {
-          const currencies = [
-            'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
-          ];
           return (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {currencies.map((currency) => (
+              {[
+                'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
+              ].map((currency) => (
                 <div className="flex flex-col gap-1.5" key={currency}>
                   <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
                   <Input
