@@ -7,7 +7,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
-import StockCard from '@/app/_components/stock-card';
+import StockCard from '@/app/(main)/_components/stock-card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -19,7 +19,7 @@ import CalculateButton from './_components/calculate-button';
 import MonthlyDividends from './_components/monthly-dividends';
 import QuantityPerStock from './_components/quantity-per-stock';
 
-const StockCharts = dynamic(() => import('@/app/_components/stock-charts'), {
+const StockCharts = dynamic(() => import('./_components/stock-charts'), {
   loading: () => <div className="flex justify-center items-center p-8 text-muted-foreground">차트 로딩 중...</div>,
   ssr: false,
 });
