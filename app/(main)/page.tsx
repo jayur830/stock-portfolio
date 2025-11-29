@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
-import type { FormValues } from '@/types';
+import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, decodeStocksFromBase64, DIVIDEND_TAX_RATE, encodeStocksToBase64, FOREIGN_TAX_RATES, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
+import type { FormValues, Stock } from '@/types';
 
 import CalculateButton from './_components/calculate-button';
 import MonthlyDividends from './_components/monthly-dividends';
@@ -35,7 +35,7 @@ function PageContent() {
       totalInvestment: searchParams.has('totalInvestment') ? +searchParams.get('totalInvestment')! : undefined,
       targetAnnualDividend: searchParams.has('targetAnnualDividend') ? +searchParams.get('targetAnnualDividend')! : undefined,
       exchangeRates: {},
-      stocks: [],
+      stocks: searchParams.has('stocks') ? decodeStocksFromBase64(searchParams.get('stocks')!) : [],
     },
   });
 
@@ -67,6 +67,18 @@ function PageContent() {
               {
                 ...searchParamsObject,
                 [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
+              },
+            );
+            break;
+          case 'stocks':
+            // stocks 배열의 어떤 필드든 변경되면 전체 stocks를 URL에 저장
+            const stocksData = value.stocks || [];
+            const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64((value.stocks || []) as Stock[]) : undefined;
+            setSearchParams(
+              pathname,
+              {
+                ...searchParamsObject,
+                stocks: encodedStocks,
               },
             );
             break;

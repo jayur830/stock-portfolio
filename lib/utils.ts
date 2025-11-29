@@ -1,5 +1,6 @@
 import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
+import dayjs from 'dayjs';
 import { twMerge } from 'tailwind-merge';
 
 import type { Stock } from '@/types';
@@ -17,6 +18,48 @@ export function setSearchParams(pathname: string, params: { [key: string]: strin
   const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, value]) => value != null && value !== ''));
   const qs = new URLSearchParams(filteredParams as any);
   window.history.replaceState({}, '', `${pathname === '/' ? '' : pathname}${qs ? `?${qs}` : ''}`);
+}
+
+/**
+ * Stocks를 Base64로 인코딩
+ * @param stocks 종목 리스트
+ * @returns Base64로 인코딩된 문자열
+ */
+export function encodeStocksToBase64(stocks: Stock[]): string {
+  try {
+    // Dayjs 객체를 ISO 문자열로 변환
+    const serializedStocks = stocks.map((stock) => ({
+      ...stock,
+      purchaseDate: stock.purchaseDate ? stock.purchaseDate.toISOString() : undefined,
+    }));
+    const jsonString = JSON.stringify(serializedStocks);
+    // Base64 인코딩 (브라우저 환경)
+    return btoa(encodeURIComponent(jsonString));
+  } catch (error) {
+    console.error('Failed to encode stocks:', error);
+    return '';
+  }
+}
+
+/**
+ * Base64에서 Stocks 디코딩
+ * @param base64String Base64로 인코딩된 문자열
+ * @returns 종목 리스트
+ */
+export function decodeStocksFromBase64(base64String: string): Stock[] {
+  try {
+    // Base64 디코딩
+    const jsonString = decodeURIComponent(atob(base64String));
+    const parsed = JSON.parse(jsonString);
+    // ISO 문자열을 Dayjs 객체로 변환
+    return parsed.map((stock: any) => ({
+      ...stock,
+      purchaseDate: stock.purchaseDate ? dayjs(stock.purchaseDate) : undefined,
+    }));
+  } catch (error) {
+    console.error('Failed to decode stocks:', error);
+    return [];
+  }
 }
 
 /** 국내 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
