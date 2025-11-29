@@ -271,31 +271,13 @@ function PageContent() {
       dividendCurrency: 'KRW' as const,
       dividendMonths: [],
       yield: 0,
-      ratio: 0,
+      ratio: 100,
       purchaseDate: undefined,
       dividendInputType: 'amount' as const,
     };
 
-    const currentStocks = getValues('stocks');
-    const newList = [...currentStocks, newStock];
-
-    // 모든 종목을 균등하게 재분배
-    const equalRatio = 100 / newList.length;
-    const redistributedList = newList.map((stock) => ({
-      ...stock,
-      ratio: equalRatio,
-    }));
-
-    // 기존 stocks의 ratio만 업데이트하고 새 종목 추가
-    setValue(
-      'stocks',
-      currentStocks.map((stock, i) => ({
-        ...stock,
-        ratio: redistributedList[i].ratio,
-      })),
-    );
-    append(redistributedList[redistributedList.length - 1]);
-  }, [getValues, setValue, append]);
+    append(newStock);
+  }, [append]);
 
   const handleReset = useCallback(() => {
     const currentExchangeRates = getValues('exchangeRates');
