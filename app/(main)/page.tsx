@@ -32,8 +32,8 @@ function PageContent() {
 
   const { control, getValues, handleSubmit, reset, setValue, watch } = useForm<FormValues>({
     defaultValues: {
-      totalInvestment: +(searchParams.get('totalInvestment') || '0'),
-      targetAnnualDividend: +(searchParams.get('targetAnnualDividend') || '0'),
+      totalInvestment: searchParams.has('totalInvestment') ? +searchParams.get('totalInvestment')! : undefined,
+      targetAnnualDividend: searchParams.has('targetAnnualDividend') ? +searchParams.get('targetAnnualDividend')! : undefined,
       exchangeRates: {},
       stocks: [],
     },
@@ -389,7 +389,9 @@ function PageContent() {
                         step="any"
                         type="number"
                         {...field}
-                        onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
+                        onChange={(e) => {
+                          onChange(e.target.value === '' ? null : e.target.valueAsNumber);
+                        }}
                         value={current || ''}
                       />
                       <span className="text-sm text-muted-foreground">원</span>
@@ -438,7 +440,9 @@ function PageContent() {
                         step="any"
                         type="number"
                         {...field}
-                        onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
+                        onChange={(e) => {
+                          onChange(e.target.value === '' ? null : e.target.valueAsNumber);
+                        }}
                         value={current || ''}
                       />
                       <span className="text-sm text-muted-foreground">원</span>
