@@ -408,7 +408,7 @@ function PageContent() {
                         step="any"
                         type="number"
                         {...field}
-                        onChange={(e) => onChange(e.target.valueAsNumber)}
+                        onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         value={current || ''}
                       />
                       <span className="text-sm text-muted-foreground">원</span>
@@ -457,7 +457,7 @@ function PageContent() {
                         step="any"
                         type="number"
                         {...field}
-                        onChange={(e) => onChange(e.target.valueAsNumber)}
+                        onChange={(e) => onChange(e.target.value === '' ? undefined : e.target.valueAsNumber)}
                         value={current || ''}
                       />
                       <span className="text-sm text-muted-foreground">원</span>
