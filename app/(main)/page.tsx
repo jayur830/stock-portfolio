@@ -8,6 +8,7 @@ import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'rea
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/app/(main)/_components/stock-card';
+import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -331,13 +332,14 @@ function PageContent() {
 
   return (
     <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col gap-3.5 p-4 overflow-x-hidden">
-      <div className="flex flex-col md:flex-row items-center gap-4">
+      <div className="flex items-center gap-4">
         <Tabs className="flex-1 w-full" onValueChange={handleTabChange} value={activeTab}>
           <TabsList className="w-full sm:w-fit">
             <TabsTrigger value="dividend">배당금 계산</TabsTrigger>
             <TabsTrigger value="investment">투자금 계산</TabsTrigger>
           </TabsList>
         </Tabs>
+        <DarkModeSwitch />
       </div>
 
       <Button

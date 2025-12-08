@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
 import StructuredData from '@/components/structured-data';
+import { ThemeProvider } from '@/components/theme-provider';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -65,7 +66,7 @@ export default function RootLayout({
   children: ReactNode;
 }>) {
   return (
-    <html lang="ko">
+    <html lang="ko" suppressHydrationWarning>
       <head>
         <StructuredData />
       </head>
@@ -73,11 +74,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="max-w-[1440px] mx-auto">
-          <ReactQueryProvider>
-            {children}
-          </ReactQueryProvider>
-        </div>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+        >
+          <div className="max-w-[1440px] mx-auto">
+            <ReactQueryProvider>
+              {children}
+            </ReactQueryProvider>
+          </div>
+        </ThemeProvider>
       </body>
     </html>
   );
