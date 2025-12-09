@@ -9,11 +9,17 @@ import { cn } from '@/lib/utils';
 
 export function DarkModeSwitch() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (mounted && theme === 'system' && resolvedTheme) {
+      setTheme(resolvedTheme);
+    }
+  }, [mounted, theme, resolvedTheme, setTheme]);
 
   if (!mounted) {
     return (
