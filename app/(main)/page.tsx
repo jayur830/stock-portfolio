@@ -542,17 +542,17 @@ function PageContent() {
           </div>
           {annualDividend != null && (
             <>
-              <div aria-live="polite" className="flex md:flex-row flex-col justify-center items-center gap-4 p-2 md:p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div aria-live="polite" className="flex md:flex-row flex-col justify-center items-center gap-4 p-2 md:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-green-700">세전 연 배당금:</span>
-                  <span className="text-lg font-bold text-green-700">
+                  <span className="text-sm font-medium text-green-700 dark:text-green-300">세전 연 배당금:</span>
+                  <span className="text-lg font-bold text-green-700 dark:text-green-300">
                     {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
                   </span>
                 </div>
-                <div className="hidden md:block h-6 w-px bg-green-300" />
+                <div className="hidden md:block h-6 w-px bg-green-300 dark:bg-green-700" />
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-green-700">세후 연 배당금:</span>
-                  <span className="text-lg font-bold text-green-700">
+                  <span className="text-sm font-medium text-green-700 dark:text-green-300">세후 연 배당금:</span>
+                  <span className="text-lg font-bold text-green-700 dark:text-green-300">
                     {(annualDividend * (1 - DIVIDEND_TAX_RATE)).toLocaleString('ko-KR', {
                       maximumFractionDigits: 0,
                     })}원
@@ -560,27 +560,27 @@ function PageContent() {
                 </div>
               </div>
               {chartData && chartData.stocks.length > 0 && (
-                <div className="flex flex-col gap-2 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <h3 className="text-sm font-semibold text-green-900">종목별 보유 수량</h3>
+                <div className="flex flex-col gap-2 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                  <h3 className="text-sm font-semibold text-green-900 dark:text-green-100">종목별 보유 수량</h3>
                   <QuantityPerStock exchangeRates={chartData.exchangeRates} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
                 </div>
               )}
-              <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-blue-900">예상 월별 배당금 (세후)</h3>
+              <div className="flex flex-col gap-2 p-4 bg-blue-50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-800/50 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300">예상 월별 배당금 (세후)</h3>
                 <MonthlyDividends amounts={monthlyDividends} />
               </div>
-              <div className="flex flex-col gap-2 p-4 bg-white border border-gray-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-900">배당소득세 정보</h3>
+              <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
+                <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-xs md:text-sm text-gray-600">연간 배당소득 (세전)</span>
+                    <span className="text-xs md:text-sm text-muted-foreground">연간 배당소득 (세전)</span>
                     <span className="text-sm md:text-base font-medium">
                       {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-xs md:text-sm text-gray-600">원천징수 세액 (15.4%)</span>
-                    <span className="text-sm md:text-base font-medium text-gray-500">
+                    <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액 (15.4%)</span>
+                    <span className="text-sm md:text-base font-medium text-muted-foreground">
                       {(annualDividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
                         maximumFractionDigits: 0,
                       })}{' '}
@@ -593,11 +593,11 @@ function PageContent() {
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-2">
-                              <div className="text-sm font-semibold text-gray-800">종합과세 대상</div>
+                              <div className="text-sm font-semibold">종합과세 대상</div>
                               <Popover>
                                 <PopoverTrigger asChild>
                                   <button
-                                    className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
+                                    className="cursor-pointer text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition-colors"
                                     type="button"
                                   >
                                     <HelpCircle className="h-4 w-4" />
@@ -647,24 +647,24 @@ function PageContent() {
                                 </PopoverContent>
                               </Popover>
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                               금융소득이 2,000만원을 초과하여 종합과세 대상입니다.
                             </div>
                           </div>
                         </div>
                       </div>
                       <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
-                        annualDividendAdditionalTax > 0 ? 'bg-red-50 border border-red-200' : annualDividendAdditionalTax === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'
+                        annualDividendAdditionalTax > 0 ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : annualDividendAdditionalTax === 0 ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                       }`}
                       >
                         <span className={`text-sm font-semibold ${
-                          annualDividendAdditionalTax > 0 ? 'text-red-900' : annualDividendAdditionalTax === 0 ? 'text-blue-900' : 'text-green-900'
+                          annualDividendAdditionalTax > 0 ? 'text-red-900 dark:text-red-100' : annualDividendAdditionalTax === 0 ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'
                         }`}
                         >
                           {annualDividendAdditionalTax > 0 ? '내년 추가 납부 예정' : annualDividendAdditionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
                         </span>
                         <span className={`text-base md:text-lg font-bold ${
-                          annualDividendAdditionalTax > 0 ? 'text-red-600' : annualDividendAdditionalTax === 0 ? 'text-blue-600' : 'text-green-600'
+                          annualDividendAdditionalTax > 0 ? 'text-red-600 dark:text-red-400' : annualDividendAdditionalTax === 0 ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'
                         }`}
                         >
                           {annualDividendAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
@@ -673,7 +673,7 @@ function PageContent() {
                     </>
                   ) : (
                     <div className="border-t pt-3">
-                      <div className="flex items-center gap-2 text-green-600">
+                      <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                         <svg
                           className="w-4 h-4 md:w-5 md:h-5"
                           fill="none"
@@ -694,26 +694,26 @@ function PageContent() {
           )}
           {requiredInvestment != null && (
             <>
-              <div aria-live="polite" className="flex justify-center items-center gap-4 p-2 md:p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div aria-live="polite" className="flex justify-center items-center gap-4 p-2 md:p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-purple-700">필요한 투자금:</span>
-                  <span className="text-lg font-bold text-purple-700">
+                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">필요한 투자금:</span>
+                  <span className="text-lg font-bold text-purple-700 dark:text-purple-300">
                     {requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
                   </span>
                 </div>
               </div>
               {chartData && chartData.stocks.length > 0 && (
-                <div className="flex flex-col gap-2 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                  <h3 className="text-sm font-semibold text-purple-900">종목별 보유 수량</h3>
+                <div className="flex flex-col gap-2 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+                  <h3 className="text-sm font-semibold text-purple-900 dark:text-purple-100">종목별 보유 수량</h3>
                   <QuantityPerStock exchangeRates={chartData.exchangeRates} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
                 </div>
               )}
-              <div className="flex flex-col gap-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-blue-900">예상 월별 배당금 (세후)</h3>
+              <div className="flex flex-col gap-2 p-4 bg-blue-50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg">
+                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300">예상 월별 배당금 (세후)</h3>
                 <MonthlyDividends amounts={monthlyDividends} />
               </div>
-              <div className="flex flex-col gap-2 p-4 bg-white border border-gray-200 rounded-lg">
-                <h3 className="text-sm font-semibold text-gray-900">배당소득세 정보</h3>
+              <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
+                <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                 <div className="space-y-3">
                   {(() => {
                     const requiredInvestmentAdditionalTax = requiredInvestment != null && calculatedTargetAnnualDividend != null ? calculateComprehensiveTax(calculatedTargetAnnualDividend, foreignAnnualDividend) : null;
@@ -725,14 +725,14 @@ function PageContent() {
                     const defaultElement = (
                       <>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs md:text-sm text-gray-600">연간 배당소득 (세전)</span>
+                          <span className="text-xs md:text-sm text-muted-foreground">연간 배당소득 (세전)</span>
                           <span className="text-sm md:text-base font-medium">
                             {calculatedTargetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
                           </span>
                         </div>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs md:text-sm text-gray-600">원천징수 세액 (15.4%)</span>
-                          <span className="text-sm md:text-base font-medium text-gray-500">
+                          <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액 (15.4%)</span>
+                          <span className="text-sm md:text-base font-medium text-muted-foreground">
                             {(calculatedTargetAnnualDividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
                               maximumFractionDigits: 0,
                             })}{' '}
@@ -750,11 +750,11 @@ function PageContent() {
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
                                 <div className="flex items-center gap-2">
-                                  <div className="text-sm font-semibold text-gray-800">종합과세 대상</div>
+                                  <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">종합과세 대상</div>
                                   <Popover>
                                     <PopoverTrigger asChild>
                                       <button
-                                        className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
+                                        className="cursor-pointer text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-400 transition-colors"
                                         type="button"
                                       >
                                         <HelpCircle className="h-4 w-4" />
@@ -804,24 +804,24 @@ function PageContent() {
                                     </PopoverContent>
                                   </Popover>
                                 </div>
-                                <div className="text-xs text-gray-500 mt-1">
+                                <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                   금융소득이 2,000만원을 초과하여 종합과세 대상입니다.
                                 </div>
                               </div>
                             </div>
                           </div>
                           <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
-                            requiredInvestmentAdditionalTax > 0 ? 'bg-red-50 border border-red-200' : requiredInvestmentAdditionalTax === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'
+                            requiredInvestmentAdditionalTax > 0 ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : requiredInvestmentAdditionalTax === 0 ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
                           }`}
                           >
                             <span className={`text-sm font-semibold ${
-                              requiredInvestmentAdditionalTax > 0 ? 'text-red-900' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-900' : 'text-green-900'
+                              requiredInvestmentAdditionalTax > 0 ? 'text-red-900 dark:text-red-100' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'
                             }`}
                             >
                               {requiredInvestmentAdditionalTax > 0 ? '내년 추가 납부 예정' : requiredInvestmentAdditionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
                             </span>
                             <span className={`text-base md:text-lg font-bold ${
-                              requiredInvestmentAdditionalTax > 0 ? 'text-red-600' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-600' : 'text-green-600'
+                              requiredInvestmentAdditionalTax > 0 ? 'text-red-600 dark:text-red-400' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'
                             }`}
                             >
                               {requiredInvestmentAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
@@ -835,7 +835,7 @@ function PageContent() {
                       <>
                         {defaultElement}
                         <div className="border-t pt-3">
-                          <div className="flex items-center gap-2 text-green-600">
+                          <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                             <svg
                               className="w-4 h-4 md:w-5 md:h-5"
                               fill="none"

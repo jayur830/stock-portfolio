@@ -17,16 +17,16 @@ export default function QuantityPerStock({ stocks, totalInvestment, exchangeRate
         const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
         return (
           <div
-            className="flex justify-between items-center p-2 bg-white rounded border border-grey-100"
+            className="flex justify-between items-center p-2 bg-white dark:bg-gray-800 rounded border border-grey-100 dark:border-gray-700"
             key={index}
           >
-            <span className="md:block hidden text-sm font-medium text-gray-600">
+            <span className="md:block hidden text-sm font-medium text-gray-600 dark:text-gray-400">
               {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
             </span>
-            <span className="md:hidden block text-sm font-medium text-gray-600">
+            <span className="md:hidden block text-sm font-medium text-gray-600 dark:text-gray-400">
               {stock.ticker}
             </span>
-            <span className="text-sm font-semibold text-gray-600">
+            <span className="text-sm font-semibold text-gray-600 dark:text-gray-400">
               {quantity.toLocaleString('ko-KR')}주
             </span>
           </div>

@@ -3,6 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
+import { useTheme } from 'next-themes';
 import { memo, useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -47,6 +48,9 @@ const periodOptions: TimePeriodOption[] = [
 ];
 
 const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProps) => {
+  const { theme, resolvedTheme } = useTheme();
+  const isDark = theme === 'dark' || resolvedTheme === 'dark';
+
   /** 기간 필터 상태 */
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>('1Y');
 
@@ -118,13 +122,25 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
     });
 
     return {
+      backgroundColor: 'transparent',
+      textStyle: {
+        color: isDark ? '#d1d5db' : '#374151',
+      },
       title: {
         text: '전체 포트폴리오 주가 추이',
         left: 'center',
         top: '10px',
+        textStyle: {
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
       },
       tooltip: {
         trigger: 'axis',
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        borderColor: isDark ? '#374151' : '#e5e7eb',
+        textStyle: {
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
         formatter(params: any) {
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
@@ -140,15 +156,42 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       legend: {
         data: histories.map((h) => h.symbol),
         top: '45px',
+        textStyle: {
+          color: isDark ? '#d1d5db' : '#374151',
+        },
       },
       xAxis: {
         type: 'category',
         data: sortedDates.map((d) => dayjs(d).format('YYYY.MM.DD')),
+        axisLabel: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#e5e7eb',
+          },
+        },
       },
       yAxis: {
         type: 'value',
         name: '가격 (KRW)',
         scale: true,
+        nameTextStyle: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLabel: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#e5e7eb',
+          },
+        },
+        splitLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#f3f4f6',
+          },
+        },
       },
       series,
       grid: {
@@ -159,7 +202,9 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
         containLabel: true,
       },
     };
-  }, [histories, stocks, exchangeRates, selectedPeriod]);
+  }, [
+    histories, stocks, exchangeRates, selectedPeriod, isDark,
+  ]);
 
   /** 2. 수익금 차트 (매수일 기준) */
   const profitChartOption = useMemo(() => {
@@ -327,13 +372,25 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       });
 
     return {
+      backgroundColor: 'transparent',
+      textStyle: {
+        color: isDark ? '#d1d5db' : '#374151',
+      },
       title: {
         text: '누적 수익금',
         left: 'center',
         top: '10px',
+        textStyle: {
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
       },
       tooltip: {
         trigger: 'axis',
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        borderColor: isDark ? '#374151' : '#e5e7eb',
+        textStyle: {
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
         formatter(params: any) {
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
@@ -347,15 +404,42 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       legend: {
         data: ['매매차익', '월별 배당 수익', '매매차익 + 배당 수익 누적'],
         top: '45px',
+        textStyle: {
+          color: isDark ? '#d1d5db' : '#374151',
+        },
       },
       xAxis: {
         type: 'category',
         // data: dates.map((d) => d.format('YYYY.MM.DD')),
         data: dates,
+        axisLabel: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#e5e7eb',
+          },
+        },
       },
       yAxis: {
         type: 'value',
         name: '수익금 (KRW)',
+        nameTextStyle: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLabel: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#e5e7eb',
+          },
+        },
+        splitLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#f3f4f6',
+          },
+        },
       },
       series: [
         {
@@ -463,14 +547,16 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
         containLabel: true,
       },
     };
-  }, [histories, stocks, totalInvestment, exchangeRates]);
+  }, [
+    histories, stocks, totalInvestment, exchangeRates, isDark,
+  ]);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="flex flex-col items-center gap-2">
           <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
-          <span className="text-sm text-gray-600">차트 데이터 로딩 중...</span>
+          <span className="text-sm text-muted-foreground">차트 데이터 로딩 중...</span>
         </div>
       </div>
     );
@@ -484,7 +570,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
     <div className="flex flex-col gap-6 mt-6">
       {/* 통합 포트폴리오 차트 */}
       {combinedChartOption && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-card border rounded-lg p-4">
           {/* 기간 선택 버튼 */}
           <div className="flex flex-wrap gap-2 mb-4">
             <Button
@@ -513,7 +599,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
 
       {/* 누적 수익금 차트 */}
       {profitChartOption && (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-card border rounded-lg p-4">
           <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '350px' }} />
         </div>
       )}
