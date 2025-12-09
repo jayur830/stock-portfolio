@@ -183,7 +183,7 @@ function PageContent() {
     }
 
     return null;
-  }, []);
+  }, [activeTab]);
 
   /** 배당금 계산: 투자금 → 배당금 */
   const calculateDividendFromInvestment = useCallback((data: FormValues) => {
