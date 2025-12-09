@@ -332,6 +332,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
           <Input
             className="flex-1"
+            min={0}
             onChange={(e) => {
               onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)));
             }}
@@ -471,6 +472,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <div className="flex items-center gap-2 flex-1 md:max-w-[180px]">
             <Input
               className="flex-1"
+              min={0}
               onChange={(e) => {
                 onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, yield: +e.target.value } : s)));
               }}

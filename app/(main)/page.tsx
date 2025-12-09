@@ -368,6 +368,7 @@ function PageContent() {
                 <div className="flex flex-col gap-1.5" key={currency}>
                   <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
                   <Input
+                    min={0}
                     onChange={(e) => {
                       const newValue = e.target.valueAsNumber;
                       onChange({
@@ -403,6 +404,7 @@ function PageContent() {
                       <Input
                         className="flex-1"
                         maxLength={24}
+                        min={0}
                         placeholder="총 투자금을 입력하세요"
                         step="any"
                         type="number"
@@ -454,6 +456,7 @@ function PageContent() {
                       <Input
                         className="flex-1"
                         maxLength={24}
+                        min={0}
                         placeholder="목표 연 배당금을 입력하세요"
                         step="any"
                         type="number"
