@@ -97,6 +97,8 @@ function PageContent() {
   const [averageForeignTaxRate, setAverageForeignTaxRate] = useState<number>(0.15);
   /** 필요한 투자금 */
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
+  /** 계산 시점의 목표 연 배당금 */
+  const [calculatedTargetAnnualDividend, setCalculatedTargetAnnualDividend] = useState<number | null>(null);
   /** 월별 배당금 */
   const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
   /** 차트에 전달할 계산 시점의 값들 */
@@ -263,6 +265,7 @@ function PageContent() {
       .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / totalForeignAnnualDividend : 0.15;
 
     setRequiredInvestment(requiredInvestmentAmount);
+    setCalculatedTargetAnnualDividend(data.targetAnnualDividend);
     setForeignAnnualDividend(totalForeignAnnualDividend);
     setAverageForeignTaxRate(avgForeignTaxRate);
     setMonthlyDividends(monthlyDividendArray);
@@ -303,6 +306,7 @@ function PageContent() {
     setAnnualDividend(null);
     setForeignAnnualDividend(0);
     setRequiredInvestment(null);
+    setCalculatedTargetAnnualDividend(null);
     setMonthlyDividends(Array(12).fill(0));
     setChartData(null);
   }, [reset, getValues]);
@@ -708,143 +712,143 @@ function PageContent() {
               <div className="flex flex-col gap-2 p-4 bg-white border border-gray-200 rounded-lg">
                 <h3 className="text-sm font-semibold text-gray-900">배당소득세 정보</h3>
                 <div className="space-y-3">
-                  <Controller
-                    control={control}
-                    name="targetAnnualDividend"
-                    render={({ field: { value: targetAnnualDividend } }) => {
-                      const requiredInvestmentAdditionalTax = requiredInvestment != null ? calculateComprehensiveTax(targetAnnualDividend, foreignAnnualDividend) : null;
+                  {(() => {
+                    const requiredInvestmentAdditionalTax = requiredInvestment != null && calculatedTargetAnnualDividend != null ? calculateComprehensiveTax(calculatedTargetAnnualDividend, foreignAnnualDividend) : null;
 
-                      const defaultElement = (
-                        <>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs md:text-sm text-gray-600">연간 배당소득 (세전)</span>
-                            <span className="text-sm md:text-base font-medium">
-                              {targetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-xs md:text-sm text-gray-600">원천징수 세액 (15.4%)</span>
-                            <span className="text-sm md:text-base font-medium text-gray-500">
-                              {(targetAnnualDividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
-                                maximumFractionDigits: 0,
-                              })}{' '}
-                              원
-                            </span>
-                          </div>
-                        </>
-                      );
+                    if (calculatedTargetAnnualDividend == null) {
+                      return <></>;
+                    }
 
-                      if (requiredInvestmentAdditionalTax != null) {
-                        return (
-                          <>
-                            {defaultElement}
-                            <div className="border-t pt-3">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className="text-sm font-semibold text-gray-800">종합과세 대상</div>
-                                    <Popover>
-                                      <PopoverTrigger asChild>
-                                        <button
-                                          className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
-                                          type="button"
-                                        >
-                                          <HelpCircle className="h-4 w-4" />
-                                        </button>
-                                      </PopoverTrigger>
-                                      <PopoverContent align="start" className="w-80 md:w-96">
-                                        <div className="space-y-3">
-                                          <h4 className="font-semibold text-sm">종합소득세 계산 방식</h4>
+                    const defaultElement = (
+                      <>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs md:text-sm text-gray-600">연간 배당소득 (세전)</span>
+                          <span className="text-sm md:text-base font-medium">
+                            {calculatedTargetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+                          </span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-xs md:text-sm text-gray-600">원천징수 세액 (15.4%)</span>
+                          <span className="text-sm md:text-base font-medium text-gray-500">
+                            {(calculatedTargetAnnualDividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
+                              maximumFractionDigits: 0,
+                            })}{' '}
+                            원
+                          </span>
+                        </div>
+                      </>
+                    );
 
-                                          <div className="space-y-2 text-xs">
-                                            <div>
-                                              <p className="font-medium text-gray-700">1. 기준 금액</p>
-                                              <p className="text-gray-600 ml-2">• 금융소득 2,000만원 이하: 분리과세 (15.4%)</p>
-                                              <p className="text-gray-600 ml-2">• 금융소득 2,000만원 초과: 종합과세 대상</p>
-                                            </div>
-
-                                            <div>
-                                              <p className="font-medium text-gray-700">2. 세액 계산</p>
-                                              <div className="ml-2 space-y-1">
-                                                <p className="text-gray-600">① 분리과세분 (2,000만원)</p>
-                                                <p className="text-gray-500 ml-3 font-mono text-[10px]">2,000만원 × 15.4%</p>
-
-                                                <p className="text-gray-600 mt-2">② 초과분 종합과세</p>
-                                                <p className="text-gray-500 ml-3 font-mono text-[10px]">(초과금액 × 1.11) × 누진세율 - 누진공제</p>
-                                                <p className="text-gray-500 ml-3 text-[10px]">* 1.11: 배당세액공제 Gross-up</p>
-
-                                                <p className="text-gray-600 mt-2">③ 지방소득세</p>
-                                                <p className="text-gray-500 ml-3 font-mono text-[10px]">소득세 × 10%</p>
-
-                                                <p className="text-gray-600 mt-2">④ 배당세액공제</p>
-                                                <p className="text-gray-500 ml-3 font-mono text-[10px]">Gross-up 금액 × 15%</p>
-                                              </div>
-                                            </div>
-
-                                            <div>
-                                              <p className="font-medium text-gray-700">3. 최종 납부/환급액</p>
-                                              <p className="text-gray-500 ml-2 font-mono text-[10px]">총 세액 - 원천징수액 - 배당세액공제</p>
-                                            </div>
-
-                                            <div className="bg-blue-50 p-2 rounded">
-                                              <p className="text-gray-700 font-medium">💡 외국 배당의 경우</p>
-                                              <p className="text-gray-600 ml-2 mt-1">• 배당세액공제 미적용 (Gross-up 없음)</p>
-                                              <p className="text-gray-600 ml-2">• 외국납부세액공제 적용</p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      </PopoverContent>
-                                    </Popover>
-                                  </div>
-                                  <div className="text-xs text-gray-500 mt-1">
-                                    금융소득이 2,000만원을 초과하여 종합과세 대상입니다.
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                            <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
-                              requiredInvestmentAdditionalTax > 0 ? 'bg-red-50 border border-red-200' : requiredInvestmentAdditionalTax === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'
-                            }`}
-                            >
-                              <span className={`text-sm font-semibold ${
-                                requiredInvestmentAdditionalTax > 0 ? 'text-red-900' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-900' : 'text-green-900'
-                              }`}
-                              >
-                                {requiredInvestmentAdditionalTax > 0 ? '내년 추가 납부 예정' : requiredInvestmentAdditionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
-                              </span>
-                              <span className={`text-base md:text-lg font-bold ${
-                                requiredInvestmentAdditionalTax > 0 ? 'text-red-600' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-600' : 'text-green-600'
-                              }`}
-                              >
-                                {requiredInvestmentAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
-                              </span>
-                            </div>
-                          </>
-                        );
-                      }
-
+                    if (requiredInvestmentAdditionalTax != null) {
                       return (
                         <>
                           {defaultElement}
                           <div className="border-t pt-3">
-                            <div className="flex items-center gap-2 text-green-600">
-                              <svg
-                                className="w-4 h-4 md:w-5 md:h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <span className="text-xs md:text-sm font-medium">분리과세로 과세 종결 (추가 납부 없음)</span>
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2">
+                                  <div className="text-sm font-semibold text-gray-800">종합과세 대상</div>
+                                  <Popover>
+                                    <PopoverTrigger asChild>
+                                      <button
+                                        className="cursor-pointer text-gray-400 hover:text-gray-600 transition-colors"
+                                        type="button"
+                                      >
+                                        <HelpCircle className="h-4 w-4" />
+                                      </button>
+                                    </PopoverTrigger>
+                                    <PopoverContent align="start" className="w-80 md:w-96">
+                                      <div className="space-y-3">
+                                        <h4 className="font-semibold text-sm">종합소득세 계산 방식</h4>
+
+                                        <div className="space-y-2 text-xs">
+                                          <div>
+                                            <p className="font-medium text-gray-700">1. 기준 금액</p>
+                                            <p className="text-gray-600 ml-2">• 금융소득 2,000만원 이하: 분리과세 (15.4%)</p>
+                                            <p className="text-gray-600 ml-2">• 금융소득 2,000만원 초과: 종합과세 대상</p>
+                                          </div>
+
+                                          <div>
+                                            <p className="font-medium text-gray-700">2. 세액 계산</p>
+                                            <div className="ml-2 space-y-1">
+                                              <p className="text-gray-600">① 분리과세분 (2,000만원)</p>
+                                              <p className="text-gray-500 ml-3 font-mono text-[10px]">2,000만원 × 15.4%</p>
+
+                                              <p className="text-gray-600 mt-2">② 초과분 종합과세</p>
+                                              <p className="text-gray-500 ml-3 font-mono text-[10px]">(초과금액 × 1.11) × 누진세율 - 누진공제</p>
+                                              <p className="text-gray-500 ml-3 text-[10px]">* 1.11: 배당세액공제 Gross-up</p>
+
+                                              <p className="text-gray-600 mt-2">③ 지방소득세</p>
+                                              <p className="text-gray-500 ml-3 font-mono text-[10px]">소득세 × 10%</p>
+
+                                              <p className="text-gray-600 mt-2">④ 배당세액공제</p>
+                                              <p className="text-gray-500 ml-3 font-mono text-[10px]">Gross-up 금액 × 15%</p>
+                                            </div>
+                                          </div>
+
+                                          <div>
+                                            <p className="font-medium text-gray-700">3. 최종 납부/환급액</p>
+                                            <p className="text-gray-500 ml-2 font-mono text-[10px]">총 세액 - 원천징수액 - 배당세액공제</p>
+                                          </div>
+
+                                          <div className="bg-blue-50 p-2 rounded">
+                                            <p className="text-gray-700 font-medium">💡 외국 배당의 경우</p>
+                                            <p className="text-gray-600 ml-2 mt-1">• 배당세액공제 미적용 (Gross-up 없음)</p>
+                                            <p className="text-gray-600 ml-2">• 외국납부세액공제 적용</p>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </PopoverContent>
+                                  </Popover>
+                                </div>
+                                <div className="text-xs text-gray-500 mt-1">
+                                  금융소득이 2,000만원을 초과하여 종합과세 대상입니다.
+                                </div>
+                              </div>
                             </div>
+                          </div>
+                          <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
+                            requiredInvestmentAdditionalTax > 0 ? 'bg-red-50 border border-red-200' : requiredInvestmentAdditionalTax === 0 ? 'bg-blue-50 border border-blue-200' : 'bg-green-50 border border-green-200'
+                          }`}
+                          >
+                            <span className={`text-sm font-semibold ${
+                              requiredInvestmentAdditionalTax > 0 ? 'text-red-900' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-900' : 'text-green-900'
+                            }`}
+                            >
+                              {requiredInvestmentAdditionalTax > 0 ? '내년 추가 납부 예정' : requiredInvestmentAdditionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
+                            </span>
+                            <span className={`text-base md:text-lg font-bold ${
+                              requiredInvestmentAdditionalTax > 0 ? 'text-red-600' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-600' : 'text-green-600'
+                            }`}
+                            >
+                              {requiredInvestmentAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+                            </span>
                           </div>
                         </>
                       );
-                    }}
-                  />
+                    }
+
+                    return (
+                      <>
+                        {defaultElement}
+                        <div className="border-t pt-3">
+                          <div className="flex items-center gap-2 text-green-600">
+                            <svg
+                              className="w-4 h-4 md:w-5 md:h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span className="text-xs md:text-sm font-medium">분리과세로 과세 종결 (추가 납부 없음)</span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </>
