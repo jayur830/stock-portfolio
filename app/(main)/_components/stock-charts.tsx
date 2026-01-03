@@ -402,7 +402,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
         },
       },
       legend: {
-        data: ['매매차익', '월별 배당 수익', '매매차익 + 배당 수익 누적'],
+        data: ['평가 수익', '월별 배당 수익', '누적 수익'],
         top: '45px',
         textStyle: {
           color: isDark ? '#d1d5db' : '#374151',
@@ -410,7 +410,6 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       },
       xAxis: {
         type: 'category',
-        // data: dates.map((d) => d.format('YYYY.MM.DD')),
         data: dates,
         axisLabel: {
           color: isDark ? '#9ca3af' : '#6b7280',
@@ -443,7 +442,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       },
       series: [
         {
-          name: '매매차익',
+          name: '평가 수익',
           type: 'line',
           data: profits,
           smooth: true,
