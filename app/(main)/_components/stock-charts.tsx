@@ -506,7 +506,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           },
         },
         {
-          name: '매매차익 + 배당 수익 누적',
+          name: '누적 수익',
           type: 'line',
           data: profitsWithDividends,
           smooth: true,
