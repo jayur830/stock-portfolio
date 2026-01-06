@@ -65,13 +65,15 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
     async queryFn({ queryKey: [, query] }) {
       const response = await fetch(`/api/stock/search?q=${encodeURIComponent(query)}`);
       if (!response.ok) {
-        throw new Error('Failed to search stocks');
+        const error = await response.json();
+        throw error;
       }
       const data = await response.json();
       return (data.quotes || []) as StockQuote[];
     },
     enabled: !!debouncedQuery && debouncedQuery.length >= 1,
     staleTime: 1000 * 60, // 1분
+    retry: false,
   });
 
   /** 종목 상세 정보 조회 */

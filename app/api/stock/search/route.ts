@@ -25,8 +25,17 @@ export async function GET(request: NextRequest) {
       }));
 
     return NextResponse.json({ quotes: quotes || [] });
-  } catch (error) {
-    console.error('Stock search error:', error);
+  } catch (e) {
+    const error = e as Error;
+    console.error('Stock search error:', error.message, error.name);
+
+    if (error.name === 'BadRequestError') {
+      return NextResponse.json({
+        quotes: [],
+        error: error.message,
+      }, { status: 400 });
+    }
+
     return NextResponse.json({
       quotes: [],
       error: 'Failed to search stocks',
