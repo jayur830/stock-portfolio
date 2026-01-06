@@ -17,41 +17,30 @@ export async function POST(request: NextRequest) {
     const histories = await Promise.all(
       symbols.map(async (symbol: string) => {
         try {
-          // 주가 히스토리 조회
-          const history = await yahooFinance.historical(symbol, {
+          const { quotes, events } = await yahooFinance.chart(symbol, {
             period1: startDate,
             period2: endDate,
             interval: '1d',
+            events: 'div',
           });
-          const data = history.map((item) => ({
+
+          const data = quotes.map((item) => ({
             date: item.date,
             close: item.close,
           }));
 
-          try {
-            const dividends = await yahooFinance.historical(symbol, {
-              period1: startDate,
-              period2: endDate,
-              events: 'dividends',
-            });
+          const dividends = (events?.dividends || []).map(
+            (item) => ({
+              date: item.date,
+              amount: item.amount || 0,
+            }),
+          );
 
-            return {
-              symbol,
-              data,
-              dividends: dividends.map((item) => ({
-                date: item.date,
-                amount: item.dividends || 0,
-              })),
-            };
-          } catch (divError) {
-            console.warn(`Failed to fetch dividend history for ${symbol}:`, divError);
-            // 배당 정보가 없어도 계속 진행
-            return {
-              symbol,
-              data,
-              dividends: [],
-            };
-          }
+          return {
+            symbol,
+            data,
+            dividends,
+          };
         } catch (error) {
           console.error(`Failed to fetch history for ${symbol}:`, error);
           return {

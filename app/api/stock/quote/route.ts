@@ -22,11 +22,13 @@ export async function GET(request: NextRequest) {
     let annualDividend = 0;
 
     try {
-      const dividendHistory = await yahooFinance.historical(symbol, {
+      const { events } = await yahooFinance.chart(symbol, {
         period1: startDate,
         period2: endDate,
-        events: 'dividends',
+        events: 'div',
       });
+
+      const dividendHistory = events?.dividends;
 
       if (dividendHistory && dividendHistory.length > 0) {
         // 배당 지급 월 추출 (중복 제거)
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
         dividendMonths.push(...Array.from(months).sort((a, b) => a - b));
 
         // 연간 배당금 계산 (최근 1년간 실제 지급된 배당금의 총합)
-        annualDividend = dividendHistory.reduce((sum, div) => sum + (div.dividends || 0), 0);
+        annualDividend = dividendHistory.reduce((sum, div) => sum + (div.amount || 0), 0);
       }
     } catch (divError) {
       console.warn('Failed to fetch dividend history:', divError);
