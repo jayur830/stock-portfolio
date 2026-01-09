@@ -134,6 +134,7 @@ function PageContent() {
       } as { [key: string]: number };
     },
     staleTime: 1000 * 60 * 60, // 1시간
+    refetchOnWindowFocus: true,
   });
 
   /** 환율 데이터가 변경되면 폼에 반영 */
