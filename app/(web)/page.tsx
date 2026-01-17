@@ -6,7 +6,7 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
-import StockCard from '@/app/(main)/_components/stock-card';
+import StockCard from '@/app/(web)/_components/stock-card';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
