@@ -20,6 +20,8 @@ export interface Stock {
   ratio: number;
   /** 매수일 */
   purchaseDate?: Dayjs;
+  /** 활성화 여부 */
+  enabled?: boolean;
 }
 
 export interface FormValues {

@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { FormValues } from '@/types';
@@ -43,6 +44,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
     name: 'stocks',
   });
   const stock = stocks[index];
+  const isEnabled = stock.enabled !== false;
   const dividendMonths = stock.dividendMonths || [];
 
   // 검색어 debouncing
@@ -195,7 +197,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   };
 
   return (
-    <Card className="gap-0 p-2 md:p-4 relative">
+    <Card className={cn('gap-0 p-2 md:p-4 relative', !isEnabled && 'opacity-60 bg-muted/30')}>
       {isLoadingQuote && (
         <div className="absolute inset-0 bg-card/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
           <div className="flex flex-col items-center gap-2">
@@ -204,6 +206,14 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           </div>
         </div>
       )}
+      <div className="absolute top-2 left-2 flex items-center gap-2 z-10">
+        <Switch
+          checked={isEnabled}
+          onCheckedChange={(checked) => {
+            onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, enabled: checked } : s)));
+          }}
+        />
+      </div>
       {onDelete && (
         <Button
           className="absolute top-2 right-2 h-6 w-6"
@@ -219,6 +229,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         <div className="relative" ref={dropdownRef}>
           <Input
             className="flex-1"
+            disabled={!isEnabled}
             onChange={(e) => {
               setSearchQuery(e.target.value);
             }}
@@ -262,6 +273,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             name="exchangeRates"
             render={({ field: { value: exchangeRates } }) => (
               <Select
+                disabled={!isEnabled}
                 onValueChange={(newCurrency: any) => {
                   onChangeStocks(
                     stocks.map((s, i) => {
@@ -324,6 +336,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">종목명</span>
           <Input
             className="flex-1"
+            disabled={!isEnabled}
             onChange={(e) => {
               onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, name: e.target.value } : s)));
             }}
@@ -334,6 +347,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
           <Input
             className="flex-1"
+            disabled={!isEnabled}
             min={0}
             onChange={(e) => {
               onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)));
@@ -348,7 +362,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <div className="flex flex-col md:flex-row md:items-center gap-2">
             <span className="text-xs md:text-sm font-medium whitespace-nowrap">매수일</span>
             <Popover>
-              <PopoverTrigger asChild>
+              <PopoverTrigger asChild disabled={!isEnabled}>
                 <Button
                   className={cn(
                     'flex-1 justify-start text-left font-normal',
@@ -384,6 +398,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             ].map(({ label, months }) => (
               <Button
                 className="h-7 text-xs"
+                disabled={!isEnabled}
                 key={label}
                 onClick={() => {
                   onChangeStocks(stocks.map((s, i) => (i === index ? ({ ...s, purchaseDate: dayjs().subtract(months, 'month') }) : s)));
@@ -405,6 +420,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             <div className="flex gap-2">
               <Button
                 className="h-7 text-xs"
+                disabled={!isEnabled}
                 onClick={() => {
                   // 월별: 모든 월 선택 (1~12)
                   onChangeStocks(
@@ -423,6 +439,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               </Button>
               <Button
                 className="h-7 text-xs"
+                disabled={!isEnabled}
                 onClick={() => {
                   // 분기별: 3, 6, 9, 12월 선택
                   onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, dividendMonths: [3, 6, 9, 12] } : s)));
@@ -440,6 +457,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               return (
                 <Button
                   className={`h-8 text-xs ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                  disabled={!isEnabled}
                   key={month}
                   onClick={() => {
                     onChangeStocks(
@@ -476,6 +494,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <div className="flex items-center gap-2 flex-1 md:max-w-[180px]">
             <Input
               className="flex-1"
+              disabled={!isEnabled}
               min={0}
               onChange={(e) => {
                 onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, yield: +e.target.value } : s)));
@@ -493,6 +512,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <div className="flex items-center gap-2 w-full md:w-[100px] mb-3 md:mb-0">
             <Input
               className="w-full md:w-[100px]"
+              disabled={!isEnabled}
               max={100}
               min={0}
               onChange={(e) => {
@@ -507,6 +527,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           </div>
           <Slider
             className="flex-1 md:max-w-[500px]"
+            disabled={!isEnabled}
             max={100}
             min={0}
             onValueChange={([value]) => {

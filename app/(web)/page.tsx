@@ -153,7 +153,8 @@ function PageContent() {
 
   /** 폼 데이터 검증 */
   const validateFormData = useCallback((data: FormValues): string | null => {
-    const currentTotalRatio = data.stocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
+    const enabledStocks = data.stocks.filter((s) => s.enabled !== false);
+    const currentTotalRatio = enabledStocks.reduce((sum, stock) => sum + (stock?.ratio || 0), 0);
     if (currentTotalRatio > 100) {
       return '총 비율이 100% 이하가 되어야 합니다.';
     }
@@ -167,7 +168,7 @@ function PageContent() {
     }
 
     /** 외화 종목이 있는지 확인 */
-    const foreignCurrencies = data.stocks
+    const foreignCurrencies = enabledStocks
       .map((stock) => stock.currency)
       .filter((currency) => currency !== 'KRW');
     const uniqueForeignCurrencies = Array.from(new Set(foreignCurrencies));
@@ -187,7 +188,8 @@ function PageContent() {
 
   /** 배당금 계산: 투자금 → 배당금 */
   const calculateDividendFromInvestment = useCallback((data: FormValues) => {
-    const stockDividends = data.stocks.map((stock) => {
+    const enabledStocks = data.stocks.filter((s) => s.enabled !== false);
+    const stockDividends = enabledStocks.map((stock) => {
       /** 종목별 투자금 */
       const investmentAmount = (data.totalInvestment * stock.ratio) / 100;
       /** 종목별 연 배당금 */
@@ -225,21 +227,22 @@ function PageContent() {
     setChartData({
       totalInvestment: data.totalInvestment,
       exchangeRates: data.exchangeRates,
-      stocks: data.stocks,
+      stocks: enabledStocks,
     });
   }, []);
 
   /** 투자금 계산: 목표 배당금 → 필요한 투자금 */
   const calculateInvestmentFromDividend = useCallback((data: FormValues) => {
+    const enabledStocks = data.stocks.filter((s) => s.enabled !== false);
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
-    const weightedDividendYield = data.stocks.reduce((sum, stock) => {
+    const weightedDividendYield = enabledStocks.reduce((sum, stock) => {
       const dividendYield = stock.yield / 100;
       return sum + dividendYield * (stock.ratio / 100);
     }, 0);
     /** 필요한 투자금 */
     const requiredInvestmentAmount = data.targetAnnualDividend / weightedDividendYield;
 
-    const stockDividends = data.stocks.map((stock) => {
+    const stockDividends = enabledStocks.map((stock) => {
       const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
@@ -273,7 +276,7 @@ function PageContent() {
     setChartData({
       totalInvestment: requiredInvestmentAmount,
       exchangeRates: data.exchangeRates,
-      stocks: data.stocks,
+      stocks: enabledStocks,
     });
   }, []);
 
@@ -531,7 +534,9 @@ function PageContent() {
               control={control}
               name="stocks"
               render={({ field: { value: stocks } }) => {
-                const totalRatio = stocks.reduce((acc, { ratio }) => acc + (ratio || 0), 0);
+                const totalRatio = stocks
+                  .filter((s) => s.enabled !== false)
+                  .reduce((acc, { ratio }) => acc + (ratio || 0), 0);
                 return (
                   <span className={`font-semibold ${totalRatio === 100 ? 'text-green-600' : totalRatio > 100 ? 'text-red-600' : 'text-yellow-600'}`}>
                     {totalRatio.toFixed(1)}%
