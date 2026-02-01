@@ -80,11 +80,9 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
         >
-          <div className="max-w-[1440px] mx-auto">
-            <ReactQueryProvider>
-              {children}
-            </ReactQueryProvider>
-          </div>
+          <ReactQueryProvider>
+            {children}
+          </ReactQueryProvider>
         </ThemeProvider>
         <Analytics />
       </body>
