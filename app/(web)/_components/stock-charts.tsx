@@ -54,6 +54,9 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   /** 기간 필터 상태 */
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>('1Y');
 
+  /** 오버랩 차트 표시 여부 */
+  const [isOverlap, setOverlap] = useState<boolean>(true);
+
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
 
@@ -96,45 +99,69 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       }
     }
 
-    /** 각 종목의 series 생성 */
-    const series = histories.map((history) => {
-      const stock = stocks.find((s) => s.ticker === history.symbol);
-      const dataMap = new Map(
-        history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
-      );
+    let series;
+    let yAxis;
+    let tooltip;
 
-      const seriesData = sortedDates.map((date) => {
-        const price = dataMap.get(date);
-        if (!price) {
-          return null;
+    if (isOverlap) {
+      series = histories.map((history) => {
+        const stockData = history.data
+          .map((d) => ({ date: dayjs(d.date).format('YYYY-MM-DD'), close: d.close }))
+          .filter((d) => sortedDates.includes(d.date))
+          .sort((a, b) => a.date.localeCompare(b.date));
+
+        const percentageMap = new Map<string, number>();
+
+        if (stockData.length > 0) {
+          const basePrice = stockData[0].close; // Use the price of the first available date in the filtered period as the base
+          if (basePrice === 0) {
+            stockData.forEach((dataPoint) => percentageMap.set(dataPoint.date, 0));
+          } else {
+            stockData.forEach((dataPoint) => {
+              const currentPrice = dataPoint.close;
+              const cumulativeChange = ((currentPrice - basePrice) / basePrice) * 100;
+              percentageMap.set(dataPoint.date, cumulativeChange);
+            });
+          }
         }
 
-        /** 외화 종목이면 KRW로 환산 */
-        return stock ? convertToKRW(price, stock.currency, exchangeRates) : price;
+        const seriesData = sortedDates.map((date) => {
+          const percentage = percentageMap.get(date);
+          return percentage === undefined ? null : percentage;
+        });
+
+        return {
+          name: history.symbol,
+          type: 'line',
+          data: seriesData,
+          smooth: true,
+        };
       });
 
-      return {
-        name: history.symbol,
-        type: 'line',
-        data: seriesData,
-        smooth: true,
-      };
-    });
-
-    return {
-      backgroundColor: 'transparent',
-      textStyle: {
-        color: isDark ? '#d1d5db' : '#374151',
-      },
-      title: {
-        text: '전체 포트폴리오 주가 추이',
-        left: 'center',
-        top: '10px',
-        textStyle: {
-          color: isDark ? '#e5e7eb' : '#111827',
+      yAxis = {
+        type: 'value',
+        name: '누적 등락률 (%)',
+        scale: true,
+        nameTextStyle: {
+          color: isDark ? '#9ca3af' : '#6b7280',
         },
-      },
-      tooltip: {
+        axisLabel: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+          formatter: '{value}%',
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#e5e7eb',
+          },
+        },
+        splitLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#f3f4f6',
+          },
+        },
+      };
+
+      tooltip = {
         trigger: 'axis',
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
@@ -145,14 +172,94 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
             if (param.value != null) {
-              // seriesName에서 [티커] 부분만 추출
+              const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
+              result += `${param.marker}${ticker}: ${param.value.toFixed(2)}%<br/>`;
+            }
+          });
+          return result;
+        },
+      };
+    } else {
+      series = histories.map((history) => {
+        const stock = stocks.find((s) => s.ticker === history.symbol);
+        const dataMap = new Map(
+          history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
+        );
+
+        const seriesData = sortedDates.map((date) => {
+          const price = dataMap.get(date);
+          if (!price) {
+            return null;
+          }
+
+          return stock ? convertToKRW(price, stock.currency, exchangeRates) : price;
+        });
+
+        return {
+          name: history.symbol,
+          type: 'line',
+          data: seriesData,
+          smooth: true,
+        };
+      });
+
+      yAxis = {
+        type: 'value',
+        name: '가격 (KRW)',
+        scale: true,
+        nameTextStyle: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+        },
+        axisLabel: {
+          color: isDark ? '#9ca3af' : '#6b7280',
+          formatter: '{value}',
+        },
+        axisLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#e5e7eb',
+          },
+        },
+        splitLine: {
+          lineStyle: {
+            color: isDark ? '#374151' : '#f3f4f6',
+          },
+        },
+      };
+
+      tooltip = {
+        trigger: 'axis',
+        backgroundColor: isDark ? '#1f2937' : '#ffffff',
+        borderColor: isDark ? '#374151' : '#e5e7eb',
+        textStyle: {
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
+        formatter(params: any) {
+          let result = `${params[0].axisValue}<br/>`;
+          params.forEach((param: any) => {
+            if (param.value != null) {
               const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
               result += `${param.marker}${ticker}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW<br/>`;
             }
           });
           return result;
         },
+      };
+    }
+
+    return {
+      backgroundColor: 'transparent',
+      textStyle: {
+        color: isDark ? '#d1d5db' : '#374151',
       },
+      title: {
+        text: isOverlap ? '종목별 누적 등락률 비교' : '전체 포트폴리오 주가 추이',
+        left: 'center',
+        top: '10px',
+        textStyle: {
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
+      },
+      tooltip,
       legend: {
         data: histories.map((h) => h.symbol),
         top: '45px',
@@ -173,27 +280,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           },
         },
       },
-      yAxis: {
-        type: 'value',
-        name: '가격 (KRW)',
-        scale: true,
-        nameTextStyle: {
-          color: isDark ? '#9ca3af' : '#6b7280',
-        },
-        axisLabel: {
-          color: isDark ? '#9ca3af' : '#6b7280',
-        },
-        axisLine: {
-          lineStyle: {
-            color: isDark ? '#374151' : '#e5e7eb',
-          },
-        },
-        splitLine: {
-          lineStyle: {
-            color: isDark ? '#374151' : '#f3f4f6',
-          },
-        },
-      },
+      yAxis,
       series,
       grid: {
         left: '3%',
@@ -204,7 +291,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       },
     };
   }, [
-    histories, stocks, exchangeRates, selectedPeriod, isDark,
+    histories, stocks, exchangeRates, selectedPeriod, isDark, isOverlap,
   ]);
 
   /** 2. 수익금 차트 (매수일 기준) */
@@ -593,6 +680,15 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
                 {option.label}
               </Button>
             ))}
+            <Button
+              onClick={() => {
+                setOverlap((state) => !state);
+              }}
+              size="sm"
+              variant={isOverlap ? 'default' : 'outline'}
+            >
+              %
+            </Button>
           </div>
           <ReactECharts lazyUpdate notMerge={false} option={combinedChartOption} style={{ height: '400px' }} />
         </div>
