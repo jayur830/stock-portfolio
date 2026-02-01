@@ -160,6 +160,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           color: isDark ? '#d1d5db' : '#374151',
         },
       },
+      dataZoom: [{ show: true }],
       xAxis: {
         type: 'category',
         data: sortedDates.map((d) => dayjs(d).format('YYYY.MM.DD')),
@@ -197,7 +198,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       grid: {
         left: '3%',
         right: '4%',
-        bottom: '3%',
+        bottom: '15%',
         top: '100px',
         containLabel: true,
       },
@@ -408,6 +409,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           color: isDark ? '#d1d5db' : '#374151',
         },
       },
+      dataZoom: [{ show: true }],
       xAxis: {
         type: 'category',
         data: dates,
@@ -541,7 +543,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       grid: {
         left: '3%',
         right: '4%',
-        bottom: '3%',
+        bottom: '15%',
         top: '100px',
         containLabel: true,
       },
@@ -599,7 +601,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
       {/* 누적 수익금 차트 */}
       {profitChartOption && (
         <div className="bg-card border rounded-lg p-4">
-          <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '350px' }} />
+          <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '400px' }} />
         </div>
       )}
     </div>
