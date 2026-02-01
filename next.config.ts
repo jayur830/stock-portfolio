@@ -21,6 +21,15 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ['echarts', '@tanstack/react-query', 'react-hook-form'],
   },
+
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
 };
 
 export default nextConfig;
