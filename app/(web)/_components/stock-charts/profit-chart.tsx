@@ -2,18 +2,23 @@ import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
 import { useMemo } from 'react';
 
-import { convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
+import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
 
 import type { HistoryData, StockChartsProps } from '.';
 
 export interface ProfitChartProps extends StockChartsProps {
   isDark: boolean;
   histories: HistoryData[];
+  currency: string;
 }
 
 /** 수익금 차트 (매수일 기준) */
-export default function ProfitChart({ isDark, histories, stocks, totalInvestment, exchangeRates }: ProfitChartProps) {
+export default function ProfitChart({ isDark, histories, stocks, totalInvestment, exchangeRates, currency }: ProfitChartProps) {
   const profitChartOption = useMemo(() => {
+    if (stocks.every(({ purchaseDate }) => !purchaseDate)) {
+      return null;
+    }
+
     const stockInfoList = stocks
       .filter((s) => {
         if (!s.purchaseDate) {
@@ -64,13 +69,13 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
     /** 매매차익 로직 */
     const profitMap = new Map<string, number>();
     stockInfoList
-      .flatMap(({ stock: { currency }, shares, purchaseDate, purchasePriceInKRW, priceMap }) => {
+      .flatMap(({ stock: { currency: stockCurrency }, shares, purchaseDate, purchasePriceInKRW, priceMap }) => {
         return priceMap
           .entries()
         /** 매수일 이후의 데이터만 필터링 */
           .filter(([date]) => dayjs(date).isSame(purchaseDate, 'day') || dayjs(date).isAfter(purchaseDate, 'day'))
           .map(([date, p]) => {
-            const price = convertToKRW(p, currency, exchangeRates);
+            const price = convertToKRW(p, stockCurrency, exchangeRates);
             return {
               date,
               /** (가격 - 매수일 가격) * 보유수량 */
@@ -84,7 +89,7 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
       });
     const profitList = profitMap.entries().toArray().sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1));
     /** 매매차익 차트 데이터 */
-    const profits = profitList.map(([, price]) => price);
+    const profits = profitList.map(([, price]) => convertCurrency(price, 'KRW', currency, exchangeRates));
     /** xAxis 데이터 */
     const dates = profitList.map(([date]) => dayjs(date).format('YYYY.MM.DD'));
 
@@ -146,14 +151,14 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
       .toArray()
       .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1))
       .map(([date, amount]) => {
+        let valueInKRW = amount;
         if (cumulativeDividendMap.has(date)) {
           prevDate = date;
-          return amount + cumulativeDividendMap.get(date)!;
+          valueInKRW = amount + cumulativeDividendMap.get(date)!;
+        } else if (dayjs(date).isAfter(prevDate, 'day')) {
+          valueInKRW = amount + cumulativeDividendMap.get(prevDate)!;
         }
-        if (dayjs(date).isAfter(prevDate, 'day')) {
-          return amount + cumulativeDividendMap.get(prevDate)!;
-        }
-        return amount;
+        return convertCurrency(valueInKRW, 'KRW', currency, exchangeRates);
       });
 
     prevDate = cumulativeDividendMap.keys().toArray().sort()[0];
@@ -163,14 +168,14 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
       .toArray()
       .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1))
       .map(([date]) => {
+        let valueInKRW = 0;
         if (totalDividendMap.has(date)) {
           prevDate = date;
-          return totalDividendMap.get(date)!;
+          valueInKRW = totalDividendMap.get(date)!;
+        } else if (dayjs(date).isAfter(prevDate, 'day')) {
+          valueInKRW = totalDividendMap.get(prevDate)!;
         }
-        if (dayjs(date).isAfter(prevDate, 'day')) {
-          return totalDividendMap.get(prevDate)!;
-        }
-        return 0;
+        return convertCurrency(valueInKRW, 'KRW', currency, exchangeRates);
       });
 
     return {
@@ -198,7 +203,7 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
           params.forEach((param: any) => {
             const value = param.value;
             const color = value >= 0 ? '#16a34a' : '#dc2626';
-            result += `${param.marker}<span style="color:${color}">${param.seriesName}: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW</span><br/>`;
+            result += `${param.marker}<span style="color:${color}">${param.seriesName}: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}</span><br/>`;
           });
           return result;
         },
@@ -225,7 +230,7 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
       },
       yAxis: {
         type: 'value',
-        name: '수익금 (KRW)',
+        name: `수익금 (${currency})`,
         nameTextStyle: {
           color: isDark ? '#9ca3af' : '#6b7280',
         },
@@ -350,8 +355,12 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
       },
     };
   }, [
-    histories, stocks, totalInvestment, exchangeRates, isDark,
+    histories, stocks, totalInvestment, exchangeRates, isDark, currency,
   ]);
+
+  if (profitChartOption == null) {
+    return <></>;
+  }
 
   return (
     <div className="bg-card border rounded-lg p-4">

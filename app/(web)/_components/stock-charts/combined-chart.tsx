@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { useMemo, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { convertToKRW } from '@/lib/utils';
+import { convertCurrency } from '@/lib/utils';
 
 import { HistoryData, StockChartsProps } from '.';
 
@@ -29,10 +29,11 @@ const periodOptions: TimePeriodOption[] = [
 export interface CombinedChartProps extends Omit<StockChartsProps, 'totalInvestment'> {
   isDark: boolean;
   histories: HistoryData[];
+  currency: string;
 }
 
 /** 통합 포트폴리오 차트 (모든 종목 합산) */
-export default function CombinedChart({ isDark, histories, stocks, exchangeRates }: CombinedChartProps) {
+export default function CombinedChart({ isDark, histories, stocks, exchangeRates, currency }: CombinedChartProps) {
   /** 기간 필터 상태 */
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod | null>('1Y');
 
@@ -104,7 +105,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
             return null;
           }
 
-          return stock ? convertToKRW(price, stock.currency, exchangeRates) : price;
+          return stock ? convertCurrency(price, stock.currency, currency, exchangeRates) : price;
         });
 
         return {
@@ -141,7 +142,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
           params.forEach((param: any) => {
             if (param.value != null) {
               const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
-              result += isOverlap ? `${param.marker}${ticker}: ${param.value.toFixed(2)}%<br/>` : `${param.marker}${ticker}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} KRW<br/>`;
+              result += isOverlap ? `${param.marker}${ticker}: ${param.value.toFixed(2)}%<br/>` : `${param.marker}${ticker}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}<br/>`;
             }
           });
           return result;
@@ -169,7 +170,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       },
       yAxis: {
         type: 'value',
-        name: isOverlap ? '누적 등락률 (%)' : '가격 (KRW)',
+        name: isOverlap ? '누적 등락률 (%)' : `가격 (${currency})`,
         scale: true,
         nameTextStyle: {
           color: isDark ? '#9ca3af' : '#6b7280',
@@ -199,7 +200,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       },
     };
   }, [
-    histories, stocks, exchangeRates, selectedPeriod, isDark, isOverlap,
+    histories, stocks, exchangeRates, selectedPeriod, isDark, isOverlap, currency,
   ]);
 
   return (

@@ -2,8 +2,15 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
-import { memo, useMemo } from 'react';
+import { memo, useMemo, useState } from 'react';
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { Stock } from '@/types';
 
 import CombinedChart from './combined-chart';
@@ -31,6 +38,8 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   const { theme, resolvedTheme } = useTheme();
   const isDark = theme === 'dark' || resolvedTheme === 'dark';
 
+  const [currency, setCurrency] = useState('KRW');
+
   /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
   const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
 
@@ -56,6 +65,8 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
     staleTime: 1000 * 60 * 5, // 5분
   });
 
+  const currencies = useMemo(() => ['KRW', ...Object.keys(exchangeRates)], [exchangeRates]);
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -73,8 +84,24 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
 
   return (
     <div className="flex flex-col gap-6 mt-6">
+      <div className="flex justify-end">
+        <Select onValueChange={setCurrency} value={currency}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="통화 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            {currencies.map((c) => (
+              <SelectItem key={c} value={c}>
+                {c}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {/* 통합 포트폴리오 차트 */}
       <CombinedChart
+        currency={currency}
         exchangeRates={exchangeRates}
         histories={histories}
         isDark={isDark}
@@ -83,6 +110,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
 
       {/* 누적 수익금 차트 */}
       <ProfitChart
+        currency={currency}
         exchangeRates={exchangeRates}
         histories={histories}
         isDark={isDark}

@@ -124,6 +124,34 @@ export function convertToKRW(
   return amount * rate;
 }
 
+/** 금액을 특정 통화로 환산 */
+export function convertCurrency(
+  /** 금액 */
+  amount: number,
+  /** 현재 통화 */
+  from: Stock['currency'],
+  /** 목표 통화 */
+  to: string,
+  /** 환율 정보 */
+  exchangeRates: { [key: string]: number },
+): number {
+  if (from === to) {
+    return amount;
+  }
+
+  const amountInKRW = convertToKRW(amount, from, exchangeRates);
+  if (to === 'KRW') {
+    return amountInKRW;
+  }
+
+  const toRate = exchangeRates[to];
+  if (!toRate || toRate <= 0) {
+    return 0;
+  }
+
+  return amountInKRW / toRate;
+}
+
 /** 단일 종목의 연 배당금 계산 */
 export function calculateStockAnnualDividend(
   /** 종목 */
