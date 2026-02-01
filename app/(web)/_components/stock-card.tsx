@@ -363,6 +363,8 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               <PopoverContent align="start" className="w-auto p-0">
                 <Calendar
                   autoFocus
+                  captionLayout="dropdown"
+                  defaultMonth={stock.purchaseDate ? stock.purchaseDate.toDate() : undefined}
                   locale={ko}
                   mode="single"
                   onSelect={(date) => {
