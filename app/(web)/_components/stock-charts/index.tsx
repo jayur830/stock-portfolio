@@ -11,9 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Stock } from '@/types';
 
 import CombinedChart from './combined-chart';
+import IndividualCharts from './individual-charts';
 import ProfitChart from './profit-chart';
 
 export interface StockChartsProps {
@@ -83,8 +85,13 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   }
 
   return (
-    <div className="flex flex-col gap-6 mt-6">
-      <div className="flex justify-end">
+    <Tabs className="flex flex-col gap-6 mt-6" defaultValue="total">
+      <div className="flex items-center justify-between">
+        <TabsList>
+          <TabsTrigger value="total">종합</TabsTrigger>
+          <TabsTrigger value="individual">종목별</TabsTrigger>
+        </TabsList>
+
         <Select onValueChange={setCurrency} value={currency}>
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="통화 선택" />
@@ -99,25 +106,38 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
         </Select>
       </div>
 
-      {/* 통합 포트폴리오 차트 */}
-      <CombinedChart
-        currency={currency}
-        exchangeRates={exchangeRates}
-        histories={histories}
-        isDark={isDark}
-        stocks={stocks}
-      />
+      <TabsContent className="flex flex-col gap-6 mt-0" value="total">
+        {/* 통합 포트폴리오 차트 */}
+        <CombinedChart
+          currency={currency}
+          exchangeRates={exchangeRates}
+          histories={histories}
+          isDark={isDark}
+          stocks={stocks}
+        />
 
-      {/* 누적 수익금 차트 */}
-      <ProfitChart
-        currency={currency}
-        exchangeRates={exchangeRates}
-        histories={histories}
-        isDark={isDark}
-        stocks={stocks}
-        totalInvestment={totalInvestment}
-      />
-    </div>
+        {/* 누적 수익금 차트 */}
+        <ProfitChart
+          currency={currency}
+          exchangeRates={exchangeRates}
+          histories={histories}
+          isDark={isDark}
+          stocks={stocks}
+          totalInvestment={totalInvestment}
+        />
+      </TabsContent>
+
+      <TabsContent value="individual">
+        <IndividualCharts
+          currency={currency}
+          exchangeRates={exchangeRates}
+          histories={histories}
+          isDark={isDark}
+          stocks={stocks}
+          totalInvestment={totalInvestment}
+        />
+      </TabsContent>
+    </Tabs>
   );
 };
 
