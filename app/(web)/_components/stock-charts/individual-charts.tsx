@@ -72,21 +72,23 @@ export default function IndividualCharts({
     // 3. 누적 수익 및 배당 재투자 계산
     let cumulativeDiv = 0;
     let reinvestShares = initialShares;
-    const reinvestValue = investmentAmount;
 
     const profitData: number[] = [];
     const reinvestData: number[] = [];
-    const monthlyDivData: number[] = Array(dates.length).fill(0);
+    const monthlyDivSumMap = new Map<string, number>();
 
-    filteredData.forEach((d, idx) => {
+    filteredData.forEach((d) => {
       const dateStr = dayjs(d.date).format('YYYY-MM-DD');
+      const monthStr = dayjs(d.date).format('YYYY.MM');
       const currentPriceInKRW = convertToKRW(d.close, stock.currency, exchangeRates);
 
       // 배당 발생 시 처리
       if (dividendMap.has(dateStr)) {
         const divAmt = dividendMap.get(dateStr)!;
         cumulativeDiv += divAmt;
-        monthlyDivData[idx] = convertCurrency(divAmt, 'KRW', currency, exchangeRates);
+
+        // 월별 합계 저장
+        monthlyDivSumMap.set(monthStr, (monthlyDivSumMap.get(monthStr) || 0) + divAmt);
 
         // 재투자: 세후 배당금으로 주식 추가 매수
         const additionalShares = divAmt / currentPriceInKRW;
@@ -101,6 +103,10 @@ export default function IndividualCharts({
       const currentReinvestValue = currentPriceInKRW * reinvestShares;
       reinvestData.push(convertCurrency(currentReinvestValue - investmentAmount, 'KRW', currency, exchangeRates));
     });
+
+    // 배당 차트 전용 월별 데이터 구성
+    const monthlyLabels = [...new Set(filteredData.map((d) => dayjs(d.date).format('YYYY.MM')))].sort();
+    const monthlyDivChartData = monthlyLabels.map((m) => convertCurrency(monthlyDivSumMap.get(m) || 0, 'KRW', currency, exchangeRates));
 
     const commonOption = {
       backgroundColor: 'transparent',
@@ -129,13 +135,35 @@ export default function IndividualCharts({
     return {
       price: {
         ...commonOption,
+        tooltip: {
+          ...commonOption.tooltip,
+          formatter: (params: any) => {
+            const param = Array.isArray(params) ? params[0] : params;
+            const value = param.value;
+            const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return `${param.name}<br/>${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
+          },
+        },
         title: { text: '주가 추이', left: 'center', textStyle: { fontSize: 14, color: isDark ? '#e5e7eb' : '#111827' } },
         series: [{ name: '주가', type: 'line', data: priceData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#3b82f6' } }],
       },
       dividend: {
         ...commonOption,
+        tooltip: {
+          ...commonOption.tooltip,
+          formatter: (params: any) => {
+            const param = Array.isArray(params) ? params[0] : params;
+            const value = param.value;
+            const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return `${param.name}<br/>${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
+          },
+        },
+        xAxis: {
+          ...commonOption.xAxis,
+          data: monthlyLabels,
+        },
         title: { text: '월별 배당금', left: 'center', textStyle: { fontSize: 14, color: isDark ? '#e5e7eb' : '#111827' } },
-        series: [{ name: '배당금', type: 'bar', data: monthlyDivData, itemStyle: { color: '#f59e0b' } }],
+        series: [{ name: '배당금', type: 'bar', data: monthlyDivChartData, itemStyle: { color: '#f59e0b' } }],
       },
       profit: {
         ...commonOption,
@@ -161,7 +189,7 @@ export default function IndividualCharts({
           <SelectContent>
             {stocks.filter((s) => s.ticker).map((s) => (
               <SelectItem key={s.ticker} value={s.ticker}>
-                {s.name} ({s.ticker})
+                {s.ticker}: {s.name}
               </SelectItem>
             ))}
           </SelectContent>
