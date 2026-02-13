@@ -18,6 +18,7 @@ import ExchangeRates from './_components/exchange-rates';
 import IncomeTaxInfo from './_components/income-tax-info';
 import MonthlyDividends from './_components/monthly-dividends';
 import TargetInput from './_components/target-input';
+import TaxInfo from './_components/tax-info';
 
 const StockCharts = dynamic(() => import('./_components/stock-charts'), {
   loading: () => <div className="flex justify-center items-center p-8 text-muted-foreground">차트 로딩 중...</div>,
@@ -88,6 +89,7 @@ function PageContent() {
       }
     }).unsubscribe;
   }, [watch, pathname, searchParamsObject]);
+
   /** 연 배당금 */
   const [annualDividend, setAnnualDividend] = useState<number | null>(null);
   /** 해외 연 배당금 */
@@ -402,21 +404,7 @@ function PageContent() {
               <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
                 <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                 <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs md:text-sm text-muted-foreground">연간 배당소득 (세전)</span>
-                    <span className="text-sm md:text-base font-medium">
-                      {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액 (15.4%)</span>
-                    <span className="text-sm md:text-base font-medium text-muted-foreground">
-                      {(annualDividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}{' '}
-                      원
-                    </span>
-                  </div>
+                  <TaxInfo dividend={annualDividend} />
                   {annualDividendAdditionalTax != null ? (
                     <>
                       <div className="border-t pt-3">
@@ -495,30 +483,10 @@ function PageContent() {
                       return <></>;
                     }
 
-                    const defaultElement = (
-                      <>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs md:text-sm text-muted-foreground">연간 배당소득 (세전)</span>
-                          <span className="text-sm md:text-base font-medium">
-                            {calculatedTargetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액 (15.4%)</span>
-                          <span className="text-sm md:text-base font-medium text-muted-foreground">
-                            {(calculatedTargetAnnualDividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
-                              maximumFractionDigits: 0,
-                            })}{' '}
-                            원
-                          </span>
-                        </div>
-                      </>
-                    );
-
                     if (requiredInvestmentAdditionalTax != null) {
                       return (
                         <>
-                          {defaultElement}
+                          <TaxInfo dividend={calculatedTargetAnnualDividend} />
                           <div className="border-t pt-3">
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
@@ -555,7 +523,7 @@ function PageContent() {
 
                     return (
                       <>
-                        {defaultElement}
+                        <TaxInfo dividend={calculatedTargetAnnualDividend} />
                         <div className="border-t pt-3">
                           <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                             <svg
