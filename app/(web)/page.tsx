@@ -13,10 +13,10 @@ import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStock
 import type { FormValues, Stock } from '@/types';
 
 import CalculateButton from './_components/calculate-button';
+import CountPerStock from './_components/count-per-stock';
 import ExchangeRates from './_components/exchange-rates';
 import IncomeTaxInfo from './_components/income-tax-info';
 import MonthlyDividends from './_components/monthly-dividends';
-import QuantityPerStock from './_components/quantity-per-stock';
 import TargetInput from './_components/target-input';
 
 const StockCharts = dynamic(() => import('./_components/stock-charts'), {
@@ -104,7 +104,7 @@ function PageContent() {
   const [chartData, setChartData] = useState<{
     totalInvestment: number;
     exchangeRates: { [key: string]: number };
-    stocks: any[];
+    stocks: Stock[];
   } | null>(null);
 
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
@@ -397,16 +397,8 @@ function PageContent() {
                   </span>
                 </div>
               </div>
-              {chartData && chartData.stocks.length > 0 && (
-                <div className="flex flex-col gap-2 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <h3 className="text-sm font-semibold text-green-900 dark:text-green-100">종목별 보유 수량</h3>
-                  <QuantityPerStock exchangeRates={chartData.exchangeRates} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
-                </div>
-              )}
-              <div className="flex flex-col gap-2 p-4 bg-blue-50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-800/50 rounded-lg">
-                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300">예상 월별 배당금 (세후)</h3>
-                <MonthlyDividends amounts={monthlyDividends} />
-              </div>
+              <CountPerStock chartData={chartData} tab="dividend" />
+              <MonthlyDividends amounts={monthlyDividends} />
               <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
                 <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                 <div className="space-y-3">
@@ -491,16 +483,8 @@ function PageContent() {
                   </span>
                 </div>
               </div>
-              {chartData && chartData.stocks.length > 0 && (
-                <div className="flex flex-col gap-2 p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                  <h3 className="text-sm font-semibold text-purple-900 dark:text-purple-100">종목별 보유 수량</h3>
-                  <QuantityPerStock exchangeRates={chartData.exchangeRates} stocks={chartData.stocks} totalInvestment={chartData.totalInvestment} />
-                </div>
-              )}
-              <div className="flex flex-col gap-2 p-4 bg-blue-50 dark:bg-blue-950/10 border border-blue-200 dark:border-blue-900/30 rounded-lg">
-                <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-300">예상 월별 배당금 (세후)</h3>
-                <MonthlyDividends amounts={monthlyDividends} />
-              </div>
+              <CountPerStock chartData={chartData} tab="investment" />
+              <MonthlyDividends amounts={monthlyDividends} />
               <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
                 <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                 <div className="space-y-3">
