@@ -1,6 +1,5 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'react';
@@ -9,15 +8,16 @@ import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import StockCard from '@/app/(web)/_components/stock-card';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, decodeStocksFromBase64, DIVIDEND_TAX_RATE, encodeStocksToBase64, FOREIGN_TAX_RATES, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
 import type { FormValues, Stock } from '@/types';
 
 import CalculateButton from './_components/calculate-button';
+import ExchangeRates from './_components/exchange-rates';
 import IncomeTaxInfo from './_components/income-tax-info';
 import MonthlyDividends from './_components/monthly-dividends';
 import QuantityPerStock from './_components/quantity-per-stock';
+import TargetInput from './_components/target-input';
 
 const StockCharts = dynamic(() => import('./_components/stock-charts'), {
   loading: () => <div className="flex justify-center items-center p-8 text-muted-foreground">차트 로딩 중...</div>,
@@ -109,47 +109,6 @@ function PageContent() {
 
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
   const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignAnnualDividend, averageForeignTaxRate) : null;
-
-  /** 환율 조회 */
-  const { data: exchangeRateData, isLoading: loadingExchangeRate, refetch: refetchExchangeRate } = useQuery({
-    queryKey: ['exchangeRates'],
-    async queryFn() {
-      const response = await fetch('https://api.exchangerate-api.com/v4/latest/KRW');
-      if (!response.ok) {
-        throw new Error('환율 조회에 실패했습니다.');
-      }
-      const data = await response.json();
-      // KRW 기준으로 다른 통화의 환율을 계산 (1 외화 = X KRW)
-      return {
-        USD: +(1 / data.rates.USD).toFixed(2),
-        EUR: +(1 / data.rates.EUR).toFixed(2),
-        JPY: +(1 / data.rates.JPY).toFixed(2),
-        GBP: +(1 / data.rates.GBP).toFixed(2),
-        CNY: +(1 / data.rates.CNY).toFixed(2),
-        AUD: +(1 / data.rates.AUD).toFixed(2),
-        CAD: +(1 / data.rates.CAD).toFixed(2),
-        CHF: +(1 / data.rates.CHF).toFixed(2),
-        HKD: +(1 / data.rates.HKD).toFixed(2),
-      } as { [key: string]: number };
-    },
-    staleTime: 1000 * 60 * 60, // 1시간
-    refetchOnWindowFocus: true,
-  });
-
-  /** 환율 데이터가 변경되면 폼에 반영 */
-  useEffect(() => {
-    if (exchangeRateData) {
-      setValue('exchangeRates', exchangeRateData);
-    }
-  }, [exchangeRateData, setValue]);
-
-  /** 환율 조회 버튼 핸들러 */
-  const handleFetchExchangeRate = useCallback(async () => {
-    const result = await refetchExchangeRate();
-    if (result.data) {
-      setValue('exchangeRates', result.data);
-    }
-  }, [refetchExchangeRate, setValue]);
 
   /** 폼 데이터 검증 */
   const validateFormData = useCallback((data: FormValues): string | null => {
@@ -351,157 +310,17 @@ function PageContent() {
       </div>
 
       {/** 환율 */}
-      <Button
-        className="w-full sm:w-fit"
-        disabled={loadingExchangeRate}
-        onClick={handleFetchExchangeRate}
-        size="sm"
-        type="button"
-        variant="outline"
-      >
-        {loadingExchangeRate ? '조회 중...' : '환율 조회'}
-      </Button>
-      <Controller
+      <ExchangeRates
         control={control}
-        name="exchangeRates"
-        render={({ field: { onChange, value: exchangeRates } }) => {
-          return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-              {[
-                'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
-              ].map((currency) => (
-                <div className="flex flex-col gap-1.5" key={currency}>
-                  <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
-                  <Input
-                    min={0}
-                    onChange={(e) => {
-                      const newValue = e.target.valueAsNumber;
-                      onChange({
-                        ...exchangeRates,
-                        [currency]: isNaN(newValue) ? 0 : newValue,
-                      });
-                    }}
-                    placeholder="0"
-                    step="any"
-                    type="number"
-                    value={exchangeRates?.[currency as keyof typeof exchangeRates] || ''}
-                  />
-                </div>
-              ))}
-            </div>
-          );
+        onResetExchangeRates={(data) => {
+          setValue('exchangeRates', data);
         }}
       />
 
       <form className="flex flex-col gap-2" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2 p-4 bg-muted rounded-lg">
-          {/** 총 투자금 입력 필드 */}
-          {activeTab === 'dividend' && (
-            <Controller
-              control={control}
-              name="totalInvestment"
-              render={({ field: { onChange, value: current, ...field } }) => (
-                <>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <label className="text-xs md:text-sm font-medium whitespace-nowrap">총 투자금</label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        className="flex-1"
-                        maxLength={24}
-                        min={0}
-                        placeholder="총 투자금을 입력하세요"
-                        step="any"
-                        type="number"
-                        {...field}
-                        onChange={(e) => {
-                          onChange(e.target.value === '' ? null : e.target.valueAsNumber);
-                        }}
-                        value={current || ''}
-                      />
-                      <span className="text-sm text-muted-foreground">원</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {[
-                      { label: '+10만', value: 100000 },
-                      { label: '+100만', value: 1000000 },
-                      { label: '+1000만', value: 10000000 },
-                      { label: '+1억', value: 100000000 },
-                      { label: '+10억', value: 1000000000 },
-                      { label: '+100억', value: 10000000000 },
-                    ].map(({ label, value }) => (
-                      <Button
-                        className="h-7 text-xs"
-                        key={label}
-                        onClick={() => {
-                          onChange(isNaN(current) ? value : current + value);
-                        }}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                      >
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
-                </>
-              )}
-            />
-          )}
-
-          {/** 목표 연 배당금 입력 필드 */}
-          {activeTab === 'investment' && (
-            <Controller
-              control={control}
-              name="targetAnnualDividend"
-              render={({ field: { onChange, value: current, ...field } }) => (
-                <>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <label className="text-xs md:text-sm font-medium whitespace-nowrap">목표 연 배당금 (세전)</label>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        className="flex-1"
-                        maxLength={24}
-                        min={0}
-                        placeholder="목표 연 배당금을 입력하세요"
-                        step="any"
-                        type="number"
-                        {...field}
-                        onChange={(e) => {
-                          onChange(e.target.value === '' ? null : e.target.valueAsNumber);
-                        }}
-                        value={current || ''}
-                      />
-                      <span className="text-sm text-muted-foreground">원</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-1">
-                    {[
-                      { label: '+10만', value: 100000 },
-                      { label: '+100만', value: 1000000 },
-                      { label: '+1000만', value: 10000000 },
-                      { label: '+1억', value: 100000000 },
-                      { label: '+10억', value: 1000000000 },
-                      { label: '+100억', value: 10000000000 },
-                    ].map(({ label, value }) => (
-                      <Button
-                        className="h-7 text-xs"
-                        key={label}
-                        onClick={() => {
-                          onChange(isNaN(current) ? value : current + value);
-                        }}
-                        size="sm"
-                        type="button"
-                        variant="outline"
-                      >
-                        {label}
-                      </Button>
-                    ))}
-                  </div>
-                </>
-              )}
-            />
-          )}
+          {/** 총 투자금/목표 연 배당금 입력 */}
+          <TargetInput control={control} tab={activeTab} />
         </div>
 
         {/** 종목 리스트 */}
