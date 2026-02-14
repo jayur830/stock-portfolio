@@ -126,6 +126,12 @@ export default function IndividualCharts({
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: { color: isDark ? '#e5e7eb' : '#111827' },
+        formatter: (params: any) => {
+          const param = Array.isArray(params) ? params[0] : params;
+          const value = param.value;
+          const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          return `${param.name}<br/>${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
+        },
       },
       dataZoom: [{ show: true, height: 30, bottom: 0 }],
       grid: { left: '2%', right: '2%', bottom: 40, top: 60, containLabel: true },
@@ -145,29 +151,11 @@ export default function IndividualCharts({
     return {
       price: {
         ...commonOption,
-        tooltip: {
-          ...commonOption.tooltip,
-          formatter: (params: any) => {
-            const param = Array.isArray(params) ? params[0] : params;
-            const value = param.value;
-            const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            return `${param.name}<br/>${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
-          },
-        },
         title: { text: '주가 추이', left: 'center', textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' } },
         series: [{ name: '주가', type: 'line', data: priceData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#3b82f6' } }],
       },
       dividend: {
         ...commonOption,
-        tooltip: {
-          ...commonOption.tooltip,
-          formatter: (params: any) => {
-            const param = Array.isArray(params) ? params[0] : params;
-            const value = param.value;
-            const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            return `${param.name}<br/>${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
-          },
-        },
         xAxis: {
           ...commonOption.xAxis,
           data: monthlyLabels,
