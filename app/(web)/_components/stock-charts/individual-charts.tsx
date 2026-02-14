@@ -50,7 +50,10 @@ export default function IndividualCharts({
 
     // 기본 정보 계산
     const investmentAmount = (totalInvestment * stock.ratio) / 100;
-    const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day')) || filteredData[0];
+    const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'));
+
+    if (!purchaseDataPoint) return null;
+
     const purchasePriceInKRW = convertToKRW(purchaseDataPoint.close, stock.currency, exchangeRates);
     const initialShares = investmentAmount / purchasePriceInKRW;
 
@@ -84,6 +87,12 @@ export default function IndividualCharts({
         // 배당일이 현재 주가 날짜보다 미래라면 중단 (아직 지급 안 됨)
         if (divDate.isAfter(currentDate, 'day')) {
           break;
+        }
+
+        // 매수월에는 배당을 받지 못하여 0원 처리 (ProfitChart와 일관성)
+        if (divDate.format('YYYY-MM') === purchaseDate.format('YYYY-MM')) {
+          divIndex++;
+          continue;
         }
 
         // 배당금 계산 (세후)
