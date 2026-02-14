@@ -138,14 +138,15 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
           color: isDark ? '#e5e7eb' : '#111827',
         },
         formatter(params: any) {
-          let result = `${params[0].axisValue}<br/>`;
-          params.forEach((param: any) => {
-            if (param.value != null) {
+          const result = `${params[0].axisValue}<br/>`;
+          const content: string = params
+            .filter((param: any) => param.value)
+            .map((param: any) => {
               const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
-              result += isOverlap ? `${param.marker}${ticker}: ${param.value.toFixed(2)}%<br/>` : `${param.marker}${ticker}: ${param.value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}<br/>`;
-            }
-          });
-          return result;
+              return isOverlap ? `${param.marker}${ticker}: ${param.value.toFixed(2)}%` : `${param.marker}${ticker}: ${currency === 'KRW' ? Math.round(param.value).toLocaleString('ko-KR') : param.value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}`;
+            })
+            .join('<br />');
+          return result + content;
         },
       },
       legend: {

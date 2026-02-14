@@ -126,11 +126,11 @@ export default function IndividualCharts({
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: { color: isDark ? '#e5e7eb' : '#111827' },
-        formatter: (params: any) => {
+        formatter(params: any) {
           const param = Array.isArray(params) ? params[0] : params;
           const value = param.value;
           const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          return `${param.name}<br/>${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
+          return `${param.name}<br />${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
         },
       },
       dataZoom: [{ show: true, height: 30, bottom: 0 }],
@@ -165,6 +165,26 @@ export default function IndividualCharts({
       },
       profit: {
         ...commonOption,
+        tooltip: {
+          ...commonOption.tooltip,
+          formatter: (params: any) => {
+            if (Array.isArray(params)) {
+              const name = params[0].name;
+              const content = params
+                .map(({ value, marker, seriesName }) => {
+                  const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  return `${marker}${seriesName}: ${formattedValue} ${currency}`;
+                })
+                .join('<br />');
+              return `${name}<br />${content}`;
+            }
+
+            const param = Array.isArray(params) ? params[0] : params;
+            const value = param.value;
+            const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return `${param.name}<br />${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
+          },
+        },
         grid: {
           ...commonOption.grid,
           top: 100,
