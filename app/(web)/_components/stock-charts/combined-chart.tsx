@@ -192,8 +192,8 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       },
       series,
       grid: {
-        left: '3%',
-        right: '4%',
+        left: '2%',
+        right: '2%',
         bottom: '15%',
         top: '100px',
         containLabel: true,
