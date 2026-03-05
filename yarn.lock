@@ -8115,10 +8115,10 @@ y18n@^5.0.5:
   resolved "https://registry.npmjs.org/y18n/-/y18n-5.0.8.tgz"
   integrity sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==
 
-yahoo-finance2@^3.11.2:
-  version "3.11.2"
-  resolved "https://registry.yarnpkg.com/yahoo-finance2/-/yahoo-finance2-3.11.2.tgz#93e94e0bd8a4a8fca885c231d2880987a6ac7ea3"
-  integrity sha512-SIvMXjrOktBRD8m+qXAGCK+vR1vwBKuMgCnvmbxv29+t6LTDu0vAUxNYfbigsMRTmBzS4F9TQwbYF90g3Om4HA==
+yahoo-finance2@^3.13.2:
+  version "3.13.2"
+  resolved "https://registry.yarnpkg.com/yahoo-finance2/-/yahoo-finance2-3.13.2.tgz#b51c16f18530b66cbe95571f0e2d5fd9f7b5a248"
+  integrity sha512-aAOJEjuLClfDxVPRKxjcwFoyzMr8BE/svgUqr5IjnQR+kppYbKO92Wl3SbAGz5DRghy6FiUfqi5FBDSBA/e2jg==
   dependencies:
     "@deno/shim-deno" "~0.18.0"
     fetch-mock-cache "npm:fetch-mock-cache@^2.1.3"
