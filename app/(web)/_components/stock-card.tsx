@@ -317,16 +317,13 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   <SelectValue placeholder="통화" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="KRW">KRW</SelectItem>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="JPY">JPY</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                  <SelectItem value="CNY">CNY</SelectItem>
-                  <SelectItem value="AUD">AUD</SelectItem>
-                  <SelectItem value="CAD">CAD</SelectItem>
-                  <SelectItem value="CHF">CHF</SelectItem>
-                  <SelectItem value="HKD">HKD</SelectItem>
+                  {[
+                    'KRW', 'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
+                  ].map((currency) => (
+                    <SelectItem key={currency} value={currency}>
+                      {currency}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}

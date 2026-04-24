@@ -298,6 +298,8 @@ function PageContent() {
     }
   }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
+  const requiredInvestmentAdditionalTax = requiredInvestment != null && calculatedTargetAnnualDividend != null ? calculateComprehensiveTax(calculatedTargetAnnualDividend, foreignAnnualDividend) : null;
+
   return (
     <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col overflow-x-hidden">
       {/** 배당금 계산/투자금 계산 탭 */}
@@ -477,72 +479,63 @@ function PageContent() {
                 <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
                   <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                   <div className="space-y-3">
-                    {(() => {
-                      const requiredInvestmentAdditionalTax = requiredInvestment != null && calculatedTargetAnnualDividend != null ? calculateComprehensiveTax(calculatedTargetAnnualDividend, foreignAnnualDividend) : null;
-
-                      if (calculatedTargetAnnualDividend == null) {
-                        return <></>;
-                      }
-
-                      if (requiredInvestmentAdditionalTax != null) {
-                        return (
-                          <>
-                            <TaxInfo dividend={calculatedTargetAnnualDividend} />
-                            <div className="border-t pt-3">
-                              <div className="flex items-start justify-between">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2">
-                                    <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">종합과세 대상</div>
-                                    <IncomeTaxInfo />
-                                  </div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                                    금융소득이 2,000만원을 초과하여 종합과세 대상입니다.
-                                  </div>
-                                </div>
+                    {calculatedTargetAnnualDividend == null ? (
+                      <></>
+                    ) : requiredInvestmentAdditionalTax == null ? (
+                      <>
+                        <TaxInfo dividend={calculatedTargetAnnualDividend} />
+                        <div className="border-t pt-3">
+                          <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+                            <svg
+                              className="w-4 h-4 md:w-5 md:h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              viewBox="0 0 24 24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span className="text-xs md:text-sm font-medium">분리과세로 과세 종결 (추가 납부 없음)</span>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <TaxInfo dividend={calculatedTargetAnnualDividend} />
+                        <div className="border-t pt-3">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2">
+                                <div className="text-sm font-semibold text-gray-800 dark:text-gray-200">종합과세 대상</div>
+                                <IncomeTaxInfo />
+                              </div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                금융소득이 2,000만원을 초과하여 종합과세 대상입니다.
                               </div>
                             </div>
-                            <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
-                              requiredInvestmentAdditionalTax > 0 ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : requiredInvestmentAdditionalTax === 0 ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-                            }`}
-                            >
-                              <span className={`text-sm font-semibold ${
-                                requiredInvestmentAdditionalTax > 0 ? 'text-red-900 dark:text-red-100' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'
-                              }`}
-                              >
-                                {requiredInvestmentAdditionalTax > 0 ? '내년 추가 납부 예정' : requiredInvestmentAdditionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
-                              </span>
-                              <span className={`text-base md:text-lg font-bold ${
-                                requiredInvestmentAdditionalTax > 0 ? 'text-red-600 dark:text-red-400' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'
-                              }`}
-                              >
-                                {requiredInvestmentAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
-                              </span>
-                            </div>
-                          </>
-                        );
-                      }
-
-                      return (
-                        <>
-                          <TaxInfo dividend={calculatedTargetAnnualDividend} />
-                          <div className="border-t pt-3">
-                            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
-                              <svg
-                                className="w-4 h-4 md:w-5 md:h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth={2}
-                                viewBox="0 0 24 24"
-                                xmlns="http://www.w3.org/2000/svg"
-                              >
-                                <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                              </svg>
-                              <span className="text-xs md:text-sm font-medium">분리과세로 과세 종결 (추가 납부 없음)</span>
-                            </div>
                           </div>
-                        </>
-                      );
-                    })()}
+                        </div>
+                        <div
+                          className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
+                            requiredInvestmentAdditionalTax > 0 ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : requiredInvestmentAdditionalTax === 0 ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
+                          }`}
+                        >
+                          <span className={`text-sm font-semibold ${
+                            requiredInvestmentAdditionalTax > 0 ? 'text-red-900 dark:text-red-100' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'
+                          }`}
+                          >
+                            {requiredInvestmentAdditionalTax > 0 ? '내년 추가 납부 예정' : requiredInvestmentAdditionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
+                          </span>
+                          <span className={`text-base md:text-lg font-bold ${
+                            requiredInvestmentAdditionalTax > 0 ? 'text-red-600 dark:text-red-400' : requiredInvestmentAdditionalTax === 0 ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'
+                          }`}
+                          >
+                            {requiredInvestmentAdditionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               </>
