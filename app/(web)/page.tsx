@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { Suspense, useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 
 import StockCard from '@/app/(web)/_components/stock-card';
@@ -72,7 +72,7 @@ function PageContent() {
             );
             break;
           case 'stocks':
-            // stocks 배열의 어떤 필드든 변경되면 전체 stocks를 URL에 저장
+            /** stocks 배열의 어떤 필드든 변경되면 전체 stocks를 URL에 저장 */
             const stocksData = value.stocks || [];
             const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64((value.stocks || []) as Stock[]) : undefined;
             setSearchParams(
@@ -97,16 +97,10 @@ function PageContent() {
     isForeign: boolean;
     taxRate: number;
   }[]>([]);
-  /** 해외 연 배당금 */
-  const [foreignAnnualDividend, setForeignAnnualDividend] = useState<number>(0);
-  /** 평균 해외 배당소득세율 (가중평균) */
-  const [averageForeignTaxRate, setAverageForeignTaxRate] = useState<number>(0.15);
   /** 필요한 투자금 */
   const [requiredInvestment, setRequiredInvestment] = useState<number | null>(null);
   /** 계산 시점의 목표 연 배당금 */
-  const [calculatedTargetAnnualDividend, setCalculatedTargetAnnualDividend] = useState<number | null>(null);
-  /** 월별 배당금 */
-  const [monthlyDividends, setMonthlyDividends] = useState<number[]>(Array(12).fill(0));
+  const [targetAnnualDividend, setTargetAnnualDividend] = useState<number | null>(null);
   /** 차트에 전달할 계산 시점의 값들 */
   const [chartData, setChartData] = useState<{
     totalInvestment: number;
@@ -115,7 +109,32 @@ function PageContent() {
   } | null>(null);
 
   /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
-  const annualDividend = stockDividends.length === 0 ? null : stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+  const annualDividend = useMemo(() => {
+    if (stockDividends.length === 0) {
+      return null;
+    }
+    return stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+  }, [stockDividends]);
+
+  /** 해외 연 배당금 합산 */
+  const foreignAnnualDividend = useMemo(() => {
+    return stockDividends
+      .filter(({ isForeign }) => isForeign)
+      .reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+  }, [stockDividends]);
+
+  /** 해외 평균 배당소득세율 (가중평균) */
+  const averageForeignTaxRate = useMemo(() => {
+    if (annualDividend != null && annualDividend > 0) {
+      return stockDividends
+        .filter(({ isForeign }) => isForeign)
+        .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / annualDividend;
+    }
+    return 0.15;
+  }, [annualDividend]);
+
+  /** 종목별 월별 배당금 합산 */
+  const monthlyDividends = useMemo(() => mergeMonthlyDividends(stockDividends), [stockDividends]);
 
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
   const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignAnnualDividend, averageForeignTaxRate) : null;
@@ -166,7 +185,6 @@ function PageContent() {
       /** 종목별 월별 배당금 */
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
       /** 종목별 세율 */
-      // const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
       const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {
         annualDividend,
@@ -177,20 +195,8 @@ function PageContent() {
     });
     setStockDividends(stockDividends);
 
-    /** 해외 연 배당금 합산 */
-    const totalForeignAnnualDividend = stockDividends
-      .filter(({ isForeign }) => isForeign)
-      .reduce((sum, { annualDividend }) => sum + annualDividend, 0);
-    /** 평균 해외 배당소득세율 (가중평균) */
-    const avgForeignTaxRate = totalForeignAnnualDividend > 0 ? stockDividends
-      .filter(({ isForeign }) => isForeign)
-      .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / totalForeignAnnualDividend : 0.15;
     /** 종목별 월별 배당금 합산 */
-    const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
 
-    setForeignAnnualDividend(totalForeignAnnualDividend);
-    setAverageForeignTaxRate(avgForeignTaxRate);
-    setMonthlyDividends(monthlyDividendArray);
     setRequiredInvestment(null);
     setChartData({
       totalInvestment: data.totalInvestment,
@@ -215,7 +221,6 @@ function PageContent() {
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
       /** 종목별 세율 */
-      // const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
       const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {
         annualDividend,
@@ -226,22 +231,8 @@ function PageContent() {
     });
     setStockDividends(stockDividends);
 
-    const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
-
-    /** 해외 연 배당금 합산 */
-    const totalForeignAnnualDividend = stockDividends
-      .filter(({ isForeign }) => isForeign)
-      .reduce((sum, { annualDividend }) => sum + annualDividend, 0);
-    /** 평균 해외 배당소득세율 (가중평균) */
-    const avgForeignTaxRate = totalForeignAnnualDividend > 0 ? stockDividends
-      .filter(({ isForeign }) => isForeign)
-      .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / totalForeignAnnualDividend : 0.15;
-
     setRequiredInvestment(requiredInvestmentAmount);
-    setCalculatedTargetAnnualDividend(data.targetAnnualDividend);
-    setForeignAnnualDividend(totalForeignAnnualDividend);
-    setAverageForeignTaxRate(avgForeignTaxRate);
-    setMonthlyDividends(monthlyDividendArray);
+    setTargetAnnualDividend(data.targetAnnualDividend);
     setChartData({
       totalInvestment: requiredInvestmentAmount,
       exchangeRates: data.exchangeRates,
@@ -275,10 +266,8 @@ function PageContent() {
       exchangeRates: currentExchangeRates,
       stocks: [],
     });
-    setForeignAnnualDividend(0);
     setRequiredInvestment(null);
-    setCalculatedTargetAnnualDividend(null);
-    setMonthlyDividends(Array(12).fill(0));
+    setTargetAnnualDividend(null);
     setChartData(null);
   }, [reset, getValues]);
 
@@ -305,7 +294,7 @@ function PageContent() {
     }
   }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
-  const requiredInvestmentAdditionalTax = requiredInvestment != null && calculatedTargetAnnualDividend != null ? calculateComprehensiveTax(calculatedTargetAnnualDividend, foreignAnnualDividend) : null;
+  const requiredInvestmentAdditionalTax = requiredInvestment != null && targetAnnualDividend != null ? calculateComprehensiveTax(targetAnnualDividend, foreignAnnualDividend) : null;
 
   return (
     <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col overflow-x-hidden">
@@ -486,7 +475,7 @@ function PageContent() {
                 <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
                   <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                   <div className="space-y-3">
-                    {calculatedTargetAnnualDividend == null ? (
+                    {targetAnnualDividend == null ? (
                       <></>
                     ) : requiredInvestmentAdditionalTax == null ? (
                       <>
