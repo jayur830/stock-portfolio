@@ -9,7 +9,7 @@ import StockCard from '@/app/(web)/_components/stock-card';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, decodeStocksFromBase64, DIVIDEND_TAX_RATE, encodeStocksToBase64, FOREIGN_TAX_RATES, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
+import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, decodeStocksFromBase64, encodeStocksToBase64, FOREIGN_TAX_RATES, mergeMonthlyDividends, setSearchParams } from '@/lib/utils';
 import type { FormValues, Stock } from '@/types';
 
 import CalculateButton from './_components/calculate-button';
@@ -90,8 +90,13 @@ function PageContent() {
     }).unsubscribe;
   }, [watch, pathname, searchParamsObject]);
 
-  /** 연 배당금 */
-  const [annualDividend, setAnnualDividend] = useState<number | null>(null);
+  /** 종목별 배당정보 리스트 */
+  const [stockDividends, setStockDividends] = useState<{
+    annualDividend: number;
+    monthlyDividends: Record<number, number>;
+    isForeign: boolean;
+    taxRate: number;
+  }[]>([]);
   /** 해외 연 배당금 */
   const [foreignAnnualDividend, setForeignAnnualDividend] = useState<number>(0);
   /** 평균 해외 배당소득세율 (가중평균) */
@@ -108,6 +113,9 @@ function PageContent() {
     exchangeRates: { [key: string]: number };
     stocks: Stock[];
   } | null>(null);
+
+  /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
+  const annualDividend = stockDividends.length === 0 ? null : stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
 
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
   const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignAnnualDividend, averageForeignTaxRate) : null;
@@ -158,7 +166,8 @@ function PageContent() {
       /** 종목별 월별 배당금 */
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
       /** 종목별 세율 */
-      const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
+      // const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
+      const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {
         annualDividend,
         monthlyDividends,
@@ -166,9 +175,8 @@ function PageContent() {
         taxRate,
       };
     });
+    setStockDividends(stockDividends);
 
-    /** 종목별 연 배당금 합산 */
-    const totalAnnualDividend = stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
     /** 해외 연 배당금 합산 */
     const totalForeignAnnualDividend = stockDividends
       .filter(({ isForeign }) => isForeign)
@@ -180,7 +188,6 @@ function PageContent() {
     /** 종목별 월별 배당금 합산 */
     const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
 
-    setAnnualDividend(totalAnnualDividend);
     setForeignAnnualDividend(totalForeignAnnualDividend);
     setAverageForeignTaxRate(avgForeignTaxRate);
     setMonthlyDividends(monthlyDividendArray);
@@ -208,7 +215,8 @@ function PageContent() {
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
       /** 종목별 세율 */
-      const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
+      // const taxRate = stock.currency === 'KRW' ? 0 : (FOREIGN_TAX_RATES[stock.currency] ?? 0.15);
+      const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {
         annualDividend,
         monthlyDividends,
@@ -216,6 +224,7 @@ function PageContent() {
         taxRate,
       };
     });
+    setStockDividends(stockDividends);
 
     const monthlyDividendArray = mergeMonthlyDividends(stockDividends);
 
@@ -233,7 +242,6 @@ function PageContent() {
     setForeignAnnualDividend(totalForeignAnnualDividend);
     setAverageForeignTaxRate(avgForeignTaxRate);
     setMonthlyDividends(monthlyDividendArray);
-    setAnnualDividend(null);
     setChartData({
       totalInvestment: requiredInvestmentAmount,
       exchangeRates: data.exchangeRates,
@@ -267,7 +275,6 @@ function PageContent() {
       exchangeRates: currentExchangeRates,
       stocks: [],
     });
-    setAnnualDividend(null);
     setForeignAnnualDividend(0);
     setRequiredInvestment(null);
     setCalculatedTargetAnnualDividend(null);
@@ -396,7 +403,7 @@ function PageContent() {
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-green-700 dark:text-green-300">세후 연 배당금:</span>
                     <span className="text-lg font-bold text-green-700 dark:text-green-300">
-                      {(annualDividend * (1 - DIVIDEND_TAX_RATE)).toLocaleString('ko-KR', {
+                      {stockDividends.reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * (1 - taxRate), 0).toLocaleString('ko-KR', {
                         maximumFractionDigits: 0,
                       })}원
                     </span>
@@ -407,7 +414,7 @@ function PageContent() {
                 <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
                   <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                   <div className="space-y-3">
-                    <TaxInfo dividend={annualDividend} />
+                    <TaxInfo stockDividends={stockDividends} />
                     {annualDividendAdditionalTax != null ? (
                       <>
                         <div className="border-t pt-3">
@@ -483,7 +490,7 @@ function PageContent() {
                       <></>
                     ) : requiredInvestmentAdditionalTax == null ? (
                       <>
-                        <TaxInfo dividend={calculatedTargetAnnualDividend} />
+                        <TaxInfo stockDividends={stockDividends} />
                         <div className="border-t pt-3">
                           <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
                             <svg
@@ -502,7 +509,7 @@ function PageContent() {
                       </>
                     ) : (
                       <>
-                        <TaxInfo dividend={calculatedTargetAnnualDividend} />
+                        <TaxInfo stockDividends={stockDividends} />
                         <div className="border-t pt-3">
                           <div className="flex items-start justify-between">
                             <div className="flex-1">

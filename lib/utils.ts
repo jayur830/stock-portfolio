@@ -67,6 +67,7 @@ export const DIVIDEND_TAX_RATE = 0.154;
 
 /** 국가별 배당소득세율 */
 export const FOREIGN_TAX_RATES: { [key: string]: number } = {
+  KRW: DIVIDEND_TAX_RATE, // 한국
   USD: 0.15, // 미국
   EUR: 0.26375, // 유럽 (독일 기준, 국가마다 상이)
   JPY: 0.15315, // 일본

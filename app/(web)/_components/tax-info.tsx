@@ -1,22 +1,25 @@
-import { DIVIDEND_TAX_RATE } from '@/lib/utils';
 
 export interface TaxInfoProps {
-  dividend: number;
+  /** 세전 연배당금 */
+  stockDividends: {
+    annualDividend: number;
+    taxRate: number;
+  }[];
 }
 
-export default function TaxInfo({ dividend }: TaxInfoProps) {
+export default function TaxInfo({ stockDividends }: TaxInfoProps) {
   return (
     <>
       <div className="flex justify-between items-center">
         <span className="text-xs md:text-sm text-muted-foreground">연간 배당소득 (세전)</span>
         <span className="text-sm md:text-base font-medium">
-          {dividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+          {stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
         </span>
       </div>
       <div className="flex justify-between items-center">
-        <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액 (15.4%)</span>
+        <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액</span>
         <span className="text-sm md:text-base font-medium text-muted-foreground">
-          {(dividend * DIVIDEND_TAX_RATE).toLocaleString('ko-KR', {
+          {stockDividends.reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0).toLocaleString('ko-KR', {
             maximumFractionDigits: 0,
           })}{' '}
           원
