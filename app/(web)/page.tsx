@@ -183,7 +183,8 @@ function PageContent() {
       /** 종목별 연 배당금 */
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       /** 종목별 월별 배당금 */
-      const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
+      const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
+      console.log(monthlyDividends);
       /** 종목별 세율 */
       const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {
@@ -219,7 +220,7 @@ function PageContent() {
     const stockDividends = enabledStocks.map((stock) => {
       const investmentAmount = (requiredInvestmentAmount * stock.ratio) / 100;
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
-      const monthlyDividends = calculateStockMonthlyDividends(stock, annualDividend);
+      const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
       /** 종목별 세율 */
       const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {

@@ -142,29 +142,17 @@ describe('@/lib/utils', () => {
   /** {@link calculateStockMonthlyDividends} */
   it('calculateStockMonthlyDividends()', () => {
     expect(
-      calculateStockMonthlyDividends(
-        {
-          name: 'AST SpaceMobile, Inc.',
-          ticker: 'ASTS',
-          currency: 'USD',
-          dividendMonths: [],
-          price: 55.52,
-          yield: 0,
-          ratio: 1,
-          purchaseDate: dayjs('2024-01-01'),
-        },
-        10000,
-      ),
+      calculateStockMonthlyDividends([], 'USD', 10000),
     ).toEqual({});
 
-    expect(calculateStockMonthlyDividends(TQQQ, 10000)).toEqual({
+    expect(calculateStockMonthlyDividends(TQQQ.dividendMonths, 'USD', 10000)).toEqual({
       3: 2125,
       6: 2125,
       9: 2125,
       12: 2125,
     });
 
-    expect(calculateStockMonthlyDividends(JEPQ, 10000)).toEqual({
+    expect(calculateStockMonthlyDividends(JEPQ.dividendMonths, 'USD', 10000)).toEqual({
       1: 708.33,
       2: 708.33,
       3: 708.33,
@@ -179,7 +167,7 @@ describe('@/lib/utils', () => {
       12: 708.33,
     });
 
-    expect(calculateStockMonthlyDividends(SGOV, 3000)).toEqual({
+    expect(calculateStockMonthlyDividends(SGOV.dividendMonths, 'USD', 3000)).toEqual({
       1: 212.5,
       2: 212.5,
       3: 212.5,
@@ -275,9 +263,9 @@ describe('@/lib/utils', () => {
     ]);
 
     /** 실제 Stock 데이터 활용 */
-    const tqqqMonthly = calculateStockMonthlyDividends(TQQQ, calculateStockAnnualDividend(TQQQ, 10000, { USD: 1 }));
-    const jepqMonthly = calculateStockMonthlyDividends(JEPQ, calculateStockAnnualDividend(JEPQ, 10000, { USD: 1 }));
-    const sgovMonthly = calculateStockMonthlyDividends(SGOV, calculateStockAnnualDividend(SGOV, 10000, { USD: 1.2 }));
+    const tqqqMonthly = calculateStockMonthlyDividends(TQQQ.dividendMonths, 'USD', calculateStockAnnualDividend(TQQQ, 10000, { USD: 1 }));
+    const jepqMonthly = calculateStockMonthlyDividends(JEPQ.dividendMonths, 'USD', calculateStockAnnualDividend(JEPQ, 10000, { USD: 1 }));
+    const sgovMonthly = calculateStockMonthlyDividends(SGOV.dividendMonths, 'USD', calculateStockAnnualDividend(SGOV, 10000, { USD: 1.2 }));
 
     /** 실제 계산된 값 사용 */
     const merged = mergeMonthlyDividends([

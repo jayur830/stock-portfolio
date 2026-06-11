@@ -1,3 +1,4 @@
+import { KRW_CGT } from '@/lib/utils';
 
 export interface TaxInfoProps {
   /** 세전 연배당금 */
@@ -8,6 +9,7 @@ export interface TaxInfoProps {
 }
 
 export default function TaxInfo({ stockDividends }: TaxInfoProps) {
+  console.log(stockDividends);
   return (
     <>
       <div className="flex justify-between items-center">
@@ -19,9 +21,16 @@ export default function TaxInfo({ stockDividends }: TaxInfoProps) {
       <div className="flex justify-between items-center">
         <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액</span>
         <span className="text-sm md:text-base font-medium text-muted-foreground">
-          {stockDividends.reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0).toLocaleString('ko-KR', {
-            maximumFractionDigits: 0,
-          })}{' '}
+          {stockDividends
+            .reduce((sum, { annualDividend, taxRate }) => {
+              if (taxRate > KRW_CGT) {
+                return sum + annualDividend * taxRate;
+              }
+              return sum + annualDividend * (taxRate + (KRW_CGT - taxRate) * 1.1);
+            }, 0)
+            .toLocaleString('ko-KR', {
+              maximumFractionDigits: 0,
+            })}{' '}
           원
         </span>
       </div>

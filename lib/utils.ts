@@ -3,7 +3,7 @@ import { clsx } from 'clsx';
 import dayjs from 'dayjs';
 import { twMerge } from 'tailwind-merge';
 
-import type { Stock } from '@/types';
+import type { Currency, Stock } from '@/types';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -62,12 +62,14 @@ export function decodeStocksFromBase64(base64String: string): Stock[] {
   }
 }
 
+/** 국내 배당소득세율 중 순수 소득세 14% */
+export const KRW_CGT = 0.14;
 /** 국내 배당소득세율 15.4% (소득세 14% + 지방소득세 1.4%) */
-export const DIVIDEND_TAX_RATE = 0.154;
+export const DIVIDEND_TAX_RATE = KRW_CGT * 1.1;
 
 /** 국가별 배당소득세율 */
 export const FOREIGN_TAX_RATES: { [key: string]: number } = {
-  KRW: DIVIDEND_TAX_RATE, // 한국
+  KRW: KRW_CGT, // 한국
   USD: 0.15, // 미국
   EUR: 0.26375, // 유럽 (독일 기준, 국가마다 상이)
   JPY: 0.15315, // 일본
@@ -170,20 +172,30 @@ export function calculateStockAnnualDividend(
 
 /** 단일 종목의 월별 배당금 계산 */
 export function calculateStockMonthlyDividends(
-  /** 종목 */
-  stock: Stock,
+  /** 월별 배당금 */
+  dividendMonths: number[],
+  /** 통화 */
+  currency: Currency,
   /** 연 배당금 */
   annualDividend: number,
 ): Record<number, number> {
-  if (!stock.dividendMonths || stock.dividendMonths.length === 0) {
+  if (!dividendMonths || dividendMonths.length === 0) {
     return {};
   }
 
   /** 통화에 따라 세율 선택 */
-  const taxRate = stock.currency === 'KRW' ? DIVIDEND_TAX_RATE : (FOREIGN_TAX_RATES[stock.currency] ?? FOREIGN_DIVIDEND_TAX_RATE);
+  let taxRate = FOREIGN_TAX_RATES[currency || 'KRW'];
 
-  return stock.dividendMonths.reduce((acc, month) => {
-    acc[month] = +((annualDividend / stock.dividendMonths.length) * (1 - taxRate)).toFixed(2);
+  if (taxRate > KRW_CGT) {
+    return dividendMonths.reduce((acc, month) => {
+      acc[month] = +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2);
+      return acc;
+    }, {} as Record<number, number>);
+  }
+
+  taxRate += (KRW_CGT - taxRate) * 1.1;
+  return dividendMonths.reduce((acc, month) => {
+    acc[month] = +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2);
     return acc;
   }, {} as Record<number, number>);
 }

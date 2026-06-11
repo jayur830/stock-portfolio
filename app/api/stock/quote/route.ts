@@ -12,6 +12,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const quote = await yahooFinance.quote(symbol);
+    console.log(quote);
 
     // 배당 내역 조회 (최근 1년)
     const endDate = new Date();
@@ -46,8 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 거래소에 따라 통화 결정
-    const isKorean = quote.exchange === 'KRW' || quote.exchange === 'KSC' || quote.exchange === 'KOE';
-    const currency = isKorean ? 'KRW' : 'USD';
+    const currency = quote.currency || 'KRW';
 
     // 배당률 계산 (배당금 / 주가 * 100)
     const price = quote.regularMarketPrice || 0;
