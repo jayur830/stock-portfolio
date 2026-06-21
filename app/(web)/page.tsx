@@ -117,28 +117,18 @@ function PageContent() {
     return stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
   }, [stockDividends]);
 
-  /** 해외 연 배당금 합산 */
-  const foreignAnnualDividend = useMemo(() => {
+  /** 국가별 해외 배당소득 */
+  const foreignDividends = useMemo(() => {
     return stockDividends
       .filter(({ isForeign }) => isForeign)
-      .reduce((sum, { annualDividend }) => sum + annualDividend, 0);
+      .map(({ annualDividend, taxRate }) => ({ income: annualDividend, taxRate }));
   }, [stockDividends]);
-
-  /** 해외 평균 배당소득세율 (가중평균) */
-  const averageForeignTaxRate = useMemo(() => {
-    if (annualDividend != null && annualDividend > 0) {
-      return stockDividends
-        .filter(({ isForeign }) => isForeign)
-        .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * taxRate, 0) / annualDividend;
-    }
-    return 0.15;
-  }, [annualDividend]);
 
   /** 종목별 월별 배당금 합산 */
   const monthlyDividends = useMemo(() => mergeMonthlyDividends(stockDividends), [stockDividends]);
 
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
-  const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignAnnualDividend, averageForeignTaxRate) : null;
+  const annualDividendAdditionalTax = annualDividend != null ? calculateComprehensiveTax(annualDividend, foreignDividends) : null;
 
   /** 폼 데이터 검증 */
   const validateFormData = useCallback((data: FormValues): string | null => {
@@ -285,7 +275,7 @@ function PageContent() {
     }
   }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
 
-  const requiredInvestmentAdditionalTax = requiredInvestment != null && targetAnnualDividend != null ? calculateComprehensiveTax(targetAnnualDividend, foreignAnnualDividend) : null;
+  const requiredInvestmentAdditionalTax = requiredInvestment != null && targetAnnualDividend != null ? calculateComprehensiveTax(targetAnnualDividend, foreignDividends) : null;
 
   return (
     <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col overflow-x-hidden">

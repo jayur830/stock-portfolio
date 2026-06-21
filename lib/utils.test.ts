@@ -322,12 +322,18 @@ describe('@/lib/utils', () => {
     expect(calculateComprehensiveTax(80000000)).toBe(-7983600);
     expect(calculateComprehensiveTax(100000000)).toBe(-8436000);
 
-    /** 국내 + 해외 배당 혼합 */
-    expect(calculateComprehensiveTax(80000000, 40000000)).toBe(-1242600);
-    expect(calculateComprehensiveTax(100000000, 100000000)).toBe(6516000);
+    /** 국내 + 해외 배당 혼합 (미국 15%) */
+    expect(calculateComprehensiveTax(80000000, [{ income: 40000000, taxRate: 0.15 }])).toBe(-1242600);
+    expect(calculateComprehensiveTax(100000000, [{ income: 100000000, taxRate: 0.15 }])).toBe(6516000);
+
+    /** 국가별 세율 혼합 (미국 15% + 영국 0%) */
+    expect(calculateComprehensiveTax(100000000, [
+      { income: 50000000, taxRate: 0.15 },
+      { income: 50000000, taxRate: 0 },
+    ])).toBe(14016000);
 
     /** 고액 배당 (납부세액 발생) */
     expect(calculateComprehensiveTax(1000000000)).toBe(151837000);
-    expect(calculateComprehensiveTax(1000000000, 1000000000)).toBe(272466000);
+    expect(calculateComprehensiveTax(1000000000, [{ income: 1000000000, taxRate: 0.15 }])).toBe(272466000);
   });
 });
