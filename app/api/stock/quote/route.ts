@@ -12,7 +12,6 @@ export async function GET(request: NextRequest) {
 
   try {
     const quote = await yahooFinance.quote(symbol);
-    console.log(quote);
 
     // 배당 내역 조회 (최근 1년)
     const endDate = new Date();

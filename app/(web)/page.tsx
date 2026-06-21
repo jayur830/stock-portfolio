@@ -103,6 +103,7 @@ function PageContent() {
   const [targetAnnualDividend, setTargetAnnualDividend] = useState<number | null>(null);
   /** 차트에 전달할 계산 시점의 값들 */
   const [chartData, setChartData] = useState<{
+    /** 총 투자금 */
     totalInvestment: number;
     exchangeRates: { [key: string]: number };
     stocks: Stock[];
@@ -184,7 +185,6 @@ function PageContent() {
       const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, data.exchangeRates);
       /** 종목별 월별 배당금 */
       const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
-      console.log(monthlyDividends);
       /** 종목별 세율 */
       const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
       return {
@@ -195,8 +195,6 @@ function PageContent() {
       };
     });
     setStockDividends(stockDividends);
-
-    /** 종목별 월별 배당금 합산 */
 
     setRequiredInvestment(null);
     setChartData({
@@ -210,10 +208,7 @@ function PageContent() {
   const calculateInvestmentFromDividend = useCallback((data: FormValues) => {
     const enabledStocks = data.stocks.filter((s) => s.enabled !== false);
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
-    const weightedDividendYield = enabledStocks.reduce((sum, stock) => {
-      const dividendYield = stock.yield / 100;
-      return sum + dividendYield * (stock.ratio / 100);
-    }, 0);
+    const weightedDividendYield = enabledStocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
     /** 필요한 투자금 */
     const requiredInvestmentAmount = data.targetAnnualDividend / weightedDividendYield;
 
@@ -242,21 +237,16 @@ function PageContent() {
   }, []);
 
   const handleAddStock = useCallback(() => {
-    const newStock = {
+    append({
       name: '',
       ticker: '',
       price: 0,
       currency: 'KRW' as const,
-      dividend: 0,
-      dividendCurrency: 'KRW' as const,
       dividendMonths: [],
       yield: 0,
       ratio: 100,
       purchaseDate: undefined,
-      dividendInputType: 'amount' as const,
-    };
-
-    append(newStock);
+    });
   }, [append]);
 
   const handleReset = useCallback(() => {

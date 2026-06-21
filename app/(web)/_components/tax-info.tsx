@@ -9,7 +9,6 @@ export interface TaxInfoProps {
 }
 
 export default function TaxInfo({ stockDividends }: TaxInfoProps) {
-  console.log(stockDividends);
   return (
     <>
       <div className="flex justify-between items-center">
