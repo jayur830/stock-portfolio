@@ -4,7 +4,7 @@ import type { Control } from 'react-hook-form';
 import { useController } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { FormValues } from '@/types';
+import type { FormValues } from '@/types';
 
 export interface CalculateButtonProps {
   control: Control<FormValues>;

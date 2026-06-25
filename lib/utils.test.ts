@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { Stock } from '@/types';
 
-import { calculateComprehensiveTax, calculateStockAnnualDividend, calculateStockMonthlyDividends, convertToKRW, mergeMonthlyDividends, setSearchParams } from './utils';
+import { calculateStockAnnualDividend, calculateStockMonthlyDividends, convertToKRW, getComprehensiveTax, mergeMonthlyDividends, setSearchParams } from './utils';
 
 describe('@/lib/utils', () => {
   beforeEach(() => {
@@ -106,6 +106,7 @@ describe('@/lib/utils', () => {
     yield: 2.5,
     ratio: 0.1,
     purchaseDate: dayjs('2023-01-01'),
+    enabled: true,
   };
   const JEPQ: Stock = {
     name: 'JP Morgan Nasdaq Equity Premium Income',
@@ -118,6 +119,7 @@ describe('@/lib/utils', () => {
     yield: 10.2,
     ratio: 1,
     purchaseDate: dayjs('2024-01-01'),
+    enabled: true,
   };
   const SGOV: Stock = {
     name: 'iShares 0-3M Treasury Bond',
@@ -130,6 +132,7 @@ describe('@/lib/utils', () => {
     yield: 4.2,
     ratio: 1,
     purchaseDate: dayjs('2024-01-01'),
+    enabled: true,
   };
 
   /** {@link calculateStockAnnualDividend} */
@@ -310,30 +313,30 @@ describe('@/lib/utils', () => {
     ]);
   });
 
-  /** {@link calculateComprehensiveTax} */
+  /** {@link getComprehensiveTax} */
   it('calculateComprehensiveTax()', () => {
     /** 2,000만원 이하: 분리과세 */
-    expect(calculateComprehensiveTax(1000000)).toBe(null);
-    expect(calculateComprehensiveTax(20000000)).toBe(null);
+    expect(getComprehensiveTax(1000000)).toBe(null);
+    expect(getComprehensiveTax(20000000)).toBe(null);
 
     /** 국내 배당만 (배당세액공제 적용으로 환급액 증가) */
-    expect(calculateComprehensiveTax(40000000)).toBe(-4133000);
-    expect(calculateComprehensiveTax(77600000)).toBe(-7917696);
-    expect(calculateComprehensiveTax(80000000)).toBe(-7983600);
-    expect(calculateComprehensiveTax(100000000)).toBe(-8436000);
+    expect(getComprehensiveTax(40000000)).toBe(-4133000);
+    expect(getComprehensiveTax(77600000)).toBe(-7917696);
+    expect(getComprehensiveTax(80000000)).toBe(-7983600);
+    expect(getComprehensiveTax(100000000)).toBe(-8436000);
 
     /** 국내 + 해외 배당 혼합 (미국 15%) */
-    expect(calculateComprehensiveTax(80000000, [{ income: 40000000, taxRate: 0.15 }])).toBe(-1242600);
-    expect(calculateComprehensiveTax(100000000, [{ income: 100000000, taxRate: 0.15 }])).toBe(6516000);
+    expect(getComprehensiveTax(80000000, [{ income: 40000000, taxRate: 0.15 }])).toBe(-1242600);
+    expect(getComprehensiveTax(100000000, [{ income: 100000000, taxRate: 0.15 }])).toBe(6516000);
 
     /** 국가별 세율 혼합 (미국 15% + 영국 0%) */
-    expect(calculateComprehensiveTax(100000000, [
+    expect(getComprehensiveTax(100000000, [
       { income: 50000000, taxRate: 0.15 },
       { income: 50000000, taxRate: 0 },
     ])).toBe(14016000);
 
     /** 고액 배당 (납부세액 발생) */
-    expect(calculateComprehensiveTax(1000000000)).toBe(151837000);
-    expect(calculateComprehensiveTax(1000000000, [{ income: 1000000000, taxRate: 0.15 }])).toBe(272466000);
+    expect(getComprehensiveTax(1000000000)).toBe(151837000);
+    expect(getComprehensiveTax(1000000000, [{ income: 1000000000, taxRate: 0.15 }])).toBe(272466000);
   });
 });

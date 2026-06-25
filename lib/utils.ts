@@ -230,7 +230,7 @@ export type ForeignDividendIncome = {
  * @param foreignDividends 국가별 해외 배당소득 및 세율 목록
  * @returns 추가 납부세액 (양수: 납부, 음수: 환급), null이면 분리과세 종결
  */
-export function calculateComprehensiveTax(
+export function getComprehensiveTax(
   annualDividendIncome: number,
   foreignDividends: ForeignDividendIncome[] = [],
 ): number | null {

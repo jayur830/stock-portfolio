@@ -21,7 +21,7 @@ import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
-interface StockCardProps {
+export interface StockCardProps {
   control: Control<FormValues>;
   index: number;
   onDelete?(): void;
@@ -44,7 +44,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
     name: 'stocks',
   });
   const stock = stocks[index];
-  const isEnabled = stock.enabled !== false;
+  const isEnabled = stock.enabled;
   const dividendMonths = stock.dividendMonths || [];
 
   // 검색어 debouncing
@@ -105,11 +105,17 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             };
 
             if (data.dividendMonths && data.dividendMonths.length > 0) {
+              console.log({
+                ...defaultStock,
+                dividendMonths: data.dividendMonths,
+              });
               return {
                 ...defaultStock,
                 dividendMonths: data.dividendMonths,
               };
             }
+
+            console.log(defaultStock);
 
             return defaultStock;
           }),
