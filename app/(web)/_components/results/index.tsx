@@ -72,10 +72,10 @@ export default function Results() {
       </div>
 
       {/** 버튼 */}
-      <div className="flex justify-center items-center gap-1 w-full">
-        <CalculateButton className="flex-1 lg:flex-none" control={control} />
+      <div className="fixed md:relative bottom-0 left-0 md:bottom-auto md:left-auto flex justify-center items-center gap-1 w-full p-4 z-30">
+        <CalculateButton className="flex-1 lg:flex-none h-12 md:h-auto" control={control} />
         <Button
-          className="flex-1 lg:flex-none"
+          className="flex-1 lg:flex-none h-12 md:h-auto"
           type="reset"
           variant="outline"
         >
