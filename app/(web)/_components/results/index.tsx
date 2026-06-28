@@ -4,14 +4,12 @@ import { useMemo } from 'react';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { getComprehensiveTax, mergeMonthlyDividends } from '@/lib/utils';
+import { mergeMonthlyDividends } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import CalculateButton from './calculate-button';
 import CountPerStock from './count-per-stock';
-import IncomeTaxInfo from './income-tax-info';
 import MonthlyDividends from './monthly-dividends';
-import NoAddedTax from './no-added-tax';
 import StockCharts from './stock-charts';
 import TaxInfo from './tax-info';
 
@@ -20,7 +18,7 @@ export default function Results() {
 
   const { field: { value: stocks } } = useController({ control, name: 'stocks' });
   const { field: { value: targetAnnualDividend } } = useController({ control, name: 'targetAnnualDividend' });
-  const { field: { value: calculatedCategory } } = useController({ control, name: 'calculatedCategory' });
+  // const { field: { value: calculatedCategory } } = useController({ control, name: 'calculatedCategory' });
   const { field: { value: stockDividends } } = useController({ control, name: 'stockDividends' });
 
   /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
@@ -35,20 +33,24 @@ export default function Results() {
     return targetAnnualDividend / weightedDividendYield;
   }, [stocks, targetAnnualDividend]);
 
+  // #region 종합과세 계산은 복잡하여 추후 과제로 보류
   /** 국가별 해외 배당소득 */
-  const foreignDividends = useMemo(() => {
-    return stockDividends
-      .filter(({ isForeign }) => isForeign)
-      .map(({ annualDividend, taxRate }) => ({ income: annualDividend, taxRate }));
-  }, [stockDividends]);
+  // const foreignDividends = useMemo(() => {
+  //   return stockDividends
+  //     .filter(({ isForeign }) => isForeign)
+  //     .map(({ annualDividend, taxRate }) => ({ income: annualDividend, taxRate }));
+  // }, [stockDividends]);
+  // #endregion
 
   /** 종목별 월별 배당금 합산 */
   const monthlyDividends = useMemo(() => mergeMonthlyDividends(stockDividends), [stockDividends]);
 
+  // #region 종합과세 계산은 복잡하여 추후 과제로 보류
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
-  const annualDividendAdditionalTax = getComprehensiveTax(annualDividend, foreignDividends);
+  // const annualDividendAdditionalTax = getComprehensiveTax(annualDividend, foreignDividends);
 
-  const requiredInvestmentAdditionalTax = calculatedCategory === 'investment' && targetAnnualDividend ? getComprehensiveTax(targetAnnualDividend, foreignDividends) : null;
+  // const requiredInvestmentAdditionalTax = calculatedCategory === 'investment' && targetAnnualDividend ? getComprehensiveTax(targetAnnualDividend, foreignDividends) : null;
+  // #endregion
 
   return (
     <div className="flex flex-col gap-2 mt-2">
@@ -112,11 +114,12 @@ export default function Results() {
                   <h3 className="text-sm font-semibold">배당소득세 정보</h3>
                   <div className="space-y-3">
                     <TaxInfo stockDividends={stockDividends} />
-                    {annualDividendAdditionalTax != null ? (
+                    {/** 종합과세 계산은 복잡하여 추후 과제로 보류 */}
+                    {/* {annualDividendAdditionalTax != null ? (
                       <IncomeTaxInfo additionalTax={annualDividendAdditionalTax} />
                     ) : (
                       <NoAddedTax />
-                    )}
+                    )} */}
                   </div>
                 </div>
               </>
@@ -141,11 +144,12 @@ export default function Results() {
                     {targetAnnualDividend && (
                       <>
                         <TaxInfo stockDividends={stockDividends} />
-                        {requiredInvestmentAdditionalTax != null ? (
+                        {/** 종합과세 계산은 복잡하여 추후 과제로 보류 */}
+                        {/* {requiredInvestmentAdditionalTax != null ? (
                           <IncomeTaxInfo additionalTax={requiredInvestmentAdditionalTax} />
                         ) : (
                           <NoAddedTax />
-                        )}
+                        )} */}
                       </>
                     )}
                   </div>
