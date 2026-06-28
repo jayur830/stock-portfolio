@@ -67,6 +67,7 @@ export default function TargetInput() {
                 { label: '+1억', value: 100000000 },
                 { label: '+10억', value: 1000000000 },
                 { label: '+100억', value: 10000000000 },
+                { label: '초기화', value: NaN },
               ].map(({ label, value }) => (
                 <Button
                   className="h-7 text-xs"
