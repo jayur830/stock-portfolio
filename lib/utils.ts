@@ -81,6 +81,9 @@ export const FOREIGN_TAX_RATES: { [key: string]: number } = {
   HKD: 0.0, // 홍콩 (배당세 없음)
 };
 
+/** 국가별 통화 목록 */
+export const exchangeRateCodes = Object.keys(FOREIGN_TAX_RATES);
+
 /** 해외 배당소득세율 (미국 기준, 하위 호환성) */
 export const FOREIGN_DIVIDEND_TAX_RATE = FOREIGN_TAX_RATES.USD;
 

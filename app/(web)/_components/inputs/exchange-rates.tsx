@@ -8,14 +8,14 @@ import { useController, useFormContext } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FOREIGN_TAX_RATES } from '@/lib/utils';
+import { exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
-const exchangeRateCodes = Object.keys(FOREIGN_TAX_RATES).filter((key) => key !== 'KRW');
+const _exchangeRateCodes = exchangeRateCodes.filter((key) => key !== 'KRW');
 
 /** 환율 */
 export default function ExchangeRates() {
-  const [selectedCurrency, setSelectedCurrency] = useState<typeof exchangeRateCodes[number]>('USD');
+  const [selectedCurrency, setSelectedCurrency] = useState<typeof _exchangeRateCodes[number]>('USD');
 
   const { control } = useFormContext<FormValues>();
   const { field: { onChange, value: exchangeRates } } = useController({
@@ -33,7 +33,7 @@ export default function ExchangeRates() {
       }
       const data = await response.json();
       // KRW 기준으로 다른 통화의 환율을 계산 (1 외화 = X KRW)
-      return exchangeRateCodes.reduce((result, key) => ({ ...result, [key]: +(1 / data.rates[key]).toFixed(2) }), {});
+      return _exchangeRateCodes.reduce((result, key) => ({ ...result, [key]: +(1 / data.rates[key]).toFixed(2) }), {});
     },
     staleTime: 1000 * 60 * 60, // 1시간
     refetchOnWindowFocus: true,
@@ -67,7 +67,7 @@ export default function ExchangeRates() {
         {loadingExchangeRate ? '조회 중...' : '환율 조회'}
       </Button>
       <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-        {exchangeRateCodes.map((currency) => (
+        {_exchangeRateCodes.map((currency) => (
           <div className="flex flex-col gap-1.5" key={currency}>
             <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
             <Input
@@ -94,7 +94,7 @@ export default function ExchangeRates() {
               <SelectValue placeholder="통화" />
             </SelectTrigger>
             <SelectContent>
-              {exchangeRateCodes.map((currency) => <SelectItem key={currency} value={currency}>{currency}/KRW</SelectItem>)}
+              {_exchangeRateCodes.map((currency) => <SelectItem key={currency} value={currency}>{currency}/KRW</SelectItem>)}
             </SelectContent>
           </Select>
           <Button

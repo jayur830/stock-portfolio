@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useDebounce } from '@/hooks/use-debounce';
-import { cn } from '@/lib/utils';
+import { cn, exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 export interface StockCardProps {
@@ -231,7 +231,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <X className="h-4 w-4" />
         </Button>
       )}
-      <CardHeader className="mt-4 p-2 md:p-4">
+      <CardHeader className="mt-8 p-2 md:p-4">
         <div className="relative" ref={dropdownRef}>
           <Input
             className="flex-1"
@@ -323,9 +323,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   <SelectValue placeholder="통화" />
                 </SelectTrigger>
                 <SelectContent>
-                  {[
-                    'KRW', 'USD', 'EUR', 'JPY', 'GBP', 'CNY', 'AUD', 'CAD', 'CHF', 'HKD',
-                  ].map((currency) => (
+                  {exchangeRateCodes.map((currency) => (
                     <SelectItem key={currency} value={currency}>
                       {currency}
                     </SelectItem>
