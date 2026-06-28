@@ -1,11 +1,13 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { useCallback, useEffect } from 'react';
+import { RefreshCw } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FOREIGN_TAX_RATES } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
@@ -13,6 +15,8 @@ const exchangeRateCodes = Object.keys(FOREIGN_TAX_RATES).filter((key) => key !==
 
 /** 환율 */
 export default function ExchangeRates() {
+  const [selectedCurrency, setSelectedCurrency] = useState<typeof exchangeRateCodes[number]>('USD');
+
   const { control } = useFormContext<FormValues>();
   const { field: { onChange, value: exchangeRates } } = useController({
     control,
@@ -53,7 +57,7 @@ export default function ExchangeRates() {
   return (
     <>
       <Button
-        className="w-full sm:w-fit"
+        className="hidden sm:block w-full sm:w-fit"
         disabled={loadingExchangeRate}
         onClick={handleFetchExchangeRate}
         size="sm"
@@ -62,7 +66,7 @@ export default function ExchangeRates() {
       >
         {loadingExchangeRate ? '조회 중...' : '환율 조회'}
       </Button>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
         {exchangeRateCodes.map((currency) => (
           <div className="flex flex-col gap-1.5" key={currency}>
             <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
@@ -82,6 +86,44 @@ export default function ExchangeRates() {
             />
           </div>
         ))}
+      </div>
+      <div className="flex sm:hidden flex-col gap-3">
+        <div className="flex gap-3">
+          <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
+            <SelectTrigger className="md:w-24 w-full">
+              <SelectValue placeholder="통화" />
+            </SelectTrigger>
+            <SelectContent>
+              {exchangeRateCodes.map((currency) => <SelectItem key={currency} value={currency}>{currency}/KRW</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <Button
+            disabled={loadingExchangeRate}
+            onClick={handleFetchExchangeRate}
+            type="button"
+            variant="outline"
+          >
+            <span>{loadingExchangeRate ? '조회 중...' : '환율 조회'}</span>
+            <RefreshCw size={14} />
+          </Button>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-muted-foreground">{selectedCurrency}/KRW</label>
+          <Input
+            min={0}
+            onChange={(e) => {
+              const newValue = e.target.valueAsNumber;
+              onChange({
+                ...exchangeRates,
+                [selectedCurrency]: isNaN(newValue) ? 0 : newValue,
+              });
+            }}
+            placeholder="0"
+            step="any"
+            type="number"
+            value={exchangeRates?.[selectedCurrency as keyof typeof exchangeRates] || ''}
+          />
+        </div>
       </div>
     </>
   );
