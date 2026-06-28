@@ -338,7 +338,6 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         <div className="flex flex-col md:flex-row md:items-center gap-2">
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">종목명</span>
           <Input
-            className="flex-1"
             disabled={!isEnabled}
             onChange={(e) => {
               onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, name: e.target.value } : s)));
@@ -349,7 +348,6 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           />
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
           <Input
-            className="flex-1"
             disabled={!isEnabled}
             min={0}
             onChange={(e) => {
