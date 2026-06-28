@@ -53,7 +53,7 @@ export default function Results() {
   // #endregion
 
   return (
-    <div className="flex flex-col gap-2 mt-2">
+    <div className="flex flex-col gap-2 mt-2 mb-16 sm:mb-0">
       {/** 총 비율 */}
       <div className="flex justify-center items-center gap-2 text-sm">
         <span className="text-muted-foreground">총 비율:</span>
@@ -75,7 +75,7 @@ export default function Results() {
       <div className="fixed md:relative bottom-0 left-0 md:bottom-auto md:left-auto flex justify-center items-center gap-1 w-full p-4 z-30">
         <CalculateButton className="flex-1 lg:flex-none h-12 md:h-auto" control={control} />
         <Button
-          className="flex-1 lg:flex-none h-12 md:h-auto"
+          className="flex-1 lg:flex-none dark:bg-card h-12 md:h-auto"
           type="reset"
           variant="outline"
         >
