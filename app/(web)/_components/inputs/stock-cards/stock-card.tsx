@@ -344,8 +344,19 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             type="text"
             value={stock.name}
           />
+          <Input
+            className="w-full md:w-72"
+            disabled={!isEnabled}
+            onChange={(e) => {
+              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ticker: e.target.value } : s)));
+            }}
+            placeholder="티커"
+            type="text"
+            value={stock.ticker}
+          />
           <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
           <Input
+            className="w-full md:w-72"
             disabled={!isEnabled}
             min={0}
             onChange={(e) => {
@@ -373,7 +384,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   {stock.purchaseDate ? stock.purchaseDate.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="start" className="w-auto p-0">
+              <PopoverContent align="start">
                 <Calendar
                   autoFocus
                   captionLayout="dropdown"
@@ -387,28 +398,28 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 />
               </PopoverContent>
             </Popover>
-          </div>
-          <div className="flex flex-wrap gap-1 md:ml-[100px]">
-            {[
-              { label: '1년 전', months: 12 },
-              { label: '6개월 전', months: 6 },
-              { label: '3개월 전', months: 3 },
-              { label: '1개월 전', months: 1 },
-            ].map(({ label, months }) => (
-              <Button
-                className="h-7 text-xs"
-                disabled={!isEnabled}
-                key={label}
-                onClick={() => {
-                  onChangeStocks(stocks.map((s, i) => (i === index ? ({ ...s, purchaseDate: dayjs().subtract(months, 'month') }) : s)));
-                }}
-                size="sm"
-                type="button"
-                variant="outline"
-              >
-                {label}
-              </Button>
-            ))}
+            <div className="flex flex-wrap gap-1 w-full">
+              {[
+                { label: '1년 전', months: 12 },
+                { label: '6개월 전', months: 6 },
+                { label: '3개월 전', months: 3 },
+                { label: '1개월 전', months: 1 },
+              ].map(({ label, months }) => (
+                <Button
+                  className="h-7 text-xs"
+                  disabled={!isEnabled}
+                  key={label}
+                  onClick={() => {
+                    onChangeStocks(stocks.map((s, i) => (i === index ? ({ ...s, purchaseDate: dayjs().subtract(months, 'month') }) : s)));
+                  }}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </CardHeader>

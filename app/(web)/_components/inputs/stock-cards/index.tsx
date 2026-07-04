@@ -31,7 +31,7 @@ export default function StockCards() {
   }, [append]);
 
   return (
-    <>
+    <div className="flex flex-col gap-4">
       {/** 종목 리스트 */}
       {fields.map((stock, index) => (
         <StockCard
@@ -52,6 +52,6 @@ export default function StockCards() {
       >
         +
       </Button>
-    </>
+    </div>
   );
 }
