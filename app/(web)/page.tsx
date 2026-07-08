@@ -11,7 +11,7 @@ export default async function Page() {
   await connection();
   return (
     <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col overflow-x-hidden">
-      <div className="fixed flex justify-between items-center gap-4 p-4 w-full max-w-[1440px] z-50 backdrop-blur-sm">
+      <div className="fixed flex justify-between items-center gap-4 p-4 w-full max-w-desktop z-50 backdrop-blur-sm">
         {/** 배당금 계산/투자금 계산 탭 */}
         <CalculatorTabs />
         {/** 다크모드 스위치 */}
