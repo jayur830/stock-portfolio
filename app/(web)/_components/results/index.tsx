@@ -61,7 +61,7 @@ export default function Results() {
           control={control}
           name="stocks"
           render={({ field: { value: stocks } }) => {
-            const totalRatio = stocks.reduce((acc, { ratio }) => acc + (ratio || 0), 0);
+            const totalRatio = stocks.filter(({ enabled }) => enabled).reduce((total, { ratio }) => total + (ratio || 0), 0);
             return (
               <span className={`font-semibold ${totalRatio === 100 ? 'text-green-600' : totalRatio > 100 ? 'text-red-600' : 'text-yellow-600'}`}>
                 {totalRatio.toFixed(1)}%

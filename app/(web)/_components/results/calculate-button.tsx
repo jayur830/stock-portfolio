@@ -16,9 +16,10 @@ export default function CalculateButton({ control, className, ...props }: Calcul
     control,
     name: 'stocks',
   });
-  const isNoStocks = stocks.length === 0;
-  const isNoInfoStocks = stocks.some((stock) => !stock.currency || !stock.dividendMonths || !stock.price || !stock.yield || !stock.ratio);
-  const totalRatio = stocks.reduce((acc, { ratio }) => acc + (ratio || 0), 0);
+  const enabledStocks = stocks.filter(({ enabled }) => enabled);
+  const isNoStocks = enabledStocks.length === 0;
+  const isNoInfoStocks = enabledStocks.some((stock) => !stock.currency || !stock.dividendMonths || !stock.price || !stock.yield || !stock.ratio);
+  const totalRatio = enabledStocks.reduce((total, { ratio }) => total + (ratio || 0), 0);
 
   return (
     <Button
