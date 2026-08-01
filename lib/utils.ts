@@ -15,9 +15,11 @@ export function cn(...inputs: ClassValue[]) {
  */
 /** @client */
 export function setSearchParams(pathname: string, params: { [key: string]: string | number | boolean | null | undefined }) {
-  const filteredParams = Object.fromEntries(Object.entries(params).filter(([_, value]) => value != null && value !== ''));
-  const qs = new URLSearchParams(filteredParams as any);
-  window.history.replaceState({}, '', `${pathname === '/' ? '' : pathname}${qs ? `?${qs}` : ''}`);
+  const filteredEntries = Object.entries(params)
+    .filter(([_, value]) => value != null && value !== '')
+    .map(([key, value]) => [key, String(value)]);
+  const qs = new URLSearchParams(filteredEntries);
+  window.history.replaceState({}, '', `${pathname === '/' ? '' : pathname}?${qs.toString()}`);
 }
 
 /**
@@ -178,10 +180,8 @@ export function calculateStockMonthlyDividends(
     taxRate += (KRW_CGT - taxRate) * 1.1;
   }
 
-  return dividendMonths.reduce((result, month) => ({
-    ...result,
-    [month]: +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2),
-  }), {} as Record<number, number>);
+  const monthlyAmount = +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2);
+  return Object.fromEntries(dividendMonths.map((month) => [month, monthlyAmount]));
 }
 
 /**
@@ -274,7 +274,7 @@ export function getComprehensiveTax(
   const comprehensiveIncome = grossUpDomestic + foreignExcess;
 
   /** 누진세율 구간 찾기 */
-  const bracket = TAX_BRACKETS.find((b) => comprehensiveIncome <= b.limit)!;
+  const bracket = TAX_BRACKETS.find((b) => comprehensiveIncome <= b.limit) ?? TAX_BRACKETS[TAX_BRACKETS.length - 1];
   /** 소득세 = 과세표준 * 세율 - 누진공제 */
   const incomeTax = comprehensiveIncome * bracket.rate - bracket.deduction;
   /** 지방소득세 = 소득세 * 지방소득세율 (10%) */

@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { Stock } from '@/types';
 
-import { calculateStockMonthlyDividends, convertToKRW, getComprehensiveTax, mergeMonthlyDividends, setSearchParams } from './utils';
+import { calculateStockMonthlyDividends, cn, convertCurrency, convertToKRW, decodeStocksFromBase64, encodeStocksToBase64, getComprehensiveTax, getStockDividends, mergeMonthlyDividends, setSearchParams } from './utils';
 
 describe('@/lib/utils', () => {
   beforeEach(() => {
@@ -331,5 +331,68 @@ describe('@/lib/utils', () => {
     /** 고액 배당 (납부세액 발생) */
     expect(getComprehensiveTax(1000000000)).toBe(151837000);
     expect(getComprehensiveTax(1000000000, [{ income: 1000000000, taxRate: 0.15 }])).toBe(272466000);
+  });
+
+  /** {@link cn} */
+  it('cn()', () => {
+    expect(cn('p-4', 'bg-red-500')).toBe('p-4 bg-red-500');
+    expect(cn('p-4', false && 'hidden', 'm-2')).toBe('p-4 m-2');
+    expect(cn('p-2', 'p-4')).toBe('p-4');
+  });
+
+  /** {@link convertCurrency} */
+  it('convertCurrency()', () => {
+    // 같은 통화인 경우
+    expect(convertCurrency(100, 'USD', 'USD', { USD: 1300 })).toBe(100);
+
+    // USD -> KRW
+    expect(convertCurrency(100, 'USD', 'KRW', { USD: 1300 })).toBe(130000);
+
+    // KRW -> USD
+    expect(convertCurrency(130000, 'KRW', 'USD', { USD: 1300 })).toBe(100);
+
+    // EUR -> USD (EUR 1400, USD 1300)
+    expect(convertCurrency(130, 'EUR', 'USD', { EUR: 1400, USD: 1300 })).toBe(140);
+
+    // 환율 정보가 없는 경우
+    expect(convertCurrency(100, 'USD', 'EUR', {})).toBe(0);
+    expect(convertCurrency(100, 'USD', 'EUR', { USD: 1300, EUR: 0 })).toBe(0);
+  });
+
+  /** {@link encodeStocksToBase64} & {@link decodeStocksFromBase64} */
+  it('encodeStocksToBase64() & decodeStocksFromBase64()', () => {
+    const stocks: Stock[] = [TQQQ, JEPQ];
+    const encoded = encodeStocksToBase64(stocks);
+    expect(typeof encoded).toBe('string');
+    expect(encoded.length).toBeGreaterThan(0);
+
+    const decoded = decodeStocksFromBase64(encoded);
+    expect(decoded.length).toBe(2);
+    expect(decoded[0].ticker).toBe('TQQQ');
+    expect(decoded[0].purchaseDate?.isSame(TQQQ.purchaseDate)).toBe(true);
+    expect(decoded[1].ticker).toBe('JEPQ');
+
+    // 빈 배열 처리
+    const emptyEncoded = encodeStocksToBase64([]);
+    expect(decodeStocksFromBase64(emptyEncoded)).toEqual([]);
+
+    // 유효하지 않은 Base64 디코딩 시 빈 배열 반환
+    expect(decodeStocksFromBase64('invalid-base64-!!!')).toEqual([]);
+  });
+
+  /** {@link getStockDividends} */
+  it('getStockDividends()', () => {
+    const result = getStockDividends([TQQQ, JEPQ], 1000000);
+    expect(result).toHaveLength(2);
+
+    // TQQQ (ratio 0.1, yield 2.5%, USD)
+    expect(result[0].isForeign).toBe(true);
+    expect(result[0].taxRate).toBe(0.15);
+    expect(result[0].annualDividend).toBe(25);
+
+    // JEPQ (ratio 1, yield 10.2%, USD)
+    expect(result[1].isForeign).toBe(true);
+    expect(result[1].taxRate).toBe(0.15);
+    expect(result[1].annualDividend).toBe(1020);
   });
 });

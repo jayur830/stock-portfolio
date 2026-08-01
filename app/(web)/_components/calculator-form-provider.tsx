@@ -11,7 +11,7 @@ import type { Category, FormValues, Stock } from '@/types';
 export default function CalculatorFormProvider({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const searchParamsObject = Object.fromEntries(searchParams.entries());
+  const searchParamsString = searchParams.toString();
   const activeTab = (searchParams.get('tab') || 'dividend') as Category;
 
   const methods = useForm<FormValues>({
@@ -26,7 +26,9 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
   const { getValues, setValue, handleSubmit, reset, watch } = methods;
 
   useLayoutEffect(() => {
-    if (!searchParams.has('tab')) {
+    const params = new URLSearchParams(searchParamsString);
+    if (!params.has('tab')) {
+      const searchParamsObject = Object.fromEntries(params.entries());
       setSearchParams(
         pathname,
         {
@@ -35,11 +37,12 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
         },
       );
     }
-  }, [pathname, searchParams, searchParamsObject]);
+  }, [pathname, searchParamsString]);
 
   useEffect(() => {
-    return watch((value, { name, type }) => {
+    const subscription = watch((value, { name, type }) => {
       if (type === 'change') {
+        const searchParamsObject = Object.fromEntries(new URLSearchParams(searchParamsString).entries());
         switch (name) {
           case 'totalInvestment':
           case 'targetAnnualDividend':
@@ -51,10 +54,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
               },
             );
             break;
-          case 'stocks':
+          case 'stocks': {
             /** stocks 배열의 어떤 필드든 변경되면 전체 stocks를 URL에 저장 */
             const stocksData = value.stocks || [];
-            const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64((value.stocks || []) as Stock[]) : undefined;
+            const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64(stocksData as Stock[]) : undefined;
             setSearchParams(
               pathname,
               {
@@ -63,12 +66,15 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
               },
             );
             break;
+          }
           default:
             break;
         }
       }
-    }).unsubscribe;
-  }, [watch, pathname, searchParamsObject]);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [watch, pathname, searchParamsString]);
 
   /** 폼 데이터 검증 */
   const validateFormData = useCallback(({ stocks, totalInvestment, targetAnnualDividend, exchangeRates }: FormValues): string | null => {
@@ -78,12 +84,23 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       return '총 비율이 100% 이하가 되어야 합니다.';
     }
 
+    if (enabledStocks.length === 0) {
+      return '최소 하나 이상의 종목을 활성화해주세요.';
+    }
+
     if (activeTab === 'dividend' && (totalInvestment == null || isNaN(totalInvestment) || totalInvestment <= 0)) {
       return '총 투자금을 입력해주세요.';
     }
 
-    if (activeTab === 'investment' && (targetAnnualDividend == null || isNaN(targetAnnualDividend) || targetAnnualDividend <= 0)) {
-      return '목표 연 배당금을 입력해주세요.';
+    if (activeTab === 'investment') {
+      if (targetAnnualDividend == null || isNaN(targetAnnualDividend) || targetAnnualDividend <= 0) {
+        return '목표 연 배당금을 입력해주세요.';
+      }
+
+      const weightedDividendYield = enabledStocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
+      if (weightedDividendYield <= 0) {
+        return '활성화된 종목들의 배당 수익률과 비율의 합이 0보다 커야 투자금을 계산할 수 있습니다.';
+      }
     }
 
     /** 외화 종목이 있는지 확인 */
@@ -127,6 +144,9 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     const enabledStocks = stocks.filter(({ enabled }) => enabled);
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
     const weightedDividendYield = enabledStocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
+    if (weightedDividendYield <= 0) {
+      return;
+    }
     /** 필요한 투자금 */
     const investment = targetAnnualDividend / weightedDividendYield;
 
