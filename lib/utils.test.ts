@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { Stock } from '@/types';
 
-import { calculateStockAnnualDividend, calculateStockMonthlyDividends, convertToKRW, getComprehensiveTax, mergeMonthlyDividends, setSearchParams } from './utils';
+import { calculateStockMonthlyDividends, convertToKRW, getComprehensiveTax, mergeMonthlyDividends, setSearchParams } from './utils';
 
 describe('@/lib/utils', () => {
   beforeEach(() => {
@@ -135,13 +135,6 @@ describe('@/lib/utils', () => {
     enabled: true,
   };
 
-  /** {@link calculateStockAnnualDividend} */
-  it('calculateStockAnnualDividend()', () => {
-    expect(calculateStockAnnualDividend(TQQQ, 10000, { USD: 1 })).toBe(250);
-    expect(calculateStockAnnualDividend(JEPQ, 10000, { USD: 1 })).toBe(1020);
-    expect(calculateStockAnnualDividend(SGOV, 10000, { USD: 1.2 })).toBe(420);
-  });
-
   /** {@link calculateStockMonthlyDividends} */
   it('calculateStockMonthlyDividends()', () => {
     expect(
@@ -266,9 +259,9 @@ describe('@/lib/utils', () => {
     ]);
 
     /** 실제 Stock 데이터 활용 */
-    const tqqqMonthly = calculateStockMonthlyDividends(TQQQ.dividendMonths, 'USD', calculateStockAnnualDividend(TQQQ, 10000, { USD: 1 }));
-    const jepqMonthly = calculateStockMonthlyDividends(JEPQ.dividendMonths, 'USD', calculateStockAnnualDividend(JEPQ, 10000, { USD: 1 }));
-    const sgovMonthly = calculateStockMonthlyDividends(SGOV.dividendMonths, 'USD', calculateStockAnnualDividend(SGOV, 10000, { USD: 1.2 }));
+    const tqqqMonthly = calculateStockMonthlyDividends(TQQQ.dividendMonths, 'USD', 250);
+    const jepqMonthly = calculateStockMonthlyDividends(JEPQ.dividendMonths, 'USD', 1020);
+    const sgovMonthly = calculateStockMonthlyDividends(SGOV.dividendMonths, 'USD', 420);
 
     /** 실제 계산된 값 사용 */
     const merged = mergeMonthlyDividends([

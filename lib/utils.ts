@@ -158,21 +158,6 @@ export function convertCurrency(
   return amountInKRW / toRate;
 }
 
-/** 단일 종목의 연 배당금 계산 */
-export function calculateStockAnnualDividend(
-  /** 종목 */
-  stock: Stock,
-  /** 투자금 */
-  investmentAmount: number,
-  /** 환율 정보 */
-  exchangeRates: { [key: string]: number },
-): number {
-  const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRates);
-  const shares = investmentAmount / priceInKRW;
-  const dividendPerShare = priceInKRW * (stock.yield / 100);
-  return Math.floor(shares * dividendPerShare);
-}
-
 /** 단일 종목의 월별 배당금 계산 */
 export function calculateStockMonthlyDividends(
   /** 배당 지급 월 */
