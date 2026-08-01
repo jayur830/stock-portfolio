@@ -175,11 +175,11 @@ export function calculateStockAnnualDividend(
 
 /** 단일 종목의 월별 배당금 계산 */
 export function calculateStockMonthlyDividends(
-  /** 월별 배당금 */
+  /** 배당 지급 월 */
   dividendMonths: number[],
   /** 통화 */
   currency: Currency,
-  /** 연 배당금 */
+  /** 단일종목 연 배당금 */
   annualDividend: number,
 ): Record<number, number> {
   if (!dividendMonths || dividendMonths.length === 0) {
@@ -189,18 +189,40 @@ export function calculateStockMonthlyDividends(
   /** 통화에 따라 세율 선택 */
   let taxRate = FOREIGN_TAX_RATES[currency || 'KRW'];
 
-  if (taxRate > KRW_CGT) {
-    return dividendMonths.reduce((acc, month) => {
-      acc[month] = +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2);
-      return acc;
-    }, {} as Record<number, number>);
+  if (taxRate <= KRW_CGT) {
+    taxRate += (KRW_CGT - taxRate) * 1.1;
   }
 
-  taxRate += (KRW_CGT - taxRate) * 1.1;
-  return dividendMonths.reduce((acc, month) => {
-    acc[month] = +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2);
-    return acc;
-  }, {} as Record<number, number>);
+  return dividendMonths.reduce((result, month) => ({
+    ...result,
+    [month]: +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2),
+  }), {} as Record<number, number>);
+}
+
+/**
+   * 종목별 배당정보 리스트 구하기
+   * @param stocks 종목 리스트
+   * @param investment 필요한 투자금
+   * @param exchangeRates 환율 정보
+   * @returns 종목별 배당정보 리스트
+   */
+export function getStockDividends(stocks: Stock[], investment: number) {
+  return stocks.map((stock) => {
+    /** 종목별 투자금 */
+    const investmentAmount = (investment * stock.ratio) / 100;
+    /** 종목별 연 배당금 */
+    const annualDividend = Math.floor(investmentAmount * stock.yield / 100);
+    /** 종목별 월별 배당금 */
+    const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
+    /** 종목별 세율 */
+    const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
+    return {
+      annualDividend,
+      monthlyDividends,
+      isForeign: stock.currency !== 'KRW',
+      taxRate,
+    };
+  });
 }
 
 /** 월별 배당금 배열 생성 */

@@ -5,7 +5,7 @@ import type { PropsWithChildren } from 'react';
 import { useCallback, useEffect, useLayoutEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
-import { calculateStockAnnualDividend, calculateStockMonthlyDividends, decodeStocksFromBase64, encodeStocksToBase64, FOREIGN_TAX_RATES, setSearchParams } from '@/lib/utils';
+import { decodeStocksFromBase64, encodeStocksToBase64, getStockDividends, setSearchParams } from '@/lib/utils';
 import type { Category, FormValues, Stock } from '@/types';
 
 export default function CalculatorFormProvider({ children }: PropsWithChildren) {
@@ -111,22 +111,7 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     /** 필요한 투자금 */
     const investment = totalInvestment;
 
-    const stockDividends = enabledStocks.map((stock) => {
-      /** 종목별 투자금 */
-      const investmentAmount = (investment * stock.ratio) / 100;
-      /** 종목별 연 배당금 */
-      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, exchangeRates);
-      /** 종목별 월별 배당금 */
-      const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
-      /** 종목별 세율 */
-      const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
-      return {
-        annualDividend,
-        monthlyDividends,
-        isForeign: stock.currency !== 'KRW',
-        taxRate,
-      };
-    });
+    const stockDividends = getStockDividends(enabledStocks, investment);
 
     setValue('stockDividends', stockDividends);
     setValue('chartData', {
@@ -145,22 +130,7 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     /** 필요한 투자금 */
     const investment = targetAnnualDividend / weightedDividendYield;
 
-    const stockDividends = enabledStocks.map((stock) => {
-      /** 종목별 투자금 */
-      const investmentAmount = (investment * stock.ratio) / 100;
-      /** 종목별 연 배당금 */
-      const annualDividend = calculateStockAnnualDividend(stock, investmentAmount, exchangeRates);
-      /** 종목별 월별 배당금 */
-      const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
-      /** 종목별 세율 */
-      const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
-      return {
-        annualDividend,
-        monthlyDividends,
-        isForeign: stock.currency !== 'KRW',
-        taxRate,
-      };
-    });
+    const stockDividends = getStockDividends(enabledStocks, investment);
 
     setValue('stockDividends', stockDividends);
     setValue('chartData', {
