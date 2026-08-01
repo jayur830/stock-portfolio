@@ -1,6 +1,6 @@
 'use client';
 
-import { Calculator, Home } from 'lucide-react';
+import { Calculator, Ellipsis, Home, PieChart } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { PropsWithChildren } from 'react';
@@ -18,6 +18,16 @@ const NAV_ITEMS = [
     href: '/m/calculator',
     Icon: Calculator,
   },
+  {
+    label: 'My 포트',
+    href: '/m/portfolio',
+    Icon: PieChart,
+  },
+  {
+    label: '더보기',
+    href: '/m/more',
+    Icon: Ellipsis,
+  },
 ];
 
 export default function Layout({ children }: PropsWithChildren) {
@@ -29,8 +39,8 @@ export default function Layout({ children }: PropsWithChildren) {
       <main className="flex-1 pb-20">{children}</main>
 
       {/* 하단 내비게이션 바 */}
-      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/40 bg-background/80 backdrop-blur-xl transition-all duration-200">
-        <div className="mx-auto flex h-16 w-full items-center">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-border/40 bg-background/80 backdrop-blur-xl transition-all duration-200 max-w-180 mx-auto">
+        <div className="flex h-16 items-center">
           {NAV_ITEMS.map(({ label, href, Icon }) => {
             const isActive = pathname === href || pathname.startsWith(`${href}/`);
 
@@ -45,18 +55,18 @@ export default function Layout({ children }: PropsWithChildren) {
               >
                 {/* 활성화 탭 인디케이터 */}
                 {isActive && (
-                  <span className="absolute -top-px h-0.5 w-8 rounded-full bg-primary transition-all duration-300 shadow-sm" />
+                  <span className="absolute -top-px h-0.5 w-full rounded-full bg-primary transition-all duration-300 shadow-sm" />
                 )}
 
                 <div
                   className={cn(
                     'flex items-center justify-center rounded-xl p-1 transition-all duration-200',
-                    isActive && 'bg-primary/10 scale-110',
+                    isActive && 'scale-110',
                   )}
                 >
                   <Icon className="h-5 w-5" />
                 </div>
-                <span>{label}</span>
+                <span className={isActive ? 'font-bold' : undefined}>{label}</span>
               </Link>
             );
           })}
