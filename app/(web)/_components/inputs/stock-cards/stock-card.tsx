@@ -209,7 +209,6 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
 
       <div className="stock-card-topbar">
         <div className="stock-card-ident">
-          <span className="stock-card-index">{String(index + 1).padStart(2, '0')}</span>
           <div className="min-w-0">
             <span className="stock-card-label">POSITION</span>
             <strong className="stock-card-name">{stock.ticker || '새 종목 추가'}</strong>

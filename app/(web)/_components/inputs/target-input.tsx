@@ -30,7 +30,7 @@ export default function TargetInput() {
   return (
     <section className="target-surface">
       <div className="target-topline">
-        <div className="target-leading">
+        <div className="surface-leading">
           <span className="section-index">02</span>
           <div>
             <span className="surface-kicker">SET YOUR TARGET</span>

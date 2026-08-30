@@ -50,7 +50,7 @@ export default async function Page() {
             <aside aria-labelledby="portfolio-result-title" className="result-column">
               <div className="results-heading">
                 <div className="section-heading">
-                  <span className="section-index">04</span>
+                  <span className="section-index">02</span>
                   <div>
                     <span className="section-kicker">SEE THE FLOW</span>
                     <h2 className="section-title" id="portfolio-result-title">현금흐름 미리보기</h2>

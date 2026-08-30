@@ -11,7 +11,7 @@ export interface CalculateButtonProps extends Omit<ComponentProps<typeof Button>
   control: Control<FormValues>;
 }
 
-export default function CalculateButton({ control, className, ...props }: CalculateButtonProps) {
+export default function CalculateButton({ control, className, children, ...props }: CalculateButtonProps) {
   const { field: { value: stocks } } = useController({
     control,
     name: 'stocks',
@@ -28,7 +28,7 @@ export default function CalculateButton({ control, className, ...props }: Calcul
       type="submit"
       {...props}
     >
-      계산
+      {children || '계산'}
     </Button>
   );
 }

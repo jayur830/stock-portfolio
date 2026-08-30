@@ -34,12 +34,12 @@ export default function StockCards() {
   return (
     <section className="stock-list-surface">
       <div className="stock-list-heading">
-        <div className="stock-list-title-wrap">
+        <div className="surface-leading">
           <span className="section-index">03</span>
           <div>
             <span className="surface-kicker">YOUR POSITIONS</span>
-            <h3 className="stock-list-title">종목을 담아보세요</h3>
-            <p className="stock-list-description">보유 종목의 배당률과 비중을 입력하면 예상 현금흐름이 완성됩니다.</p>
+            <h3 className="surface-title">종목을 담아보세요</h3>
+            <p className="surface-description">보유 종목의 배당률과 비중을 입력하면 예상 현금흐름이 완성됩니다.</p>
           </div>
         </div>
         <span className="stock-count">{fields.length} POSITIONS</span>
