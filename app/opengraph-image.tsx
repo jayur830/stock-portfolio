@@ -71,7 +71,7 @@ export default async function Image() {
               <span>DIVIDEND</span>
               <span style={{ color: '#78e4d3' }}>LAB</span>
             </div>
-            <div style={{ color: 'rgba(231, 255, 251, 0.62)', fontSize: '10px', fontWeight: 700, letterSpacing: '4px', marginTop: '7px' }}>
+            <div style={{ color: 'rgba(231, 255, 251, 0.62)', display: 'flex', fontSize: '10px', fontWeight: 700, letterSpacing: '4px', marginTop: '7px' }}>
               INCOME, BY DESIGN
             </div>
           </div>
@@ -93,13 +93,13 @@ export default async function Image() {
           >
             DIVIDEND PORTFOLIO PLANNER
           </div>
-          <div style={{ color: '#ffffff', fontSize: '54px', fontWeight: 750, letterSpacing: '-2px', lineHeight: 1.14, marginTop: '24px' }}>
+          <div style={{ color: '#ffffff', display: 'flex', fontSize: '54px', fontWeight: 750, letterSpacing: '-2px', lineHeight: 1.14, marginTop: '24px' }}>
             배당을 모으는 일이,
           </div>
-          <div style={{ color: '#78e4d3', fontSize: '64px', fontWeight: 800, letterSpacing: '-3px', lineHeight: 1.12 }}>
+          <div style={{ color: '#78e4d3', display: 'flex', fontSize: '64px', fontWeight: 800, letterSpacing: '-3px', lineHeight: 1.12 }}>
             계획이 되도록.
           </div>
-          <div style={{ color: 'rgba(231, 255, 251, 0.72)', fontSize: '18px', lineHeight: 1.5, marginTop: '22px' }}>
+          <div style={{ color: 'rgba(231, 255, 251, 0.72)', display: 'flex', fontSize: '18px', lineHeight: 1.5, marginTop: '22px' }}>
             투자금과 목표 배당금으로 설계하는 나만의 현금흐름 플래너
           </div>
         </div>
@@ -121,21 +121,22 @@ export default async function Image() {
         >
           <div style={{ alignItems: 'flex-start', display: 'flex', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ color: '#a9eee2', fontSize: '10px', fontWeight: 800, letterSpacing: '3px' }}>YOUR INCOME PLAN</div>
-              <div style={{ color: '#ffffff', fontSize: '23px', fontWeight: 750, marginTop: '10px' }}>Monthly dividend</div>
-              <div style={{ color: 'rgba(231, 255, 251, 0.58)', fontSize: '11px', marginTop: '5px' }}>작은 습관이 만드는 큰 흐름</div>
+              <div style={{ color: '#a9eee2', display: 'flex', fontSize: '10px', fontWeight: 800, letterSpacing: '3px' }}>YOUR INCOME PLAN</div>
+              <div style={{ color: '#ffffff', display: 'flex', fontSize: '23px', fontWeight: 750, marginTop: '10px' }}>Monthly dividend</div>
+              <div style={{ color: 'rgba(231, 255, 251, 0.58)', display: 'flex', fontSize: '11px', marginTop: '5px' }}>작은 습관이 만드는 큰 흐름</div>
             </div>
-            <div style={{ color: '#bafff4', fontSize: '11px', fontWeight: 750 }}>↗ LIVE</div>
+            <div style={{ color: '#bafff4', display: 'flex', fontSize: '11px', fontWeight: 750 }}>↗ LIVE</div>
           </div>
           <div style={{ display: 'flex', height: '105px', marginTop: '22px', position: 'relative', width: '100%' }}>
-            <div style={{ borderBottom: '1px solid rgba(200, 255, 247, 0.2)', borderTop: '1px solid rgba(200, 255, 247, 0.1)', height: '54px', position: 'absolute', top: '24px', width: '100%' }} />
+            <div style={{ borderBottom: '1px solid rgba(200, 255, 247, 0.2)', borderTop: '1px solid rgba(200, 255, 247, 0.1)', display: 'flex', height: '54px', position: 'absolute', top: '24px', width: '100%' }} />
             <svg fill="none" height="105" viewBox="0 0 274 105" width="274" xmlns="http://www.w3.org/2000/svg">
               <path d="M2 89C22 84 35 71 53 76C74 82 81 57 105 63C126 69 142 43 161 52C180 61 198 29 217 38C236 47 247 14 272 20" stroke="#7CE5D5" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
               <circle cx="217" cy="38" fill="#C6FFF5" r="5" stroke="#0E615A" strokeWidth="2" />
             </svg>
           </div>
           <div style={{ color: 'rgba(231, 255, 251, 0.54)', display: 'flex', fontSize: '10px', justifyContent: 'space-between', marginTop: '10px' }}>
-            <span>NOW</span><span>12 MONTHS</span>
+            <span>NOW</span>
+            <span>12 MONTHS</span>
           </div>
         </div>
 
@@ -155,7 +156,7 @@ export default async function Image() {
             <span>현금흐름 확인</span>
           </div>
         </div>
-        <div style={{ bottom: '52px', color: 'rgba(231, 255, 251, 0.5)', fontSize: '13px', position: 'absolute', right: '74px' }}>
+        <div style={{ bottom: '52px', color: 'rgba(231, 255, 251, 0.5)', display: 'flex', fontSize: '13px', position: 'absolute', right: '74px' }}>
           stock-portfolio.opentoyapp.kr
         </div>
       </div>
