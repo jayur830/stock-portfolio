@@ -24,10 +24,12 @@ export async function POST(request: NextRequest) {
             events: 'div',
           });
 
-          const data = quotes.map((item) => ({
-            date: item.date,
-            close: item.close,
-          }));
+          const data = quotes
+            .filter((item) => item.close != null && !isNaN(item.close) && item.close > 0)
+            .map((item) => ({
+              date: item.date,
+              close: item.close,
+            }));
 
           const dividends = (events?.dividends || []).map(
             (item) => ({

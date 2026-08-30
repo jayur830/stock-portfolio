@@ -45,7 +45,13 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       return null;
     }
 
-    let sortedDates = [...new Set(histories.flatMap((h) => h.data.map((d) => dayjs(d.date).format('YYYY-MM-DD'))))].sort();
+    let sortedDates = [
+      ...new Set(
+        histories.flatMap((h) => h.data
+          .filter((d) => d.close != null && !isNaN(d.close) && d.close > 0)
+          .map((d) => dayjs(d.date).format('YYYY-MM-DD'))),
+      ),
+    ].sort();
 
     /** 기간 필터 적용 */
     if (selectedPeriod) {
@@ -61,6 +67,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
     if (isOverlap) {
       series = histories.map((history) => {
         const stockData = history.data
+          .filter((d) => d.close != null && !isNaN(d.close) && d.close > 0)
           .map((d) => ({ date: dayjs(d.date).format('YYYY-MM-DD'), close: d.close }))
           .filter((d) => sortedDates.includes(d.date))
           .sort((a, b) => a.date.localeCompare(b.date));
@@ -68,14 +75,14 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
         const percentageMap = new Map<string, number>();
 
         if (stockData.length > 0) {
-          const basePrice = stockData[0].close; // Use the price of the first available date in the filtered period as the base
-          if (basePrice === 0) {
-            stockData.forEach((dataPoint) => percentageMap.set(dataPoint.date, 0));
-          } else {
+          const basePrice = stockData[0].close; // 기간 내 첫 번째 유효 가격
+          if (basePrice > 0) {
             stockData.forEach((dataPoint) => {
               const currentPrice = dataPoint.close;
-              const cumulativeChange = ((currentPrice - basePrice) / basePrice) * 100;
-              percentageMap.set(dataPoint.date, cumulativeChange);
+              if (currentPrice != null && currentPrice > 0) {
+                const cumulativeChange = ((currentPrice - basePrice) / basePrice) * 100;
+                percentageMap.set(dataPoint.date, cumulativeChange);
+              }
             });
           }
         }
@@ -96,12 +103,14 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       series = histories.map((history) => {
         const stock = stocks.find((s) => s.ticker === history.symbol);
         const dataMap = new Map(
-          history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
+          history.data
+            .filter((d) => d.close != null && !isNaN(d.close) && d.close > 0)
+            .map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
         );
 
         const seriesData = sortedDates.map((date) => {
           const price = dataMap.get(date);
-          if (!price) {
+          if (!price || price <= 0) {
             return null;
           }
 
@@ -132,6 +141,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       },
       tooltip: {
         trigger: 'axis',
+        confine: true,
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: {

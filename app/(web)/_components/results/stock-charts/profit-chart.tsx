@@ -30,7 +30,9 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
           return false;
         }
 
-        const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(s.purchaseDate, 'day'));
+        const purchaseDataPoint = history.data.find(
+          (d) => d.close != null && d.close > 0 && (dayjs(d.date).isSame(s.purchaseDate, 'day') || dayjs(d.date).isAfter(s.purchaseDate, 'day')),
+        );
         if (!purchaseDataPoint) {
           return false;
         }
@@ -42,13 +44,17 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
 
         const purchaseDate = stock.purchaseDate!;
 
-        // 날짜별 가격을 Map으로 변환 (O(1) 조회)
+        // 날짜별 유효한 가격을 Map으로 변환 (O(1) 조회)
         const priceMap = new Map(
-          history.data.map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
+          history.data
+            .filter((d) => d.close != null && d.close > 0)
+            .map((d) => [dayjs(d.date).format('YYYY-MM-DD'), d.close]),
         );
 
-        // 매수일 이후의 첫 가격 찾기
-        const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'))!;
+        // 매수일 기준 첫 가격 찾기
+        const purchaseDataPoint = history.data.find(
+          (d) => d.close != null && d.close > 0 && (dayjs(d.date).isSame(purchaseDate, 'day') || dayjs(d.date).isAfter(purchaseDate, 'day')),
+        )!;
 
         const purchasePriceInKRW = convertToKRW(purchaseDataPoint.close, stock.currency, exchangeRates);
         const investmentAmount = (totalInvestment * stock.ratio) / 100;
@@ -193,6 +199,7 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
       },
       tooltip: {
         trigger: 'axis',
+        confine: true,
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: {

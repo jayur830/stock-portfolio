@@ -43,7 +43,7 @@ export default function IndividualCharts({
 
     const purchaseDate = dayjs(stock.purchaseDate);
     const filteredData = history.data
-      .filter((d) => dayjs(d.date).isAfter(purchaseDate, 'day') || dayjs(d.date).isSame(purchaseDate, 'day'))
+      .filter((d) => d.close != null && d.close > 0 && (dayjs(d.date).isAfter(purchaseDate, 'day') || dayjs(d.date).isSame(purchaseDate, 'day')))
       .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
 
     if (filteredData.length === 0) return null;
@@ -124,6 +124,7 @@ export default function IndividualCharts({
       textStyle: { color: isDark ? '#d1d5db' : '#374151' },
       tooltip: {
         trigger: 'axis',
+        confine: true,
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: { color: isDark ? '#e5e7eb' : '#111827' },
