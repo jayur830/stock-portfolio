@@ -1,7 +1,5 @@
 import { ImageResponse } from 'next/og';
 
-export const runtime = 'edge';
-
 export const alt = '배당주 포트폴리오 계산기';
 export const size = {
   width: 1200,
@@ -69,8 +67,9 @@ export default async function Image() {
             </svg>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ color: '#ffffff', fontSize: '21px', fontWeight: 800, letterSpacing: '6px' }}>
-              DIVIDEND<span style={{ color: '#78e4d3' }}>LAB</span>
+            <div style={{ color: '#ffffff', display: 'flex', fontSize: '21px', fontWeight: 800, letterSpacing: '6px' }}>
+              <span>DIVIDEND</span>
+              <span style={{ color: '#78e4d3' }}>LAB</span>
             </div>
             <div style={{ color: 'rgba(231, 255, 251, 0.62)', fontSize: '10px', fontWeight: 700, letterSpacing: '4px', marginTop: '7px' }}>
               INCOME, BY DESIGN
@@ -90,7 +89,6 @@ export default async function Image() {
               fontWeight: 800,
               letterSpacing: '3px',
               padding: '10px 15px',
-              width: 'fit-content',
             }}
           >
             DIVIDEND PORTFOLIO PLANNER
@@ -142,11 +140,20 @@ export default async function Image() {
         </div>
 
         <div style={{ alignItems: 'center', bottom: '52px', color: 'rgba(231, 255, 251, 0.68)', display: 'flex', fontSize: '13px', fontWeight: 700, gap: '20px', position: 'absolute' }}>
-          <span><b style={{ color: '#bafff4' }}>01</b> 금액 설정</span>
+          <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
+            <span style={{ color: '#bafff4', fontWeight: 800 }}>01</span>
+            <span>금액 설정</span>
+          </div>
           <span style={{ color: '#6ed9ca' }}>•</span>
-          <span><b style={{ color: '#bafff4' }}>02</b> 종목 배분</span>
+          <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
+            <span style={{ color: '#bafff4', fontWeight: 800 }}>02</span>
+            <span>종목 배분</span>
+          </div>
           <span style={{ color: '#6ed9ca' }}>•</span>
-          <span><b style={{ color: '#bafff4' }}>03</b> 현금흐름 확인</span>
+          <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
+            <span style={{ color: '#bafff4', fontWeight: 800 }}>03</span>
+            <span>현금흐름 확인</span>
+          </div>
         </div>
         <div style={{ bottom: '52px', color: 'rgba(231, 255, 251, 0.5)', fontSize: '13px', position: 'absolute', right: '74px' }}>
           stock-portfolio.opentoyapp.kr

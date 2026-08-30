@@ -28,6 +28,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://stock-portfolio.opentoyapp.kr'),
   title: '배당주 포트폴리오 계산기 | 배당금 자동 계산',
   description: '배당주 포트폴리오 관리 및 배당금 계산. 국내외 주식, 환율 환산, 종합소득세 계산 지원.',
   keywords: [
