@@ -67,7 +67,7 @@ export default function ExchangeRates() {
           </div>
         </div>
         <Button
-          className="surface-action hidden sm:inline-flex"
+          className="surface-action inline-flex shrink-0"
           disabled={loadingExchangeRate}
           onClick={handleFetchExchangeRate}
           size="sm"
@@ -75,7 +75,8 @@ export default function ExchangeRates() {
           variant="outline"
         >
           <RefreshCw className={loadingExchangeRate ? 'animate-spin' : ''} size={14} />
-          {loadingExchangeRate ? '조회 중...' : '환율 새로고침'}
+          <span className="hidden sm:inline">{loadingExchangeRate ? '조회 중...' : '환율 새로고침'}</span>
+          <span className="sm:hidden">{loadingExchangeRate ? '조회...' : '새로고침'}</span>
         </Button>
       </div>
 
@@ -101,31 +102,25 @@ export default function ExchangeRates() {
           </div>
         ))}
       </div>
-      <div className="rate-mobile flex sm:hidden">
-        <div className="rate-mobile-actions">
-          <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
-            <SelectTrigger className="select-trigger">
-              <SelectValue placeholder="통화" />
-            </SelectTrigger>
-            <SelectContent>
-              {_exchangeRateCodes.map((currency) => <SelectItem key={currency} value={currency}>{currency}/KRW</SelectItem>)}
-            </SelectContent>
-          </Select>
-          <Button
-            className="surface-action"
-            disabled={loadingExchangeRate}
-            onClick={handleFetchExchangeRate}
-            type="button"
-            variant="outline"
-          >
-            <span>{loadingExchangeRate ? '조회 중...' : '환율 조회'}</span>
-            <RefreshCw className={loadingExchangeRate ? 'animate-spin' : ''} size={14} />
-          </Button>
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted-foreground">{selectedCurrency}/KRW</label>
+
+      <div className="rate-mobile flex flex-col gap-2.5 sm:hidden">
+        <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
+          <SelectTrigger className="h-11 w-full border-border/80 bg-card font-bold">
+            <SelectValue placeholder="통화 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            {_exchangeRateCodes.map((currency) => (
+              <SelectItem key={currency} value={currency}>
+                {currency} / KRW
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <div className="target-input-shell w-full">
           <Input
-            className="rate-input"
+            aria-label={`${selectedCurrency}/KRW 환율`}
+            className="target-input"
             min={0}
             onChange={(e) => {
               const newValue = e.target.valueAsNumber;
@@ -139,6 +134,7 @@ export default function ExchangeRates() {
             type="number"
             value={exchangeRates?.[selectedCurrency as keyof typeof exchangeRates] || ''}
           />
+          <span className="target-currency">원</span>
         </div>
       </div>
     </section>
