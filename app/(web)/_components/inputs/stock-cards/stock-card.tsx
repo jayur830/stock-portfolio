@@ -238,7 +238,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
       </div>
 
-      <CardHeader className="stock-card-header">
+      <CardHeader className="stock-card-header !px-4 sm:!px-[1.35rem]">
         <div className="stock-search-block">
           <div className="field-label-row">
             <div>
@@ -248,7 +248,6 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           </div>
           <div className="stock-search-wrap" ref={dropdownRef}>
             <div className="stock-search-input-shell">
-              <Search aria-hidden="true" className="stock-search-icon" size={16} />
               <Input
                 aria-label="종목 검색"
                 className="stock-search-input"
@@ -261,10 +260,12 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 type="search"
                 value={searchQuery}
               />
-              {isSearching && (
+              {isSearching ? (
                 <div className="stock-search-spinner">
                   <div className="animate-spin h-4 w-4 rounded-full border-2 border-gray-300 border-t-gray-600" />
                 </div>
+              ) : (
+                <Search aria-hidden="true" className="stock-search-icon" size={16} />
               )}
             </div>
             {showDropdown && searchResults.length > 0 && (
@@ -441,7 +442,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="stock-card-content">
+      <CardContent className="stock-card-content !px-4 sm:!px-[1.35rem]">
         <div className="stock-control-block">
           <div className="stock-control-head">
             <div>

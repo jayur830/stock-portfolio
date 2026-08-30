@@ -1012,23 +1012,25 @@
 
   .stock-search-icon {
     position: absolute;
-    left: 0.8rem;
+    right: 0.85rem;
     top: 50%;
     z-index: 1;
     color: var(--muted-foreground);
+    pointer-events: none;
     transform: translateY(-50%);
   }
 
   .stock-search-input {
     height: 2.8rem;
-    padding-left: 2.4rem;
+    padding-left: 0.95rem;
     padding-right: 2.4rem;
   }
 
   .stock-search-spinner {
     position: absolute;
-    right: 0.8rem;
+    right: 0.85rem;
     top: 50%;
+    pointer-events: none;
     transform: translateY(-50%);
   }
 
@@ -1968,8 +1970,8 @@
     .stock-card-topbar,
     .stock-card-header[data-slot="card-header"],
     .stock-card-content[data-slot="card-content"] {
-      padding-left: 1rem;
-      padding-right: 1rem;
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
     }
 
     .stock-card-topbar {
