@@ -1,6 +1,6 @@
-import { LineChart } from 'lucide-react';
 import { connection } from 'next/server';
 
+import BrandLogo from '@/components/brand-logo';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 
 import CalculatorFormProvider from './_components/calculator-form-provider';
@@ -15,7 +15,7 @@ export default async function Page() {
       <header className="site-header">
         <div className="brand-lockup">
           <div aria-hidden="true" className="brand-mark">
-            <LineChart size={20} strokeWidth={2.5} />
+            <BrandLogo size={20} />
           </div>
           <div>
             <span className="brand-name">DIVIDEND<span>LAB</span></span>
