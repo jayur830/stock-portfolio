@@ -238,7 +238,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
       </div>
 
-      <CardHeader className="stock-card-header !px-4 sm:!px-[1.35rem]">
+      <CardHeader className="stock-card-header px-4! sm:px-[1.35rem]!">
         <div className="stock-search-block">
           <div className="field-label-row">
             <div>
@@ -437,12 +437,24 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   {label}
                 </Button>
               ))}
+              <Button
+                className="date-preset"
+                disabled={!isEnabled || !stock.purchaseDate}
+                onClick={() => {
+                  onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, purchaseDate: undefined } : s)));
+                }}
+                size="sm"
+                type="button"
+                variant="outline"
+              >
+                초기화
+              </Button>
             </div>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="stock-card-content !px-4 sm:!px-[1.35rem]">
+      <CardContent className="stock-card-content px-4! sm:px-[1.35rem]!">
         <div className="stock-control-block">
           <div className="stock-control-head">
             <div>
