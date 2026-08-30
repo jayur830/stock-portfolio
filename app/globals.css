@@ -279,7 +279,8 @@
   }
 
   .theme-switch[data-state="checked"] .theme-switch-thumb {
-    color: var(--primary-foreground);
+    color: var(--primary);
+    background: var(--card);
   }
 
   .page-content {
