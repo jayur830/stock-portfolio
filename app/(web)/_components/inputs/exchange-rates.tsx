@@ -55,22 +55,33 @@ export default function ExchangeRates() {
   }, [refetchExchangeRate]);
 
   return (
-    <>
-      <Button
-        className="hidden sm:block w-full sm:w-fit"
-        disabled={loadingExchangeRate}
-        onClick={handleFetchExchangeRate}
-        size="sm"
-        type="button"
-        variant="outline"
-      >
-        {loadingExchangeRate ? '조회 중...' : '환율 조회'}
-      </Button>
-      <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+    <section className="input-surface exchange-rates-surface">
+      <div className="surface-heading">
+        <div className="surface-heading-copy">
+          <span className="surface-kicker">MARKET DATA</span>
+          <h3 className="surface-title">환율 기준</h3>
+          <p className="surface-description">외화 종목을 담았다면 원화 환산 기준을 먼저 맞춰주세요.</p>
+          <span className="surface-status"><span className="status-dot" /> KRW 기준 환율</span>
+        </div>
+        <Button
+          className="surface-action hidden sm:inline-flex"
+          disabled={loadingExchangeRate}
+          onClick={handleFetchExchangeRate}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
+          <RefreshCw className={loadingExchangeRate ? 'animate-spin' : ''} size={14} />
+          {loadingExchangeRate ? '조회 중...' : '환율 새로고침'}
+        </Button>
+      </div>
+
+      <div className="rate-grid hidden sm:grid">
         {_exchangeRateCodes.map((currency) => (
-          <div className="flex flex-col gap-1.5" key={currency}>
+          <div className="rate-item" key={currency}>
             <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
             <Input
+              className="rate-input"
               min={0}
               onChange={(e) => {
                 const newValue = e.target.valueAsNumber;
@@ -87,10 +98,10 @@ export default function ExchangeRates() {
           </div>
         ))}
       </div>
-      <div className="flex sm:hidden flex-col gap-3">
-        <div className="flex gap-3">
+      <div className="rate-mobile flex sm:hidden">
+        <div className="rate-mobile-actions">
           <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
-            <SelectTrigger className="md:w-24 w-full">
+            <SelectTrigger className="select-trigger">
               <SelectValue placeholder="통화" />
             </SelectTrigger>
             <SelectContent>
@@ -98,18 +109,20 @@ export default function ExchangeRates() {
             </SelectContent>
           </Select>
           <Button
+            className="surface-action"
             disabled={loadingExchangeRate}
             onClick={handleFetchExchangeRate}
             type="button"
             variant="outline"
           >
             <span>{loadingExchangeRate ? '조회 중...' : '환율 조회'}</span>
-            <RefreshCw size={14} />
+            <RefreshCw className={loadingExchangeRate ? 'animate-spin' : ''} size={14} />
           </Button>
         </div>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-medium text-muted-foreground">{selectedCurrency}/KRW</label>
           <Input
+            className="rate-input"
             min={0}
             onChange={(e) => {
               const newValue = e.target.valueAsNumber;
@@ -125,6 +138,6 @@ export default function ExchangeRates() {
           />
         </div>
       </div>
-    </>
+    </section>
   );
 }

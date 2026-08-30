@@ -4,7 +4,7 @@ import TargetInput from './target-input';
 
 export default function Inputs() {
   return (
-    <>
+    <div className="input-stack">
       {/** 환율 */}
       <ExchangeRates />
 
@@ -13,6 +13,6 @@ export default function Inputs() {
 
       {/** 종목 리스트 영역 */}
       <StockCards />
-    </>
+    </div>
   );
 }

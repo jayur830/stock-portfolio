@@ -211,10 +211,10 @@ export default function IndividualCharts({
   ]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex justify-start">
+    <div className="individual-chart-stack">
+      <div className="individual-chart-selector">
         <Select onValueChange={setSelectedTicker} value={selectedTicker}>
-          <SelectTrigger className="w-[200px]">
+          <SelectTrigger className="individual-chart-select">
             <SelectValue placeholder="종목 선택" />
           </SelectTrigger>
           <SelectContent>
@@ -228,19 +228,25 @@ export default function IndividualCharts({
       </div>
 
       {!chartOptions ? (
-        <div className="flex items-center justify-center p-12 text-muted-foreground border-2 border-dashed rounded-lg">
+        <div className="chart-empty-state">
           매수일 정보가 없거나 데이터를 불러올 수 없습니다.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-card border rounded-lg p-4">
-            <ReactECharts option={chartOptions.price} style={{ height: '300px' }} />
+          <div className="chart-card">
+            <div className="chart-viewport">
+              <ReactECharts option={chartOptions.price} style={{ height: '300px', width: '100%' }} />
+            </div>
           </div>
-          <div className="bg-card border rounded-lg p-4">
-            <ReactECharts option={chartOptions.dividend} style={{ height: '300px' }} />
+          <div className="chart-card">
+            <div className="chart-viewport">
+              <ReactECharts option={chartOptions.dividend} style={{ height: '300px', width: '100%' }} />
+            </div>
           </div>
-          <div className="bg-card border rounded-lg p-4 md:col-span-2">
-            <ReactECharts option={chartOptions.profit} style={{ height: '400px' }} />
+          <div className="chart-card md:col-span-2">
+            <div className="chart-viewport">
+              <ReactECharts option={chartOptions.profit} style={{ height: '400px', width: '100%' }} />
+            </div>
           </div>
         </div>
       )}

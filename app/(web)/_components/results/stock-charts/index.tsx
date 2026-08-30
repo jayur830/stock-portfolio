@@ -71,7 +71,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
+      <div className="chart-section chart-loading">
         <div className="flex flex-col items-center gap-2">
           <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
           <span className="text-sm text-muted-foreground">차트 데이터 로딩 중...</span>
@@ -85,15 +85,15 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   }
 
   return (
-    <Tabs className="flex flex-col gap-6 mt-6" defaultValue="total">
-      <div className="flex items-center justify-between">
-        <TabsList>
-          <TabsTrigger value="total">종합</TabsTrigger>
-          <TabsTrigger value="individual">종목별</TabsTrigger>
+    <Tabs className="chart-section" defaultValue="total">
+      <div className="chart-section-header">
+        <TabsList className="chart-tabs-list">
+          <TabsTrigger value="total">종합 분석</TabsTrigger>
+          <TabsTrigger value="individual">종목별 분석</TabsTrigger>
         </TabsList>
 
         <Select onValueChange={setCurrency} value={currency}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="chart-currency-trigger">
             <SelectValue placeholder="통화 선택" />
           </SelectTrigger>
           <SelectContent>
@@ -106,7 +106,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
         </Select>
       </div>
 
-      <TabsContent className="flex flex-col gap-6 mt-0" value="total">
+      <TabsContent className="chart-tab-content flex flex-col gap-6 mt-0" value="total">
         {/* 통합 포트폴리오 차트 */}
         <CombinedChart
           currency={currency}
@@ -127,7 +127,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
         />
       </TabsContent>
 
-      <TabsContent value="individual">
+      <TabsContent className="chart-tab-content" value="individual">
         <IndividualCharts
           currency={currency}
           exchangeRates={exchangeRates}

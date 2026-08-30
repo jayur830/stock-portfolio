@@ -1,5 +1,6 @@
 'use client';
 
+import { Calculator, ChevronRight, CircleDollarSign } from 'lucide-react';
 import { useMemo } from 'react';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
@@ -18,11 +19,17 @@ export default function Results() {
 
   const { field: { value: stocks } } = useController({ control, name: 'stocks' });
   const { field: { value: targetAnnualDividend } } = useController({ control, name: 'targetAnnualDividend' });
-  // const { field: { value: calculatedCategory } } = useController({ control, name: 'calculatedCategory' });
+  const { field: { value: calculatedCategory } } = useController({ control, name: 'calculatedCategory' });
   const { field: { value: stockDividends } } = useController({ control, name: 'stockDividends' });
 
   /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
   const annualDividend = useMemo(() => stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0), [stockDividends]);
+
+  /** 세후 연 배당금 */
+  const afterTaxAnnualDividend = useMemo(
+    () => stockDividends.reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * (1 - taxRate), 0),
+    [stockDividends],
+  );
 
   /** 필요한 투자금 */
   const requiredInvestment = useMemo(() => {
@@ -30,7 +37,7 @@ export default function Results() {
     const weightedDividendYield = stocks
       .filter(({ enabled }) => enabled)
       .reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
-    return targetAnnualDividend / weightedDividendYield;
+    return weightedDividendYield > 0 ? targetAnnualDividend / weightedDividendYield : 0;
   }, [stocks, targetAnnualDividend]);
 
   // #region 종합과세 계산은 복잡하여 추후 과제로 보류
@@ -45,6 +52,12 @@ export default function Results() {
   /** 종목별 월별 배당금 합산 */
   const monthlyDividends = useMemo(() => mergeMonthlyDividends(stockDividends), [stockDividends]);
 
+  const totalRatio = stocks
+    .filter(({ enabled }) => enabled)
+    .reduce((total, { ratio }) => total + (ratio || 0), 0);
+  const ratioState = totalRatio === 100 ? 'is-complete' : totalRatio > 100 ? 'is-over' : '';
+  const ratioMessage = totalRatio === 100 ? '배분이 완성됐어요. 이제 결과를 계산해보세요.' : totalRatio > 100 ? '비율 합계가 100%를 초과했어요. 비중을 조정해주세요.' : '종목 비중의 합계를 100%에 맞추면 가장 정확해요.';
+
   // #region 종합과세 계산은 복잡하여 추후 과제로 보류
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
   // const annualDividendAdditionalTax = getComprehensiveTax(annualDividend, foreignDividends);
@@ -53,126 +66,123 @@ export default function Results() {
   // #endregion
 
   return (
-    <div className="flex flex-col gap-2 mt-2 mb-16 sm:mb-0">
-      {/** 총 비율 */}
-      <div className="flex justify-center items-center gap-2 text-sm">
-        <span className="text-muted-foreground">총 비율:</span>
-        <Controller
-          control={control}
-          name="stocks"
-          render={({ field: { value: stocks } }) => {
-            const totalRatio = stocks.filter(({ enabled }) => enabled).reduce((total, { ratio }) => total + (ratio || 0), 0);
-            return (
-              <span className={`font-semibold ${totalRatio === 100 ? 'text-green-600' : totalRatio > 100 ? 'text-red-600' : 'text-yellow-600'}`}>
-                {totalRatio.toFixed(1)}%
-              </span>
-            );
-          }}
-        />
+    <div className="results-stack">
+      <div className="allocation-card">
+        <div className="allocation-topline">
+          <span className="allocation-label">현재 포트폴리오 배분</span>
+          <strong className={`allocation-value ${ratioState}`}>{totalRatio.toFixed(1)}%</strong>
+        </div>
+        <div aria-label={`포트폴리오 배분 ${totalRatio.toFixed(1)}%`} aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.min(totalRatio, 100)} className="allocation-track" role="progressbar">
+          <div className={`allocation-track-fill ${ratioState === 'is-over' ? 'is-over' : ''}`} style={{ width: `${Math.min(totalRatio, 100)}%` }} />
+        </div>
+        <p className={`allocation-help ${ratioState}`}>{ratioMessage}</p>
       </div>
 
-      {/** 버튼 */}
-      <div className="fixed md:relative bottom-0 left-0 md:bottom-auto md:left-auto flex justify-center items-center gap-1 w-full p-4 z-30">
-        <CalculateButton className="flex-1 lg:flex-none h-12 md:h-auto" control={control} />
-        <Button
-          className="flex-1 lg:flex-none dark:bg-card h-12 md:h-auto"
-          type="reset"
-          variant="outline"
-        >
-          초기화
-        </Button>
+      <div className="result-action-row">
+        <CalculateButton className="calculate-action" control={control}>
+          <Calculator size={17} />
+          결과 계산하기
+        </CalculateButton>
+        <Button className="reset-action" type="reset" variant="outline">초기화</Button>
       </div>
 
+      {!calculatedCategory && (
+        <div className="empty-result">
+          <div className="empty-icon"><CircleDollarSign size={25} /></div>
+          <h3 className="empty-title">계산 결과가 이곳에 표시됩니다</h3>
+          <p className="empty-description">투자금 또는 목표 배당금을 입력하고, 종목별 비중을 정한 뒤 결과를 확인하세요.</p>
+          <div className="empty-steps">
+            <span className="empty-step-number">1</span>
+            <span>입력</span>
+            <ChevronRight size={12} />
+            <span className="empty-step-number">2</span>
+            <span>계산</span>
+            <ChevronRight size={12} />
+            <span className="empty-step-number">3</span>
+            <span>확인</span>
+          </div>
+        </div>
+      )}
+
+      {/** 배당금 결과 */}
+      {calculatedCategory === 'dividend' && (
+        <>
+          <div aria-live="polite" className="result-highlight is-dividend">
+            <div className="result-highlight-head">
+              <div>
+                <span className="result-overline">CALCULATED INCOME</span>
+                <h3 className="result-highlight-title">예상 배당금</h3>
+              </div>
+              <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
+            </div>
+            <div className="result-highlight-values">
+              <div className="result-value-card">
+                <span className="result-value-label">세전 연 배당금</span>
+                <strong className="result-value">{annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                <span className="result-value-subtext">계산된 연간 배당</span>
+              </div>
+              <div className="result-value-card">
+                <span className="result-value-label">세후 연 배당금</span>
+                <strong className="result-value">{afterTaxAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                <span className="result-value-subtext">실수령 기준</span>
+              </div>
+            </div>
+          </div>
+          <CountPerStock />
+          <MonthlyDividends amounts={monthlyDividends} />
+          <div className="tax-surface">
+            <h3 className="tax-surface-title">배당소득세 정보</h3>
+            <TaxInfo stockDividends={stockDividends} />
+          </div>
+        </>
+      )}
+
+      {/** 투자금 결과 */}
+      {calculatedCategory === 'investment' && (
+        <>
+          <div aria-live="polite" className="result-highlight is-investment">
+            <div className="result-highlight-head">
+              <div>
+                <span className="result-overline">YOUR REQUIRED CAPITAL</span>
+                <h3 className="result-highlight-title">필요한 투자금</h3>
+              </div>
+              <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
+            </div>
+            <div className="result-highlight-values">
+              <div className="result-value-card">
+                <span className="result-value-label">목표 연 배당금</span>
+                <strong className="result-value">{targetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                <span className="result-value-subtext">목표 현금흐름을 만들기 위한 기준</span>
+              </div>
+              <div className="result-value-card">
+                <span className="result-value-label">필요한 투자금</span>
+                <strong className="result-value">{requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                <span className="result-value-subtext">현재 입력한 배당률과 비중 기준</span>
+              </div>
+            </div>
+          </div>
+          <CountPerStock />
+          <MonthlyDividends amounts={monthlyDividends} />
+          <div className="tax-surface">
+            <h3 className="tax-surface-title">배당소득세 정보</h3>
+            {targetAnnualDividend > 0 && <TaxInfo stockDividends={stockDividends} />}
+          </div>
+        </>
+      )}
+
+      {/** 차트 */}
       <Controller
         control={control}
-        name="calculatedCategory"
-        render={({ field: { value: calculatedCategory } }) => (
+        name="chartData"
+        render={({ field: { value: chartData } }) => (
           <>
-            {/** 배당금 결과 */}
-            {calculatedCategory === 'dividend' && (
-              <>
-                <div aria-live="polite" className="flex md:flex-row flex-col justify-center items-center gap-4 p-2 md:p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-green-700 dark:text-green-300">세전 연 배당금:</span>
-                    <span className="text-lg font-bold text-green-700 dark:text-green-300">
-                      {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-                    </span>
-                  </div>
-                  <div className="hidden md:block h-6 w-px bg-green-300 dark:bg-green-700" />
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-green-700 dark:text-green-300">세후 연 배당금:</span>
-                    <span className="text-lg font-bold text-green-700 dark:text-green-300">
-                      {stockDividends.reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * (1 - taxRate), 0).toLocaleString('ko-KR', {
-                        maximumFractionDigits: 0,
-                      })}원
-                    </span>
-                  </div>
-                </div>
-                <CountPerStock tab="dividend" />
-                <MonthlyDividends amounts={monthlyDividends} />
-                <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
-                  <h3 className="text-sm font-semibold">배당소득세 정보</h3>
-                  <div className="space-y-3">
-                    <TaxInfo stockDividends={stockDividends} />
-                    {/** 종합과세 계산은 복잡하여 추후 과제로 보류 */}
-                    {/* {annualDividendAdditionalTax != null ? (
-                      <IncomeTaxInfo additionalTax={annualDividendAdditionalTax} />
-                    ) : (
-                      <NoAddedTax />
-                    )} */}
-                  </div>
-                </div>
-              </>
+            {calculatedCategory && chartData && chartData.stocks.length > 0 && (
+              <StockCharts
+                exchangeRates={chartData.exchangeRates}
+                stocks={chartData.stocks}
+                totalInvestment={chartData.totalInvestment}
+              />
             )}
-
-            {/** 투자금 결과 */}
-            {calculatedCategory === 'investment' && (
-              <>
-                <div aria-live="polite" className="flex justify-center items-center gap-4 p-2 md:p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-purple-700 dark:text-purple-300">필요한 투자금:</span>
-                    <span className="text-lg font-bold text-purple-700 dark:text-purple-300">
-                      {requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-                    </span>
-                  </div>
-                </div>
-                <CountPerStock tab="investment" />
-                <MonthlyDividends amounts={monthlyDividends} />
-                <div className="flex flex-col gap-2 p-4 bg-card border rounded-lg">
-                  <h3 className="text-sm font-semibold">배당소득세 정보</h3>
-                  <div className="space-y-3">
-                    {targetAnnualDividend && (
-                      <>
-                        <TaxInfo stockDividends={stockDividends} />
-                        {/** 종합과세 계산은 복잡하여 추후 과제로 보류 */}
-                        {/* {requiredInvestmentAdditionalTax != null ? (
-                          <IncomeTaxInfo additionalTax={requiredInvestmentAdditionalTax} />
-                        ) : (
-                          <NoAddedTax />
-                        )} */}
-                      </>
-                    )}
-                  </div>
-                </div>
-              </>
-            )}
-
-            {/** 차트 */}
-            <Controller
-              control={control}
-              name="chartData"
-              render={({ field: { value: chartData } }) => (
-                <>
-                  {calculatedCategory && chartData && chartData.stocks.length > 0 && (
-                    <StockCharts
-                      exchangeRates={chartData.exchangeRates}
-                      stocks={chartData.stocks}
-                      totalInvestment={chartData.totalInvestment}
-                    />
-                  )}
-                </>
-              )}
-            />
           </>
         )}
       />

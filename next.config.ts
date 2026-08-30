@@ -30,6 +30,32 @@ const nextConfig: NextConfig = {
       },
     },
   },
+
+  // Webpack 프로덕션 빌드에서도 SVG를 React 컴포넌트로 사용
+  webpack(config) {
+    type WebpackRule = {
+      [key: string]: unknown;
+      exclude?: RegExp;
+      oneOf?: WebpackRule[];
+      test?: RegExp;
+    };
+
+    const rules = config.module.rules as unknown as WebpackRule[];
+    const svgRule: WebpackRule = {
+      issuer: /\.[jt]sx?$/,
+      test: /\.svg$/i,
+      use: [{ loader: '@svgr/webpack', options: { exportType: 'default' } }],
+    };
+    const oneOfRule = rules.find((rule) => Array.isArray(rule.oneOf));
+
+    if (oneOfRule?.oneOf) {
+      oneOfRule.oneOf.unshift(svgRule);
+    } else {
+      rules.unshift(svgRule);
+    }
+
+    return config;
+  },
 };
 
 export default nextConfig;

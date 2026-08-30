@@ -3,7 +3,7 @@
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ko } from 'date-fns/locale';
 import dayjs from 'dayjs';
-import { CalendarIcon, X } from 'lucide-react';
+import { CalendarIcon, Search, X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
 import { memo, useEffect, useRef, useState } from 'react';
 import type { Control } from 'react-hook-form';
@@ -105,17 +105,11 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             };
 
             if (data.dividendMonths && data.dividendMonths.length > 0) {
-              console.log({
-                ...defaultStock,
-                dividendMonths: data.dividendMonths,
-              });
               return {
                 ...defaultStock,
                 dividendMonths: data.dividendMonths,
               };
             }
-
-            console.log(defaultStock);
 
             return defaultStock;
           }),
@@ -203,181 +197,205 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   };
 
   return (
-    <Card className={cn('gap-0 p-2 md:p-4 relative', !isEnabled && 'opacity-60 bg-muted/30')}>
+    <Card className={cn('stock-card', !isEnabled && 'is-disabled')}>
       {isLoadingQuote && (
-        <div className="absolute inset-0 bg-card/80 backdrop-blur-sm flex items-center justify-center rounded-lg z-10">
+        <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[1.25rem] bg-card/80 backdrop-blur-sm">
           <div className="flex flex-col items-center gap-2">
-            <div className="animate-spin h-8 w-8 border-4 border-gray-300 border-t-gray-600 rounded-full" />
+            <div className="animate-spin h-8 w-8 rounded-full border-4 border-gray-300 border-t-gray-600" />
             <span className="text-sm text-muted-foreground">종목 정보 불러오는 중...</span>
           </div>
         </div>
       )}
-      <div className="absolute top-2 left-2 flex items-center gap-2 z-10">
-        <Switch
-          checked={isEnabled}
-          onCheckedChange={(checked) => {
-            onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, enabled: checked } : s)));
-          }}
-        />
+
+      <div className="stock-card-topbar">
+        <div className="stock-card-ident">
+          <span className="stock-card-index">{String(index + 1).padStart(2, '0')}</span>
+          <div className="min-w-0">
+            <span className="stock-card-label">POSITION</span>
+            <strong className="stock-card-name">{stock.ticker || '새 종목 추가'}</strong>
+          </div>
+        </div>
+        <div className="stock-card-actions">
+          <span>사용</span>
+          <Switch
+            checked={isEnabled}
+            className="stock-toggle"
+            onCheckedChange={(checked) => {
+              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, enabled: checked } : s)));
+            }}
+          />
+          {onDelete && (
+            <Button
+              aria-label={`${stock.ticker || '종목'} 삭제`}
+              className="delete-stock-button"
+              onClick={onDelete}
+              size="icon-sm"
+              type="button"
+              variant="ghost"
+            >
+              <X size={15} />
+            </Button>
+          )}
+        </div>
       </div>
-      {onDelete && (
-        <Button
-          className="absolute top-2 right-2 h-6 w-6"
-          onClick={onDelete}
-          size="icon"
-          type="button"
-          variant="ghost"
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
-      <CardHeader className="mt-8 p-2 md:p-4">
-        <div className="relative" ref={dropdownRef}>
-          <Input
-            className="flex-1"
-            disabled={!isEnabled}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder="종목검색"
-            type="search"
-            value={searchQuery}
-          />
-          {showDropdown && searchResults.length > 0 && (
-            <div className="absolute z-50 w-full mt-1 bg-card border rounded-md shadow-lg max-h-60 overflow-auto">
-              {searchResults.map((quote, idx) => (
-                <button
-                  className={`w-full px-4 py-2 text-left hover:bg-muted focus:bg-muted focus:outline-none ${
-                    idx === selectedIndex ? 'bg-muted' : ''
-                  }`}
-                  key={quote.symbol}
-                  onClick={() => handleStockSelect(quote)}
-                  type="button"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <div className="font-semibold text-sm">{quote.symbol}</div>
-                      <div className="text-xs text-muted-foreground">{quote.shortname}</div>
-                    </div>
-                    <div className="text-xs text-muted-foreground">{quote.exchange}</div>
-                  </div>
-                </button>
-              ))}
+
+      <CardHeader className="stock-card-header">
+        <div className="stock-search-block">
+          <div className="field-label-row">
+            <div>
+              <span className="field-title">종목 검색</span>
+              <span className="stock-search-hint">티커 또는 이름으로 검색해 시세를 불러오세요.</span>
             </div>
-          )}
-          {isSearching && (
-            <div className="absolute right-3 top-3">
-              <div className="animate-spin h-4 w-4 border-2 border-gray-300 border-t-gray-600 rounded-full" />
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
-          <span className="text-xs md:text-sm font-medium whitespace-nowrap">통화</span>
-          <Controller
-            control={control}
-            name="exchangeRates"
-            render={({ field: { value: exchangeRates } }) => (
-              <Select
+          </div>
+          <div className="stock-search-wrap" ref={dropdownRef}>
+            <div className="stock-search-input-shell">
+              <Search aria-hidden="true" className="stock-search-icon" size={16} />
+              <Input
+                aria-label="종목 검색"
+                className="stock-search-input"
                 disabled={!isEnabled}
-                onValueChange={(newCurrency: any) => {
-                  onChangeStocks(
-                    stocks.map((s, i) => {
-                      if (i !== index) {
-                        return s;
-                      }
-
-                      const oldCurrency = s.currency;
-                      const currentPrice = s.price;
-                      let newPrice = currentPrice;
-
-                      // 통화 변경 시 주가 환산
-                      if (oldCurrency !== newCurrency && currentPrice > 0 && exchangeRates) {
-                        const oldRate = exchangeRates[oldCurrency as keyof typeof exchangeRates];
-                        const newRate = exchangeRates[newCurrency as keyof typeof exchangeRates];
-
-                        if (oldCurrency === 'KRW' && newRate && newRate > 0) {
-                          // KRW -> 외화
-                          newPrice = currentPrice / newRate;
-                        } else if (newCurrency === 'KRW' && oldRate && oldRate > 0) {
-                          // 외화 -> KRW
-                          newPrice = currentPrice * oldRate;
-                        } else if (oldRate && oldRate > 0 && newRate && newRate > 0) {
-                          // 외화 -> 외화 (KRW를 거쳐서 환산)
-                          newPrice = (currentPrice * oldRate) / newRate;
-                        }
-                        newPrice = Math.round(newPrice * 100) / 100;
-                      }
-
-                      return {
-                        ...s,
-                        currency: newCurrency,
-                        price: newPrice,
-                      };
-                    }),
-                  );
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
                 }}
-                value={stock.currency}
-              >
-                <SelectTrigger className="md:w-24 w-full">
-                  <SelectValue placeholder="통화" />
-                </SelectTrigger>
-                <SelectContent>
-                  {exchangeRateCodes.map((currency) => (
-                    <SelectItem key={currency} value={currency}>
-                      {currency}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onKeyDown={handleKeyDown}
+                placeholder="예: SCHD, 삼성전자"
+                type="search"
+                value={searchQuery}
+              />
+              {isSearching && (
+                <div className="stock-search-spinner">
+                  <div className="animate-spin h-4 w-4 rounded-full border-2 border-gray-300 border-t-gray-600" />
+                </div>
+              )}
+            </div>
+            {showDropdown && searchResults.length > 0 && (
+              <div className="search-dropdown">
+                {searchResults.map((quote, idx) => (
+                  <button
+                    className={cn('search-result', idx === selectedIndex && 'is-selected')}
+                    key={quote.symbol}
+                    onClick={() => handleStockSelect(quote)}
+                    type="button"
+                  >
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="min-w-0">
+                        <div className="search-result-symbol">{quote.symbol}</div>
+                        <div className="search-result-name truncate">{quote.shortname}</div>
+                      </div>
+                      <div className="search-result-exchange">{quote.exchange}</div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             )}
-          />
+          </div>
         </div>
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
-          <span className="text-xs md:text-sm font-medium whitespace-nowrap">종목명</span>
-          <Input
-            disabled={!isEnabled}
-            onChange={(e) => {
-              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, name: e.target.value } : s)));
-            }}
-            placeholder="종목명"
-            type="text"
-            value={stock.name}
-          />
-          <Input
-            className="w-full md:w-72"
-            disabled={!isEnabled}
-            onChange={(e) => {
-              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ticker: e.target.value } : s)));
-            }}
-            placeholder="티커"
-            type="text"
-            value={stock.ticker}
-          />
-          <span className="text-xs md:text-sm font-medium whitespace-nowrap">가격</span>
-          <Input
-            className="w-full md:w-72"
-            disabled={!isEnabled}
-            min={0}
-            onChange={(e) => {
-              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)));
-            }}
-            placeholder="가격"
-            step="any"
-            type="number"
-            value={stock.price || ''}
-          />
+
+        <div className="stock-meta-grid">
+          <div className="field-group">
+            <span className="field-label">통화</span>
+            <Controller
+              control={control}
+              name="exchangeRates"
+              render={({ field: { value: exchangeRates } }) => (
+                <Select
+                  disabled={!isEnabled}
+                  onValueChange={(newCurrency: any) => {
+                    onChangeStocks(
+                      stocks.map((s, i) => {
+                        if (i !== index) {
+                          return s;
+                        }
+
+                        const oldCurrency = s.currency;
+                        const currentPrice = s.price;
+                        let newPrice = currentPrice;
+
+                        // 통화 변경 시 주가 환산
+                        if (oldCurrency !== newCurrency && currentPrice > 0 && exchangeRates) {
+                          const oldRate = exchangeRates[oldCurrency as keyof typeof exchangeRates];
+                          const newRate = exchangeRates[newCurrency as keyof typeof exchangeRates];
+
+                          if (oldCurrency === 'KRW' && newRate && newRate > 0) {
+                            // KRW -> 외화
+                            newPrice = currentPrice / newRate;
+                          } else if (newCurrency === 'KRW' && oldRate && oldRate > 0) {
+                            // 외화 -> KRW
+                            newPrice = currentPrice * oldRate;
+                          } else if (oldRate && oldRate > 0 && newRate && newRate > 0) {
+                            // 외화 -> 외화 (KRW를 거쳐서 환산)
+                            newPrice = (currentPrice * oldRate) / newRate;
+                          }
+                          newPrice = Math.round(newPrice * 100) / 100;
+                        }
+
+                        return {
+                          ...s,
+                          currency: newCurrency,
+                          price: newPrice,
+                        };
+                      }),
+                    );
+                  }}
+                  value={stock.currency}
+                >
+                  <SelectTrigger className="stock-select">
+                    <SelectValue placeholder="통화" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {exchangeRateCodes.map((currency) => (
+                      <SelectItem key={currency} value={currency}>
+                        {currency}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+          <div className="field-group">
+            <label className="field-label" htmlFor={`stock-name-${index}`}>종목명</label>
+            <Input
+              className="stock-meta-input"
+              disabled={!isEnabled}
+              id={`stock-name-${index}`}
+              onChange={(e) => {
+                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, name: e.target.value } : s)));
+              }}
+              placeholder="종목명"
+              type="text"
+              value={stock.name}
+            />
+          </div>
+          <div className="field-group">
+            <label className="field-label" htmlFor={`stock-price-${index}`}>현재 가격 ({stock.currency})</label>
+            <Input
+              aria-label="현재 가격"
+              className="stock-meta-input"
+              disabled={!isEnabled}
+              id={`stock-price-${index}`}
+              min={0}
+              onChange={(e) => {
+                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)));
+              }}
+              placeholder="가격"
+              step="any"
+              type="number"
+              value={stock.price || ''}
+            />
+          </div>
         </div>
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <span className="text-xs md:text-sm font-medium whitespace-nowrap">매수일</span>
+
+        <div className="stock-date-row">
+          <div className="field-label-row">
+            <span className="field-label">매수일</span>
+            <span className="field-help">수익 차트의 기준일</span>
+          </div>
+          <div className="date-controls">
             <Popover>
               <PopoverTrigger asChild disabled={!isEnabled}>
                 <Button
-                  className={cn(
-                    'flex-1 justify-start text-left font-normal',
-                    !stock.purchaseDate && 'text-muted-foreground',
-                  )}
+                  className={cn('date-picker-button', !stock.purchaseDate && 'is-empty')}
                   variant="outline"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
@@ -398,7 +416,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 />
               </PopoverContent>
             </Popover>
-            <div className="flex flex-wrap gap-1 w-full">
+            <div className="date-presets">
               {[
                 { label: '1년 전', months: 12 },
                 { label: '6개월 전', months: 6 },
@@ -406,7 +424,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 { label: '1개월 전', months: 1 },
               ].map(({ label, months }) => (
                 <Button
-                  className="h-7 text-xs"
+                  className="date-preset"
                   disabled={!isEnabled}
                   key={label}
                   onClick={() => {
@@ -423,13 +441,17 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="flex flex-col gap-4 p-2 md:p-4">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <span className="text-xs md:text-sm font-medium whitespace-nowrap">배당 지급 월</span>
-            <div className="flex gap-2">
+
+      <CardContent className="stock-card-content">
+        <div className="stock-control-block">
+          <div className="stock-control-head">
+            <div>
+              <span className="field-title">배당 지급 월</span>
+              <span className="field-caption">배당이 들어오는 달을 선택하세요.</span>
+            </div>
+            <div className="calendar-presets">
               <Button
-                className="h-7 text-xs"
+                className="date-preset"
                 disabled={!isEnabled}
                 onClick={() => {
                   // 월별: 모든 월 선택 (1~12)
@@ -442,18 +464,20 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                     } : s)),
                   );
                 }}
+                size="sm"
                 type="button"
                 variant="outline"
               >
                 월별
               </Button>
               <Button
-                className="h-7 text-xs"
+                className="date-preset"
                 disabled={!isEnabled}
                 onClick={() => {
                   // 분기별: 3, 6, 9, 12월 선택
                   onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, dividendMonths: [3, 6, 9, 12] } : s)));
                 }}
+                size="sm"
                 type="button"
                 variant="outline"
               >
@@ -461,12 +485,12 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2">
+          <div className="months-grid">
             {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => {
               const isSelected = dividendMonths.includes(month);
               return (
                 <Button
-                  className={`h-8 text-xs ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}
+                  className={cn('month-button', isSelected && 'is-selected')}
                   disabled={!isEnabled}
                   key={month}
                   onClick={() => {
@@ -499,53 +523,65 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             })}
           </div>
         </div>
-        <div className="flex flex-col md:flex-row md:items-center gap-2">
-          <label className="text-xs md:text-sm font-medium whitespace-nowrap">연 배당률</label>
-          <div className="flex items-center gap-2 flex-1 md:max-w-[180px]">
-            <Input
-              className="flex-1"
-              disabled={!isEnabled}
-              min={0}
-              onChange={(e) => {
-                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, yield: +e.target.value } : s)));
-              }}
-              placeholder="3.00"
-              step="any"
-              type="number"
-              value={stock.yield || ''}
-            />
-            <span className="text-sm text-muted-foreground">%</span>
+
+        <div className="stock-metric-grid">
+          <div className="metric-control">
+            <label className="metric-label" htmlFor={`stock-yield-${index}`}>연 배당률</label>
+            <div className="metric-input-wrap">
+              <Input
+                className="metric-input"
+                disabled={!isEnabled}
+                id={`stock-yield-${index}`}
+                min={0}
+                onChange={(e) => {
+                  onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, yield: +e.target.value } : s)));
+                }}
+                placeholder="3.00"
+                step="any"
+                type="number"
+                value={stock.yield || ''}
+              />
+              <span className="metric-unit">%</span>
+            </div>
           </div>
-        </div>
-        <div className="flex md:flex-row flex-col md:items-center items-start gap-2">
-          <label className="text-xs md:text-sm font-medium whitespace-nowrap">비율</label>
-          <div className="flex items-center gap-2 w-full md:w-[100px] mb-3 md:mb-0">
-            <Input
-              className="w-full md:w-[100px]"
-              disabled={!isEnabled}
-              max={100}
-              min={0}
-              onChange={(e) => {
-                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: parseFloat(e.target.value) || 0 } : s)));
-              }}
-              placeholder="비율"
-              step={1}
-              type="number"
-              value={stock.ratio.toFixed(0) || 0}
-            />
-            <span className="text-sm text-muted-foreground">%</span>
+
+          <div className="metric-control">
+            <div className="field-label-row">
+              <label className="metric-label" htmlFor={`stock-ratio-${index}`}>포트폴리오 비중</label>
+              <span className="field-help">합계 100%</span>
+            </div>
+            <div className="ratio-layout">
+              <div className="ratio-input-wrap">
+                <Input
+                  aria-label="포트폴리오 비중"
+                  className="metric-input ratio-input"
+                  disabled={!isEnabled}
+                  id={`stock-ratio-${index}`}
+                  max={100}
+                  min={0}
+                  onChange={(e) => {
+                    onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: parseFloat(e.target.value) || 0 } : s)));
+                  }}
+                  placeholder="비율"
+                  step={1}
+                  type="number"
+                  value={stock.ratio.toFixed(0) || 0}
+                />
+                <span className="metric-unit">%</span>
+              </div>
+              <Slider
+                className="ratio-slider"
+                disabled={!isEnabled}
+                max={100}
+                min={0}
+                onValueChange={([value]) => {
+                  onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: value } : s)));
+                }}
+                step={1}
+                value={[stock.ratio || 0]}
+              />
+            </div>
           </div>
-          <Slider
-            className="flex-1 md:max-w-[500px]"
-            disabled={!isEnabled}
-            max={100}
-            min={0}
-            onValueChange={([value]) => {
-              onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: value } : s)));
-            }}
-            step={1}
-            value={[stock.ratio || 0]}
-          />
         </div>
       </CardContent>
     </Card>

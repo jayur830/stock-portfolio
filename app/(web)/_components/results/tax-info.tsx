@@ -11,15 +11,15 @@ export interface TaxInfoProps {
 export default function TaxInfo({ stockDividends }: TaxInfoProps) {
   return (
     <>
-      <div className="flex justify-between items-center">
-        <span className="text-xs md:text-sm text-muted-foreground">연간 배당소득 (세전)</span>
-        <span className="text-sm md:text-base font-medium">
+      <div className="tax-line">
+        <span className="tax-label">연간 배당소득 (세전)</span>
+        <span className="tax-value">
           {stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
         </span>
       </div>
-      <div className="flex justify-between items-center">
-        <span className="text-xs md:text-sm text-muted-foreground">원천징수 세액</span>
-        <span className="text-sm md:text-base font-medium text-muted-foreground">
+      <div className="tax-line">
+        <span className="tax-label">원천징수 세액</span>
+        <span className="tax-value is-muted">
           {stockDividends
             .reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * (taxRate + (KRW_CGT - Math.min(KRW_CGT, taxRate)) * 1.1), 0)
             .toLocaleString('ko-KR', { maximumFractionDigits: 0 })}

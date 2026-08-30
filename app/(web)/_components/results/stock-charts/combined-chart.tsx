@@ -205,39 +205,45 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
   ]);
 
   return (
-    <div className="bg-card border rounded-lg p-4">
+    <div className="chart-card">
       {/* 기간 선택 버튼 */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="chart-period-controls">
         <Button
-          className={selectedPeriod == null ? 'bg-blue-600 hover:bg-blue-700' : ''}
+          className={`chart-period-button ${selectedPeriod == null ? 'is-active' : ''}`}
           onClick={() => setSelectedPeriod(null)}
           size="sm"
+          type="button"
           variant={selectedPeriod == null ? 'default' : 'outline'}
         >
           전체
         </Button>
         {periodOptions.map((option) => (
           <Button
-            className={selectedPeriod === option.value ? 'bg-blue-600 hover:bg-blue-700' : ''}
+            className={`chart-period-button ${selectedPeriod === option.value ? 'is-active' : ''}`}
             key={option.value}
             onClick={() => setSelectedPeriod(option.value)}
             size="sm"
+            type="button"
             variant={selectedPeriod === option.value ? 'default' : 'outline'}
           >
             {option.label}
           </Button>
         ))}
         <Button
+          className={`chart-period-button ${isOverlap ? 'is-active' : ''}`}
           onClick={() => {
             setOverlap((state) => !state);
           }}
           size="sm"
+          type="button"
           variant={isOverlap ? 'default' : 'outline'}
         >
           %
         </Button>
       </div>
-      <ReactECharts lazyUpdate notMerge={false} option={combinedChartOption} style={{ height: '400px' }} />
+      <div className="chart-viewport">
+        <ReactECharts lazyUpdate notMerge={false} option={combinedChartOption} style={{ height: '400px', width: '100%' }} />
+      </div>
     </div>
   );
 }

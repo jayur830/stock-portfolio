@@ -364,7 +364,9 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
 
   return (
     <div className="bg-card border rounded-lg p-4">
-      <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '400px' }} />
+      <div className="chart-viewport">
+        <ReactECharts lazyUpdate notMerge={false} option={profitChartOption} style={{ height: '400px', width: '100%' }} />
+      </div>
     </div>
   );
 }

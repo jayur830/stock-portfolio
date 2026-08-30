@@ -28,16 +28,28 @@ export default function TargetInput() {
   const { control } = useFormContext<FormValues>();
 
   return (
-    <div className="flex flex-col gap-2 p-4 bg-muted rounded-lg mt-1.5">
-      <div className="flex flex-col md:flex-row md:items-center gap-2">
-        <label className="text-xs md:text-sm font-medium whitespace-nowrap">{labels[tab]}</label>
-        <div className="flex items-center gap-2">
+    <section className="target-surface">
+      <div className="target-topline">
+        <div className="target-leading">
+          <span className="section-index">02</span>
+          <div>
+            <span className="surface-kicker">SET YOUR TARGET</span>
+            <h3 className="surface-title">{labels[tab]}</h3>
+            <p className="surface-description">{tab === 'dividend' ? '현재 투자금으로 기대하는 연간 배당을 계산합니다.' : '원하는 연간 배당을 만들기 위한 투자금을 계산합니다.'}</p>
+          </div>
+        </div>
+        <span className="target-badge">{tab === 'dividend' ? 'INVESTMENT' : 'INCOME GOAL'}</span>
+      </div>
+
+      <div className="target-input-row">
+        <div className="target-input-shell">
           <Controller
             control={control}
             name={keys[tab]}
             render={({ field: { onChange, value: current, ...field } }) => (
               <Input
-                className="flex-1"
+                aria-label={labels[tab]}
+                className="target-input"
                 maxLength={24}
                 min={0}
                 placeholder={placeholders[tab]}
@@ -51,10 +63,10 @@ export default function TargetInput() {
               />
             )}
           />
-          <span className="text-sm text-muted-foreground">원</span>
+          <span className="target-currency">원</span>
         </div>
       </div>
-      <div className="flex flex-wrap gap-1">
+      <div className="quick-add-row">
         <Controller
           control={control}
           name={keys[tab]}
@@ -70,7 +82,7 @@ export default function TargetInput() {
                 { label: '초기화', value: NaN },
               ].map(({ label, value }) => (
                 <Button
-                  className="h-7 text-xs"
+                  className="quick-add-button"
                   key={label}
                   onClick={() => {
                     onChange(isNaN(current) ? value : current + value);
@@ -86,6 +98,6 @@ export default function TargetInput() {
           )}
         />
       </div>
-    </div>
+    </section>
   );
 }

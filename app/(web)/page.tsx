@@ -1,3 +1,4 @@
+import { LineChart } from 'lucide-react';
 import { connection } from 'next/server';
 
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
@@ -10,21 +11,56 @@ import Results from './_components/results';
 export default async function Page() {
   await connection();
   return (
-    <main aria-label="배당주 포트폴리오 계산기" className="flex flex-col overflow-x-hidden">
-      <div className="fixed flex justify-between items-center gap-4 p-4 w-full max-w-desktop z-50 backdrop-blur-sm">
-        {/** 배당금 계산/투자금 계산 탭 */}
-        <CalculatorTabs />
-        {/** 다크모드 스위치 */}
-        <DarkModeSwitch />
-      </div>
+    <main aria-label="배당주 포트폴리오 계산기" className="app-shell">
+      <header className="site-header">
+        <div className="brand-lockup">
+          <div aria-hidden="true" className="brand-mark">
+            <LineChart size={20} strokeWidth={2.5} />
+          </div>
+          <div>
+            <span className="brand-name">DIVIDEND<span>LAB</span></span>
+            <span className="brand-subtitle">INCOME, BY DESIGN</span>
+          </div>
+        </div>
 
-      <div className="flex flex-col mt-16 p-4">
+        <div className="header-actions">
+          {/** 배당금 계산/투자금 계산 탭 */}
+          <CalculatorTabs />
+          <div aria-hidden="true" className="header-divider" />
+          {/** 다크모드 스위치 */}
+          <DarkModeSwitch />
+        </div>
+      </header>
+
+      <div className="page-content">
         <CalculatorFormProvider>
-          {/** 입력 영역 */}
-          <Inputs />
+          <div className="workspace-grid">
+            <section aria-labelledby="portfolio-builder-title" className="input-column">
+              <div className="section-heading">
+                <span className="section-index">01</span>
+                <div>
+                  <span className="section-kicker">BUILD YOUR PLAN</span>
+                  <h2 className="section-title" id="portfolio-builder-title">포트폴리오 구성</h2>
+                  <p className="section-description">기준 금액과 종목별 비중을 입력해 나만의 배당 설계를 시작하세요.</p>
+                </div>
+              </div>
+              <Inputs />
+            </section>
 
-          {/** 결과 */}
-          <Results />
+            <aside aria-labelledby="portfolio-result-title" className="result-column">
+              <div className="results-heading">
+                <div className="section-heading">
+                  <span className="section-index">04</span>
+                  <div>
+                    <span className="section-kicker">SEE THE FLOW</span>
+                    <h2 className="section-title" id="portfolio-result-title">현금흐름 미리보기</h2>
+                  </div>
+                </div>
+                <span className="results-live-badge">자동 반영</span>
+              </div>
+              <Results />
+            </aside>
+          </div>
         </CalculatorFormProvider>
       </div>
     </main>
