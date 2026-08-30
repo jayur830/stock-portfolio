@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
+import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 import type { HistoryData } from '.';
@@ -46,11 +46,13 @@ export default function IndividualCharts({
       .filter((d) => dayjs(d.date).isAfter(purchaseDate, 'day') || dayjs(d.date).isSame(purchaseDate, 'day'))
       .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
 
+    if (filteredData.length === 0) return null;
+
     const dates = filteredData.map((d) => dayjs(d.date).format('YYYY.MM.DD'));
 
-    // 기본 정보 계산
+    // 기본 정보 계산 (매수일 기준 첫 거래일 데이터)
     const investmentAmount = (totalInvestment * stock.ratio) / 100;
-    const purchaseDataPoint = history.data.find((d) => dayjs(d.date).isAfter(purchaseDate, 'day'));
+    const purchaseDataPoint = filteredData[0];
 
     if (!purchaseDataPoint) return null;
 
@@ -60,14 +62,13 @@ export default function IndividualCharts({
     // 1. 주가 차트 (선택한 통화 기준)
     const priceData = filteredData.map((d) => convertCurrency(d.close, stock.currency, currency, exchangeRates));
 
-    // 2. 월별 배당 및 누적 배당 계산
-    // 배당금을 날짜순으로 정렬
+    // 2. 월별 배당 및 배당 재투자 계산
+    const taxRate = FOREIGN_TAX_RATES[stock.currency] ?? DIVIDEND_TAX_RATE;
     const sortedDividends = (history.dividends || [])
       .filter((d) => dayjs(d.date).isSame(purchaseDate, 'day') || dayjs(d.date).isAfter(purchaseDate, 'day'))
       .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
 
-    // 3. 누적 수익 및 배당 재투자 계산
-    let cumulativeDiv = 0;
+    // 3. 누적 평가 수익(시세차익) 및 배당 재투자 평가 수익 계산
     let reinvestShares = initialShares;
     let divIndex = 0;
 
@@ -89,38 +90,29 @@ export default function IndividualCharts({
           break;
         }
 
-        // 매수월에는 배당을 받지 못하여 0원 처리 (ProfitChart와 일관성)
-        if (divDate.format('YYYY-MM') === purchaseDate.format('YYYY-MM')) {
-          divIndex++;
-          continue;
-        }
-
         // 배당금 계산 (세후)
         const divAmountInKRW = convertToKRW(div.amount, stock.currency, exchangeRates);
 
-        // 1) 일반 모드: 초기 보유량 기준 배당금 (현금 수취 가정)
-        const divAmtNormal = divAmountInKRW * initialShares * (1 - DIVIDEND_TAX_RATE);
-        cumulativeDiv += divAmtNormal;
-
-        // 월별 배당금 합계 (배당 지급일 기준 월)
+        // 월별 배당금 합계용 (초기 보유량 기준 세후 배당금)
+        const divAmtNormal = divAmountInKRW * initialShares * (1 - taxRate);
         const monthStr = divDate.format('YYYY.MM');
         monthlyDivSumMap.set(monthStr, (monthlyDivSumMap.get(monthStr) || 0) + divAmtNormal);
 
-        // 2) 재투자 모드: 현재 보유량(reinvestShares) 기준 배당금 -> 재투자
-        const divAmtReinvest = divAmountInKRW * reinvestShares * (1 - DIVIDEND_TAX_RATE);
-        const additionalShares = divAmtReinvest / currentPriceInKRW;
+        // 재투자 모드: 당시 보유량(reinvestShares) 기준으로 발생한 세후 배당금 -> 현재 주가로 주식 재매수
+        const divAmtReinvest = divAmountInKRW * reinvestShares * (1 - taxRate);
+        const additionalShares = currentPriceInKRW > 0 ? divAmtReinvest / currentPriceInKRW : 0;
         reinvestShares += additionalShares;
 
         divIndex++;
       }
 
-      // 일반 누적 수익 (평가금액 + 누적배당 - 투자원금)
-      const normalValue = (currentPriceInKRW * initialShares) + cumulativeDiv;
-      profitData.push(convertCurrency(normalValue - investmentAmount, 'KRW', currency, exchangeRates));
+      // 1) 일반 누적 평가수익 (현재 평가금액 - 투자원금) : 순수 주가 변동에 따른 평가수익
+      const normalProfit = (currentPriceInKRW * initialShares) - investmentAmount;
+      profitData.push(convertCurrency(normalProfit, 'KRW', currency, exchangeRates));
 
-      // 재투자 수익 (평가금액 - 투자원금) -> 평가금액 자체가 늘어난 수량 반영
-      const currentReinvestValue = currentPriceInKRW * reinvestShares;
-      reinvestData.push(convertCurrency(currentReinvestValue - investmentAmount, 'KRW', currency, exchangeRates));
+      // 2) 배당 재투자 수익 (재투자 후 평가금액 - 투자원금) : 늘어난 주식 수 기반 평가수익
+      const reinvestProfit = (currentPriceInKRW * reinvestShares) - investmentAmount;
+      reinvestData.push(convertCurrency(reinvestProfit, 'KRW', currency, exchangeRates));
     });
 
     // 배당 차트 전용 월별 데이터 구성
@@ -199,9 +191,9 @@ export default function IndividualCharts({
           top: 100,
         },
         title: { text: '누적 수익 vs 재투자 수익', left: 'center', textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' } },
-        legend: { data: ['일반 누적 수익', '배당 재투자 수익'], top: 50, textStyle: { color: isDark ? '#d1d5db' : '#374151' } },
+        legend: { data: ['누적 수익', '배당 재투자 수익'], top: 50, textStyle: { color: isDark ? '#d1d5db' : '#374151' } },
         series: [
-          { name: '일반 누적 수익', type: 'line', data: profitData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#16a34a' } },
+          { name: '누적 수익', type: 'line', data: profitData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#16a34a' } },
           { name: '배당 재투자 수익', type: 'line', data: reinvestData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#8b5cf6' } },
         ],
       },
