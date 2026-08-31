@@ -21,7 +21,7 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
         {/* 뷰 전환 탭 버튼 */}
         <div className="inline-flex items-center rounded-lg border border-border/70 bg-muted/40 p-0.5">
           <button
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
               viewMode === 'grid' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setViewMode('grid')}
@@ -31,7 +31,7 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
             <span>12개월 요약</span>
           </button>
           <button
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold transition-all ${
+            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
               viewMode === 'calendar' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
             }`}
             onClick={() => setViewMode('calendar')}

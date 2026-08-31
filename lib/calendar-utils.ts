@@ -98,13 +98,15 @@ export function generateMonthCalendar(
   const currentMonthNumber = monthIndex + 1;
   const monthEventsMap = new Map<number, DividendEvent[]>();
 
+  const historyList = Array.isArray(histories) ? histories : (histories && typeof histories === 'object' && 'histories' in histories && Array.isArray((histories as { histories: HistoryDataForCalendar[] }).histories)) ? (histories as { histories: HistoryDataForCalendar[] }).histories : [];
+
   stocks.forEach((stock, index) => {
     if (!stock.enabled) return;
     const dividendInfo = stockDividends[index];
     if (!dividendInfo) return;
 
     const taxRate = dividendInfo.taxRate ?? (dividendInfo.isForeign ? 0.15 : 0.154);
-    const history = histories?.find((h) => h.symbol === stock.ticker);
+    const history = historyList.find((h) => h.symbol === stock.ticker);
 
     // 1. 실제 야후 파이낸스 배당 히스토리 매칭 시도
     let actualDividendsInThisMonth: { day: number; amount: number }[] = [];
@@ -139,15 +141,17 @@ export function generateMonthCalendar(
     // 2. 실제 배당 데이터가 있는 경우 (12월 2회 지급, 실제 일자 등 정확히 반영)
     if (actualDividendsInThisMonth.length > 0) {
       const totalDivAmount = actualDividendsInThisMonth.reduce((sum, d) => sum + d.amount, 0);
-      const monthlyTotalGross = dividendInfo.monthlyDividends[monthIndex] || dividendInfo.annualDividend / (stock.dividendMonths?.length || 4);
+      const totalDivMonthsCount = stock.dividendMonths?.length || 4;
+      const singleMonthNet = dividendInfo.monthlyDividends[currentMonthNumber] ?? (dividendInfo.annualDividend * (1 - taxRate) / totalDivMonthsCount);
+      const singleMonthGross = singleMonthNet / (1 - taxRate > 0 ? 1 - taxRate : 1);
 
       actualDividendsInThisMonth.forEach(({ day, amount }) => {
         // 각 배당일의 비중에 맞춰 월 총배당금 배분
         const weight = totalDivAmount > 0 ? amount / totalDivAmount : 1 / actualDividendsInThisMonth.length;
-        const grossAmount = monthlyTotalGross * weight;
+        const grossAmount = singleMonthGross * weight;
+        const netAmount = singleMonthNet * weight;
         if (grossAmount <= 0) return;
 
-        const netAmount = grossAmount * (1 - taxRate);
         const event: DividendEvent = {
           currency: stock.currency,
           day,
@@ -167,10 +171,10 @@ export function generateMonthCalendar(
 
     // 3. Fallback: 배당 히스토리가 없을 때는 기존 dividendMonths 기반 계산
     if (stock.dividendMonths && stock.dividendMonths.includes(currentMonthNumber)) {
-      const monthlyGross = dividendInfo.monthlyDividends[monthIndex] || 0;
-      if (monthlyGross <= 0) return;
+      const monthlyNet = dividendInfo.monthlyDividends[currentMonthNumber] || 0;
+      if (monthlyNet <= 0) return;
 
-      const monthlyNet = monthlyGross * (1 - taxRate);
+      const monthlyGross = monthlyNet / (1 - taxRate > 0 ? 1 - taxRate : 1);
       const day = getEstimatedDividendDay(stock.ticker, stock.name);
 
       const event: DividendEvent = {

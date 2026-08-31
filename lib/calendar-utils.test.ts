@@ -58,17 +58,31 @@ describe('calendar-utils', () => {
       {
         annualDividend: 400000,
         isForeign: true,
-        monthlyDividends: [
-          100000, 0, 0, 100000, 0, 0, 100000, 0, 0, 100000, 0, 0,
-        ],
+        monthlyDividends: {
+          1: 100000,
+          4: 100000,
+          7: 100000,
+          10: 100000,
+        },
         taxRate: 0.15,
       },
       {
         annualDividend: 600000,
         isForeign: true,
-        monthlyDividends: [
-          50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000, 50000,
-        ],
+        monthlyDividends: {
+          1: 50000,
+          2: 50000,
+          3: 50000,
+          4: 50000,
+          5: 50000,
+          6: 50000,
+          7: 50000,
+          8: 50000,
+          9: 50000,
+          10: 50000,
+          11: 50000,
+          12: 50000,
+        },
         taxRate: 0.15,
       },
     ];
@@ -111,6 +125,21 @@ describe('calendar-utils', () => {
 
       const day28 = currentMonthCells.find((c) => c.dayNumber === 28);
       expect(day28?.events.some((e) => e.ticker === 'JEPI')).toBe(true);
+    });
+
+    it('histories가 객체 래핑({ histories: [...] }) 형태로 전달되어도 안전하게 작동해야 함', () => {
+      const wrappedHistories = {
+        histories: [
+          {
+            dividends: [{ amount: 0.5, date: '2024-12-15' }],
+            symbol: 'JEPI',
+          },
+        ],
+      };
+
+      // @ts-expect-error test invalid shape input
+      const weeks = generateMonthCalendar(2024, 11, mockStocks, mockStockDividends, wrappedHistories);
+      expect(weeks.length).toBeGreaterThanOrEqual(4);
     });
   });
 });

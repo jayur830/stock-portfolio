@@ -37,7 +37,8 @@ export default function DividendCalendar() {
         throw new Error('Failed to fetch stock histories');
       }
 
-      return response.json();
+      const data = await response.json();
+      return (data.histories || []);
     },
     queryKey: ['stockHistories', tickers] as const,
     staleTime: 1000 * 60 * 60,
@@ -160,7 +161,7 @@ export default function DividendCalendar() {
           const isSelected = selectedMonthIndex === i;
           return (
             <button
-              className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium transition-all ${
+              className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium cursor-pointer transition-all ${
                 isSelected ? 'bg-primary text-primary-foreground shadow-2xs font-bold' : 'bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               key={i}
@@ -266,7 +267,7 @@ export default function DividendCalendar() {
           </div>
           {selectedDay && (
             <button
-              className="text-[11px] text-primary hover:underline font-medium"
+              className="text-[11px] text-primary hover:underline font-medium cursor-pointer"
               onClick={() => setSelectedDay(null)}
               type="button"
             >
