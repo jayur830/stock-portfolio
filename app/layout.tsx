@@ -3,7 +3,6 @@ import './globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
@@ -58,13 +57,19 @@ export const metadata: Metadata = {
   verification: {
     other: {
       'naver-site-verification': process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION,
-      'google-adsense-account': 'ca-pub-5568597176740953',
+      ...(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && {
+        'google-adsense-account': process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID,
+      }),
     },
   },
   other: {
-    'google-adsense-account': 'ca-pub-5568597176740953',
+    ...(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && {
+      'google-adsense-account': process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID,
+    }),
   },
 };
+
+const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 export default function RootLayout({
   children,
@@ -74,12 +79,16 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
-        <meta content="ca-pub-5568597176740953" name="google-adsense-account" />
-        <script
-          async
-          crossOrigin="anonymous"
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5568597176740953"
-        />
+        {adsenseClientId && (
+          <>
+            <meta content={adsenseClientId} name="google-adsense-account" />
+            <script
+              async
+              crossOrigin="anonymous"
+              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+            />
+          </>
+        )}
         <StructuredData />
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
