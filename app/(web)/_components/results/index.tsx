@@ -10,6 +10,7 @@ import type { FormValues } from '@/types';
 
 import CalculateButton from './calculate-button';
 import CountPerStock from './count-per-stock';
+import ExportButton from './export-button';
 import MonthlyDividends from './monthly-dividends';
 import StockCharts from './stock-charts';
 import TaxInfo from './tax-info';
@@ -84,6 +85,7 @@ export default function Results() {
           결과 계산하기
         </CalculateButton>
         <Button className="reset-action" type="reset" variant="outline">초기화</Button>
+        {calculatedCategory && <ExportButton />}
       </div>
 
       {!calculatedCategory && (
