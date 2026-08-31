@@ -58,7 +58,11 @@ export const metadata: Metadata = {
   verification: {
     other: {
       'naver-site-verification': process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION,
+      'google-adsense-account': 'ca-pub-5568597176740953',
     },
+  },
+  other: {
+    'google-adsense-account': 'ca-pub-5568597176740953',
   },
 };
 
