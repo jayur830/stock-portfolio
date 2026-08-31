@@ -1,21 +1,32 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCw } from 'lucide-react';
+import { ChevronDown, LineChart, RefreshCw } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
+
+import ExchangeRateChart, { currencySymbols } from './exchange-rate-chart';
 
 const _exchangeRateCodes = exchangeRateCodes.filter((key) => key !== 'KRW');
 
 /** 환율 */
 export default function ExchangeRates() {
   const [selectedCurrency, setSelectedCurrency] = useState<typeof _exchangeRateCodes[number]>('USD');
+  const [modalCurrency, setModalCurrency] = useState<string | null>(null);
+  const [isMobileChartOpen, setIsMobileChartOpen] = useState(false);
 
   const { control } = useFormContext<FormValues>();
   const { field: { onChange, value: exchangeRates } } = useController({
@@ -80,29 +91,46 @@ export default function ExchangeRates() {
         </Button>
       </div>
 
+      {/* 데스크탑 그리드 뷰 */}
       <div className="rate-grid hidden sm:grid">
         {_exchangeRateCodes.map((currency) => (
           <div className="rate-item" key={currency}>
-            <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
-            <Input
-              className="rate-input"
-              min={0}
-              onChange={(e) => {
-                const newValue = e.target.valueAsNumber;
-                onChange({
-                  ...exchangeRates,
-                  [currency]: isNaN(newValue) ? 0 : newValue,
-                });
-              }}
-              placeholder="0"
-              step="any"
-              type="number"
-              value={exchangeRates?.[currency as keyof typeof exchangeRates] || ''}
-            />
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-muted-foreground">{currency}/KRW</label>
+              <Button
+                aria-label={`${currency} 환율 차트 보기`}
+                className="h-5 w-5 p-0 text-muted-foreground transition-colors hover:text-primary"
+                onClick={() => setModalCurrency(currency)}
+                size="sm"
+                title={`${currency} 환율 차트`}
+                type="button"
+                variant="ghost"
+              >
+                <LineChart className="size-3.5" />
+              </Button>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <Input
+                className="rate-input flex-1"
+                min={0}
+                onChange={(e) => {
+                  const newValue = e.target.valueAsNumber;
+                  onChange({
+                    ...exchangeRates,
+                    [currency]: isNaN(newValue) ? 0 : newValue,
+                  });
+                }}
+                placeholder="0"
+                step="any"
+                type="number"
+                value={exchangeRates?.[currency as keyof typeof exchangeRates] || ''}
+              />
+            </div>
           </div>
         ))}
       </div>
 
+      {/* 모바일 뷰 */}
       <div className="rate-mobile flex flex-col gap-2.5 sm:hidden">
         <Select onValueChange={setSelectedCurrency} value={selectedCurrency}>
           <SelectTrigger className="h-11 w-full border-border/80 bg-card font-bold">
@@ -111,7 +139,7 @@ export default function ExchangeRates() {
           <SelectContent>
             {_exchangeRateCodes.map((currency) => (
               <SelectItem key={currency} value={currency}>
-                {currency} / KRW
+                {currency} / KRW ({currencySymbols[currency]?.name || currency})
               </SelectItem>
             ))}
           </SelectContent>
@@ -136,7 +164,53 @@ export default function ExchangeRates() {
           />
           <span className="target-currency">원</span>
         </div>
+
+        {/* 모바일 Accordion 차트 토글 */}
+        <div className="mt-1 flex flex-col rounded-lg border border-border/60 bg-muted/20">
+          <button
+            aria-expanded={isMobileChartOpen}
+            className="flex items-center justify-between px-3.5 py-2.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            onClick={() => setIsMobileChartOpen((prev) => !prev)}
+            type="button"
+          >
+            <span className="flex items-center gap-1.5">
+              <LineChart className="size-3.5 text-primary" />
+              {selectedCurrency}/KRW 환율 추이 차트 {isMobileChartOpen ? '접기' : '보기'}
+            </span>
+            <ChevronDown
+              className={`size-4 text-muted-foreground transition-transform duration-200 ${isMobileChartOpen ? 'rotate-180' : ''}`}
+            />
+          </button>
+
+          {isMobileChartOpen && (
+            <div className="border-t border-border/50 p-3 pt-2">
+              <ExchangeRateChart currency={selectedCurrency} height={220} />
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* 데스크탑 환율 차트 모달 팝업 */}
+      <Dialog onOpenChange={(open) => !open && setModalCurrency(null)} open={!!modalCurrency}>
+        <DialogContent className="max-w-2xl">
+          {modalCurrency && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-2 text-base font-bold">
+                  <LineChart className="size-4.5 text-primary" />
+                  {currencySymbols[modalCurrency]?.name || modalCurrency} ({modalCurrency}/KRW) 환율 추이
+                </DialogTitle>
+                <DialogDescription className="text-xs">
+                  최근 기간별 원화(KRW) 환율 변동 추이 및 최고/최저 통계 데이터입니다.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="pt-2">
+                <ExchangeRateChart currency={modalCurrency} height={320} />
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }
