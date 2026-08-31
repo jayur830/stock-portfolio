@@ -2,6 +2,7 @@ import { connection } from 'next/server';
 
 import BrandLogo from '@/components/brand-logo';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
+import Footer from '@/components/footer';
 
 import CalculatorFormProvider from './_components/calculator-form-provider';
 import CalculatorTabs from './_components/calculator-tabs';
@@ -11,7 +12,7 @@ import Results from './_components/results';
 export default async function Page() {
   await connection();
   return (
-    <main aria-label="배당주 포트폴리오 계산기" className="app-shell">
+    <main aria-label="배당주 포트폴리오 계산기" className="app-shell flex flex-col justify-between">
       <header className="site-header">
         <div className="brand-lockup">
           <div aria-hidden="true" className="brand-mark">
@@ -32,7 +33,7 @@ export default async function Page() {
         </div>
       </header>
 
-      <div className="page-content">
+      <div className="page-content flex-1">
         <CalculatorFormProvider>
           <div className="workspace-grid">
             <section aria-labelledby="portfolio-builder-title" className="input-column">
@@ -63,6 +64,9 @@ export default async function Page() {
           </div>
         </CalculatorFormProvider>
       </div>
+
+      {/** OpenToyApp 푸터 */}
+      <Footer />
     </main>
   );
 }
