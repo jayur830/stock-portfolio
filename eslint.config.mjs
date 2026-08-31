@@ -7,11 +7,16 @@ import tseslint from 'typescript-eslint';
 const eslintConfig = [
   {
     ignores: [
-      'node_modules/**',
       '.next/**',
+      '.vercel/**',
+      'node_modules/**',
       'out/**',
       'build/**',
+      'coverage/**',
       'next-env.d.ts',
+      '*.config.js',
+      '*.config.mjs',
+      '*.config.ts',
     ],
   },
   ...tseslint.configs.recommended,

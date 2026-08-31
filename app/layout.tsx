@@ -1,9 +1,9 @@
 import './globals.css';
 
 import { GoogleAnalytics } from '@next/third-parties/google';
-import { Analytics } from '@vercel/analytics/next';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
@@ -71,6 +71,12 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         <StructuredData />
+        <Script
+          async
+          crossOrigin="anonymous"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5568597176740953"
+          strategy="afterInteractive"
+        />
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       <body
@@ -85,7 +91,6 @@ export default function RootLayout({
             {children}
           </ReactQueryProvider>
         </ThemeProvider>
-        <Analytics />
       </body>
     </html>
   );
