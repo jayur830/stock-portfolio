@@ -191,12 +191,12 @@ export default function IndividualCharts({
           ...commonOption.grid,
           top: 100,
         },
-        title: { text: '누적 수익 vs 재투자 수익', left: 'center', textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' } },
-        legend: { data: ['누적 수익', '배당 재투자 수익'], top: 50, textStyle: { color: isDark ? '#d1d5db' : '#374151' } },
+        legend: { data: ['누적 수익', '배당 재투자 수익 (100% 재투자)'], textStyle: { color: isDark ? '#d1d5db' : '#374151' }, top: 50 },
         series: [
-          { name: '누적 수익', type: 'line', data: profitData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#16a34a' } },
-          { name: '배당 재투자 수익', type: 'line', data: reinvestData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#8b5cf6' } },
+          { data: profitData, lineStyle: { color: '#16a34a', width: 2 }, name: '누적 수익', showSymbol: false, smooth: true, type: 'line' },
+          { data: reinvestData, lineStyle: { color: '#8b5cf6', width: 2 }, name: '배당 재투자 수익 (100% 재투자)', showSymbol: false, smooth: true, type: 'line' },
         ],
+        title: { left: 'center', text: '누적 수익 vs 재투자 수익', textStyle: { color: isDark ? '#e5e7eb' : '#111827', fontSize: 18 } },
       },
     };
   }, [

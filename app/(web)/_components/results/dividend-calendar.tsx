@@ -200,7 +200,7 @@ export default function DividendCalendar() {
 
             return (
               <div
-                className={`min-h-[5.25rem] sm:min-h-[6rem] p-1.5 sm:p-2 transition-all flex flex-col justify-between ${
+                className={`min-h-21 sm:min-h-24 p-1.5 sm:p-2 transition-all flex flex-col justify-between ${
                   !cell.isCurrentMonth ? 'bg-muted/10 opacity-35' : hasEvents ? 'cursor-pointer hover:bg-primary/5' : 'hover:bg-muted/20'
                 } ${isSelected ? 'ring-2 ring-primary ring-inset bg-primary/10' : ''}`}
                 key={idx}
@@ -236,7 +236,7 @@ export default function DividendCalendar() {
                       className="flex items-center justify-between rounded bg-card/90 px-1 py-0.5 text-[10px] border border-border/60 shadow-2xs"
                       key={eIdx}
                     >
-                      <span className="font-bold text-foreground truncate max-w-[4rem] sm:max-w-none">
+                      <span className="font-bold text-foreground truncate max-w-16 sm:max-w-none">
                         {event.ticker}
                       </span>
                       <span className="font-semibold text-primary text-[9px] shrink-0">
@@ -296,7 +296,7 @@ export default function DividendCalendar() {
                   <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="text-xs font-bold text-foreground">{event.ticker}</span>
-                      <span className="text-xs text-muted-foreground truncate max-w-[10rem] sm:max-w-[16rem]">
+                      <span className="text-xs text-muted-foreground truncate max-w-40 sm:max-w-[16rem]">
                         {event.stockName}
                       </span>
                     </div>
