@@ -27,6 +27,17 @@ export interface Stock {
   enabled: boolean;
 }
 
+export interface StockDividend {
+  /** 연 배당금 */
+  annualDividend: number;
+  /** 월별 배당금 */
+  monthlyDividends: Record<number, number>;
+  /** 해외종목 여부 */
+  isForeign: boolean;
+  /** 배당소득세율 */
+  taxRate: number;
+}
+
 export interface FormValues {
   /** 총 투자금 */
   totalInvestment: number;
@@ -39,16 +50,7 @@ export interface FormValues {
   /** 결과 계산 여부 */
   calculatedCategory?: Category;
   /** 종목별 배당정보 리스트 */
-  stockDividends: {
-    /** 연 배당금 */
-    annualDividend: number;
-    /** 월별 배당금 */
-    monthlyDividends: Record<number, number>;
-    /** 해외종목 여부 */
-    isForeign: boolean;
-    /** 배당소득세율 */
-    taxRate: number;
-  }[];
+  stockDividends: StockDividend[];
   /** 차트 데이터 */
   chartData?: {
     /** 총 투자금 */
