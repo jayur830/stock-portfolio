@@ -692,8 +692,15 @@
   }
 
   .rate-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 0.65rem;
+  }
+
+  @media (min-width: 1280px) {
+    .rate-grid {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+    }
   }
 
   .rate-item {

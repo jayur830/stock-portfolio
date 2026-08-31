@@ -92,7 +92,7 @@ export default function ExchangeRates() {
       </div>
 
       {/* 데스크탑 그리드 뷰 */}
-      <div className="rate-grid hidden sm:grid">
+      <div className="rate-grid hidden sm:grid sm:grid-cols-3 xl:grid-cols-5">
         {_exchangeRateCodes.map((currency) => (
           <div className="rate-item" key={currency}>
             <div className="flex items-center justify-between">
