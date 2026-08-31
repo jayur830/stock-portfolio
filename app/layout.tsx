@@ -75,13 +75,12 @@ export default function RootLayout({
     <html lang="ko" suppressHydrationWarning>
       <head>
         <meta content="ca-pub-5568597176740953" name="google-adsense-account" />
-        <StructuredData />
-        <Script
+        <script
           async
           crossOrigin="anonymous"
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5568597176740953"
-          strategy="afterInteractive"
         />
+        <StructuredData />
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       <body
