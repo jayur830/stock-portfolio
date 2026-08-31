@@ -70,6 +70,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <meta content="ca-pub-5568597176740953" name="google-adsense-account" />
         <StructuredData />
         <Script
           async
