@@ -156,15 +156,21 @@
     position: sticky;
     top: 0;
     z-index: 40;
+    width: 100%;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
+    background: color-mix(in srgb, var(--background) 84%, transparent);
+    backdrop-filter: blur(20px);
+  }
+
+  .site-header-inner {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 2rem;
     width: 100%;
+    max-width: var(--max-width-desktop);
+    margin: 0 auto;
     padding: 1rem clamp(1.25rem, 4vw, 3.5rem);
-    border-bottom: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
-    background: color-mix(in srgb, var(--background) 84%, transparent);
-    backdrop-filter: blur(20px);
   }
 
   .brand-lockup,
@@ -544,9 +550,11 @@
 
   .workspace-grid {
     display: grid;
-    grid-template-columns: minmax(0, 1.07fr) minmax(22rem, 0.93fr);
+    grid-template-columns: minmax(0, 1.07fr) minmax(0, 0.93fr);
     align-items: start;
     gap: 1.5rem;
+    width: 100%;
+    min-width: 0;
   }
 
   .input-column,
@@ -569,11 +577,6 @@
     width: 100%;
     max-width: 100%;
     min-width: 0;
-  }
-
-  .result-column {
-    position: sticky;
-    top: 6.5rem;
   }
 
   .input-stack,
@@ -1874,7 +1877,7 @@
   }
 
   @media (max-width: 720px) {
-    .site-header {
+    .site-header-inner {
       gap: 0.75rem;
       padding: 0.8rem 1rem;
     }
@@ -2071,32 +2074,20 @@
     }
 
     .result-action-row {
-      position: fixed;
-      right: 0;
-      bottom: 0;
-      left: 0;
-      z-index: 45;
+      display: flex;
+      flex-wrap: wrap;
       gap: 0.6rem;
       width: 100%;
-      max-width: none;
-      padding: 0.75rem max(1rem, env(safe-area-inset-right)) calc(0.75rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
-      background: transparent !important;
-      border: none !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      pointer-events: none;
+      margin-top: 0.5rem;
     }
 
     .calculate-action,
     .reset-action,
     .export-action {
-      height: 3.75rem !important;
-      border-radius: 1rem;
-      font-size: 1rem !important;
-      font-weight: 850 !important;
-      letter-spacing: -0.01em;
-      pointer-events: auto;
+      height: 3rem !important;
+      border-radius: 0.85rem;
+      font-size: 0.85rem !important;
+      font-weight: 750 !important;
     }
 
     .export-action {

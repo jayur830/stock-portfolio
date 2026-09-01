@@ -2,7 +2,7 @@ import type { PropsWithChildren } from 'react';
 
 export default function Layout({ children }: PropsWithChildren) {
   return (
-    <div className="max-w-desktop mx-auto">
+    <div className="w-full min-h-screen">
       {children}
     </div>
   );
