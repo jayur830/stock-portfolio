@@ -1,5 +1,7 @@
 import type { Dayjs } from 'dayjs';
 
+import type { DividendGrowthInfo } from '@/lib/dividend-growth';
+
 /** 계산 탭 (배당금 계산 / 투자금 계산) */
 export type Category = 'dividend' | 'investment';
 
@@ -25,6 +27,8 @@ export interface Stock {
   purchaseDate?: Dayjs;
   /** 활성화 여부 */
   enabled: boolean;
+  /** 배당 성장 지표 (5년 CAGR, 연속 증액 연수, 배지) */
+  dividendGrowth?: DividendGrowthInfo | null;
 }
 
 export interface StockDividend {

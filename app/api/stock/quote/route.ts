@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+import { calculateDividendGrowth } from '@/lib/dividend-growth';
 import { yahooFinance } from '@/lib/yfinance';
 
 export async function GET(request: NextRequest) {
@@ -13,13 +14,16 @@ export async function GET(request: NextRequest) {
   try {
     const quote = await yahooFinance.quote(symbol);
 
-    // 배당 내역 조회 (최근 1년)
+    // 배당 내역 조회 (최근 6년치로 배당 성장률 및 연속 증액 연수 분석)
     const endDate = new Date();
     const startDate = new Date();
-    startDate.setFullYear(startDate.getFullYear() - 1);
+    startDate.setFullYear(startDate.getFullYear() - 6);
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
     const dividendMonths: number[] = [];
     let annualDividend = 0;
+    let dividendGrowthData = null;
 
     try {
       const { events } = await yahooFinance.chart(symbol, {
@@ -31,18 +35,33 @@ export async function GET(request: NextRequest) {
       const dividendHistory = events?.dividends;
 
       if (dividendHistory && dividendHistory.length > 0) {
-        // 배당 지급 월 추출 (중복 제거)
+        // 최근 1년 배당 필터링
+        const recentDividends = dividendHistory.filter(
+          (div) => new Date(div.date) >= oneYearAgo,
+        );
+
+        // 배당 지급 월 추출 (최근 1년 기준)
         const months = new Set(
-          dividendHistory.map((div) => new Date(div.date).getMonth() + 1),
+          (recentDividends.length > 0 ? recentDividends : dividendHistory).map(
+            (div) => new Date(div.date).getMonth() + 1,
+          ),
         );
         dividendMonths.push(...Array.from(months).sort((a, b) => a - b));
 
         // 연간 배당금 계산 (최근 1년간 실제 지급된 배당금의 총합)
-        annualDividend = dividendHistory.reduce((sum, div) => sum + (div.amount || 0), 0);
+        annualDividend = (recentDividends.length > 0 ? recentDividends : dividendHistory.slice(-4)).reduce(
+          (sum, div) => sum + (div.amount || 0),
+          0,
+        );
+
+        // 배당 성장 지표(5년 CAGR, 연속 증액 연수, 뱃지) 산출
+        dividendGrowthData = calculateDividendGrowth(quote.symbol, dividendHistory);
+      } else {
+        dividendGrowthData = calculateDividendGrowth(quote.symbol);
       }
     } catch (divError) {
       console.warn('Failed to fetch dividend history:', divError);
-      // 배당 정보가 없어도 계속 진행
+      dividendGrowthData = calculateDividendGrowth(quote.symbol);
     }
 
     // 거래소에 따라 통화 결정
@@ -60,6 +79,7 @@ export async function GET(request: NextRequest) {
       yield: yieldRate,
       dividendMonths,
       exchange: quote.exchange,
+      dividendGrowth: dividendGrowthData,
     });
   } catch (error) {
     console.error('Stock quote error:', error);

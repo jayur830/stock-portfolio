@@ -18,6 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { useDebounce } from '@/hooks/use-debounce';
+import { calculateDividendGrowth } from '@/lib/dividend-growth';
 import { cn, exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
@@ -46,6 +47,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const stock = stocks[index];
   const isEnabled = stock.enabled;
   const dividendMonths = stock.dividendMonths || [];
+  const growthInfo = stock.dividendGrowth || (stock.ticker ? calculateDividendGrowth(stock.ticker) : null);
 
   // 검색어 debouncing
   const debouncedQuery = useDebounce(searchQuery, 300);
@@ -102,6 +104,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               price: data.price,
               currency: data.currency,
               yield: data.yield,
+              dividendGrowth: data.dividendGrowth,
             };
 
             if (data.dividendMonths && data.dividendMonths.length > 0) {
@@ -211,7 +214,29 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         <div className="stock-card-ident">
           <div className="min-w-0">
             <span className="stock-card-label">POSITION</span>
-            <strong className="stock-card-name">{stock.ticker || '새 종목 추가'}</strong>
+            <div className="flex items-center gap-2 flex-wrap">
+              <strong className="stock-card-name">{stock.ticker || '새 종목 추가'}</strong>
+              {growthInfo?.badge && (
+                <span
+                  className={cn(
+                    'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold border transition-colors cursor-help',
+                    growthInfo.badge.colorClass,
+                  )}
+                  title={growthInfo.badge.description}
+                >
+                  <span>{growthInfo.badge.icon}</span>
+                  <span>{growthInfo.badge.label}</span>
+                </span>
+              )}
+              {growthInfo?.cagr5Y !== null && growthInfo?.cagr5Y !== undefined && (
+                <span
+                  className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground border border-border/60"
+                  title="최근 5년간 주당 배당금(DPS) 연평균 성장률"
+                >
+                  5년 성장률 {growthInfo.cagr5Y > 0 ? `+${growthInfo.cagr5Y}%` : `${growthInfo.cagr5Y}%`}
+                </span>
+              )}
+            </div>
           </div>
         </div>
         <div className="stock-card-actions">

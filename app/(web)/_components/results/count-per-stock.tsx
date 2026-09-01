@@ -1,6 +1,7 @@
 import { useController, useFormContext } from 'react-hook-form';
 
-import { convertToKRW } from '@/lib/utils';
+import { calculateDividendGrowth } from '@/lib/dividend-growth';
+import { cn, convertToKRW } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 export default function CountPerStock() {
@@ -19,15 +20,31 @@ export default function CountPerStock() {
           const investmentAmount = (chartData.totalInvestment * (stock.ratio || 0)) / 100;
           const priceInKRW = convertToKRW(stock.price, stock.currency, chartData.exchangeRates);
           const quantity = priceInKRW > 0 ? Math.floor(investmentAmount / priceInKRW) : 0;
+          const growthInfo = stock.dividendGrowth || (stock.ticker ? calculateDividendGrowth(stock.ticker) : null);
+
           return (
             <div
               className="quantity-item"
               key={index}
             >
-              <span className="quantity-name">
-                {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
-              </span>
-              <span className="quantity-value">
+              <div className="flex items-center gap-1.5 min-w-0">
+                {growthInfo?.badge && (
+                  <span
+                    className={cn(
+                      'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-bold border shrink-0',
+                      growthInfo.badge.colorClass,
+                    )}
+                    title={growthInfo.badge.description}
+                  >
+                    <span>{growthInfo.badge.icon}</span>
+                    <span>{growthInfo.badge.label}</span>
+                  </span>
+                )}
+                <span className="quantity-name truncate">
+                  {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
+                </span>
+              </div>
+              <span className="quantity-value shrink-0 font-bold">
                 {quantity.toLocaleString('ko-KR')}주
               </span>
             </div>
