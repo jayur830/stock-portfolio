@@ -118,15 +118,24 @@
     @apply border-border outline-ring/50;
   }
 
-  html {
-    background: var(--background);
+  html,
+  body {
+    width: 100%;
+    min-height: 100%;
+    background-color: var(--background);
+    background-image:
+      radial-gradient(ellipse 70% 60% at 10% 8%, color-mix(in srgb, var(--primary) 8%, transparent) 0%, transparent 100%),
+      radial-gradient(ellipse 60% 50% at 90% 45%, color-mix(in srgb, #ef9c54 7%, transparent) 0%, transparent 100%);
+    background-attachment: fixed;
   }
 
   body {
-    @apply bg-background text-foreground;
-    min-height: 100vh;
+    @apply text-foreground;
+    display: flex;
+    flex-direction: column;
     font-family: var(--font-geist-sans), "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
     font-feature-settings: "tnum" 1, "ss01" 1;
+    overflow-x: hidden;
   }
 
   ::selection {
@@ -138,13 +147,9 @@
 @layer components {
   .app-shell {
     position: relative;
+    width: 100%;
     min-height: 100vh;
     isolation: isolate;
-    overflow: hidden;
-    background:
-      radial-gradient(circle at 7% 8%, color-mix(in srgb, var(--primary) 7%, transparent), transparent 24rem),
-      radial-gradient(circle at 93% 46%, color-mix(in srgb, #ef9c54 7%, transparent), transparent 26rem),
-      var(--background);
   }
 
   .site-header {
