@@ -57,7 +57,6 @@ export default async function Page() {
                     <h2 className="section-title" id="portfolio-result-title">현금흐름 미리보기</h2>
                   </div>
                 </div>
-                <span className="results-live-badge">자동 반영</span>
               </div>
               <Results />
             </aside>
