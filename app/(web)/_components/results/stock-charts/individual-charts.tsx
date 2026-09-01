@@ -225,18 +225,18 @@ export default function IndividualCharts({
           매수일 정보가 없거나 데이터를 불러올 수 없습니다.
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="flex flex-col gap-6">
           <div className="chart-card">
             <div className="chart-viewport">
-              <ReactECharts option={chartOptions.price} style={{ height: '300px', width: '100%' }} />
+              <ReactECharts option={chartOptions.price} style={{ height: '320px', width: '100%' }} />
             </div>
           </div>
           <div className="chart-card">
             <div className="chart-viewport">
-              <ReactECharts option={chartOptions.dividend} style={{ height: '300px', width: '100%' }} />
+              <ReactECharts option={chartOptions.dividend} style={{ height: '320px', width: '100%' }} />
             </div>
           </div>
-          <div className="chart-card md:col-span-2">
+          <div className="chart-card">
             <div className="chart-viewport">
               <ReactECharts option={chartOptions.profit} style={{ height: '400px', width: '100%' }} />
             </div>
