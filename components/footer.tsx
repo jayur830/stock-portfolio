@@ -19,7 +19,7 @@ export default function Footer() {
 
           {/* 서비스 안내 & 면책조항 */}
           <div className="flex flex-col gap-1.5 md:max-w-sm md:text-right">
-            <h4 className="text-[11px] font-bold tracking-wider text-foreground uppercase">Disclaimer</h4>
+            <h4 className="text-[11px] font-bold tracking-wider text-foreground uppercase">사용자 유의사항</h4>
             <p className="text-[11px] leading-relaxed text-muted-foreground/80">
               본 서비스에서 제공하는 배당금, 주가 및 환율 정보는 시장 데이터를 기반으로 산출된 시뮬레이션 결과로, 실제 수치와 다를 수 있으며 투자 결과에 대한 법적 책임을 지지 않습니다.
             </p>
