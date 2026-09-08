@@ -40,41 +40,36 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
   }, [pathname, searchParamsString]);
 
   useEffect(() => {
-    const subscription = watch((value, { name, type }) => {
-      if (type === 'change') {
-        const searchParamsObject = Object.fromEntries(new URLSearchParams(searchParamsString).entries());
-        switch (name) {
-          case 'totalInvestment':
-          case 'targetAnnualDividend':
-            setSearchParams(
-              pathname,
-              {
-                ...searchParamsObject,
-                [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
-              },
-            );
-            break;
-          case 'stocks': {
-            /** stocks 배열의 어떤 필드든 변경되면 전체 stocks를 URL에 저장 */
-            const stocksData = value.stocks || [];
-            const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64(stocksData as Stock[]) : undefined;
-            setSearchParams(
-              pathname,
-              {
-                ...searchParamsObject,
-                stocks: encodedStocks,
-              },
-            );
-            break;
-          }
-          default:
-            break;
-        }
+    const subscription = watch((value, { name }) => {
+      // 사용자의 직접 입력(type === 'change') 또는 setValue로 인한 갱신 모두 처리
+      if (!name) return;
+
+      const searchParamsObject = Object.fromEntries(new URLSearchParams(window.location.search).entries());
+
+      if (name === 'totalInvestment' || name === 'targetAnnualDividend') {
+        setSearchParams(
+          pathname,
+          {
+            ...searchParamsObject,
+            [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
+          },
+        );
+      } else if (name === 'stocks' || name.startsWith('stocks.')) {
+        /** stocks 배열 또는 하위 필드가 변경되면 전체 stocks를 URL에 저장 */
+        const stocksData = value.stocks || [];
+        const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64(stocksData as Stock[]) : undefined;
+        setSearchParams(
+          pathname,
+          {
+            ...searchParamsObject,
+            stocks: encodedStocks,
+          },
+        );
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [watch, pathname, searchParamsString]);
+  }, [watch, pathname]);
 
   /** 폼 데이터 검증 */
   const validateFormData = ({ stocks, totalInvestment, targetAnnualDividend, exchangeRates }: FormValues): string | null => {
