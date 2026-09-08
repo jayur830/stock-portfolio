@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, ChevronLeft, ChevronRight, DollarSign } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -19,8 +19,8 @@ export default function DividendCalendar() {
   const [selectedMonthIndex, setSelectedMonthIndex] = useState(today.getMonth()); // 0 ~ 11
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
-  /** ticker 문자열 메모이제이션 */
-  const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
+  /** ticker 문자열 */
+  const tickers = stocks.map((s) => s.ticker).filter(Boolean).join(',');
 
   /** 실제 야후 파이낸스 배당 히스토리 데이터 조회 (StockCharts와 동일한 캐시 공유) */
   const { data: histories = [] } = useQuery({
@@ -45,28 +45,17 @@ export default function DividendCalendar() {
   });
 
   /** 해당 연월의 달력 데이터 생성 (실제 배당 히스토리 반영) */
-  const weeks = useMemo(() => {
-    return generateMonthCalendar(selectedYear, selectedMonthIndex, stocks, stockDividends, histories);
-  }, [
-    selectedYear, selectedMonthIndex, stocks, stockDividends, histories,
-  ]);
+  const weeks = generateMonthCalendar(selectedYear, selectedMonthIndex, stocks, stockDividends, histories);
 
   /** 이번 달 전체 배당 이벤트 집계 */
-  const currentMonthEvents = useMemo(() => {
-    return weeks
-      .flat()
-      .filter((cell) => cell.isCurrentMonth && cell.events.length > 0)
-      .flatMap((cell) => cell.events)
-      .sort((a, b) => a.day - b.day);
-  }, [weeks]);
+  const currentMonthEvents = weeks
+    .flat()
+    .filter((cell) => cell.isCurrentMonth && cell.events.length > 0)
+    .flatMap((cell) => cell.events)
+    .sort((a, b) => a.day - b.day);
 
-  const monthTotalGross = useMemo(() => {
-    return currentMonthEvents.reduce((sum, e) => sum + e.grossAmount, 0);
-  }, [currentMonthEvents]);
-
-  const monthTotalNet = useMemo(() => {
-    return currentMonthEvents.reduce((sum, e) => sum + e.netAmount, 0);
-  }, [currentMonthEvents]);
+  const monthTotalGross = currentMonthEvents.reduce((sum, e) => sum + e.grossAmount, 0);
+  const monthTotalNet = currentMonthEvents.reduce((sum, e) => sum + e.netAmount, 0);
 
   const handlePrevMonth = () => {
     setSelectedDay(null);

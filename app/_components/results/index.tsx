@@ -1,7 +1,6 @@
 'use client';
 
 import { Calculator, ChevronRight, CircleDollarSign, Scale } from 'lucide-react';
-import { useCallback, useMemo } from 'react';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -24,34 +23,22 @@ export default function Results() {
   const { field: { value: stockDividends } } = useController({ control, name: 'stockDividends' });
 
   /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
-  const annualDividend = useMemo(() => stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0), [stockDividends]);
+  const annualDividend = stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
 
   /** 세후 연 배당금 */
-  const afterTaxAnnualDividend = useMemo(
-    () => stockDividends.reduce((sum, { annualDividend, taxRate }) => sum + annualDividend * (1 - taxRate), 0),
-    [stockDividends],
+  const afterTaxAnnualDividend = stockDividends.reduce(
+    (sum, { annualDividend, taxRate }) => sum + annualDividend * (1 - taxRate),
+    0,
   );
 
   /** 필요한 투자금 */
-  const requiredInvestment = useMemo(() => {
-    /** 각 종목별 비율에 따른 배당 수익률의 합 */
-    const weightedDividendYield = stocks
-      .filter(({ enabled }) => enabled)
-      .reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
-    return weightedDividendYield > 0 ? targetAnnualDividend / weightedDividendYield : 0;
-  }, [stocks, targetAnnualDividend]);
-
-  // #region 종합과세 계산은 복잡하여 추후 과제로 보류
-  /** 국가별 해외 배당소득 */
-  // const foreignDividends = useMemo(() => {
-  //   return stockDividends
-  //     .filter(({ isForeign }) => isForeign)
-  //     .map(({ annualDividend, taxRate }) => ({ income: annualDividend, taxRate }));
-  // }, [stockDividends]);
-  // #endregion
+  const weightedDividendYield = stocks
+    .filter(({ enabled }) => enabled)
+    .reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
+  const requiredInvestment = weightedDividendYield > 0 ? targetAnnualDividend / weightedDividendYield : 0;
 
   /** 종목별 월별 배당금 합산 */
-  const monthlyDividends = useMemo(() => mergeMonthlyDividends(stockDividends), [stockDividends]);
+  const monthlyDividends = mergeMonthlyDividends(stockDividends);
 
   const totalRatio = stocks
     .filter(({ enabled }) => enabled)
@@ -59,10 +46,10 @@ export default function Results() {
   const ratioState = totalRatio === 100 ? 'is-complete' : totalRatio > 100 ? 'is-over' : '';
   const ratioMessage = totalRatio === 100 ? '배분이 완성됐어요. 이제 결과를 계산해보세요.' : totalRatio > 100 ? '비율 합계가 100%를 초과했어요. 비중을 조정해주세요.' : '종목 비중의 합계를 100%에 맞추면 가장 정확해요.';
 
-  const handleNormalizeRatios = useCallback(() => {
+  const handleNormalizeRatios = () => {
     const normalized = normalizeStockRatios(stocks);
     setValue('stocks', normalized, { shouldValidate: true, shouldDirty: true });
-  }, [setValue, stocks]);
+  };
 
   // #region 종합과세 계산은 복잡하여 추후 과제로 보류
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */

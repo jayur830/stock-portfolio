@@ -2,7 +2,7 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { PropsWithChildren } from 'react';
-import { useCallback, useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { decodeStocksFromBase64, encodeStocksToBase64, getStockDividends, setSearchParams } from '@/lib/utils';
@@ -77,7 +77,7 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
   }, [watch, pathname, searchParamsString]);
 
   /** 폼 데이터 검증 */
-  const validateFormData = useCallback(({ stocks, totalInvestment, targetAnnualDividend, exchangeRates }: FormValues): string | null => {
+  const validateFormData = ({ stocks, totalInvestment, targetAnnualDividend, exchangeRates }: FormValues): string | null => {
     const enabledStocks = stocks.filter(({ enabled }) => enabled);
     const currentTotalRatio = enabledStocks.reduce((sum, { ratio }) => sum + ratio, 0);
     if (currentTotalRatio > 100) {
@@ -120,10 +120,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     }
 
     return null;
-  }, [activeTab]);
+  };
 
   /** 배당금 계산: 투자금 → 배당금 */
-  const calculateDividendFromInvestment = useCallback(({ stocks, totalInvestment, exchangeRates }: FormValues) => {
+  const calculateDividendFromInvestment = ({ stocks, totalInvestment, exchangeRates }: FormValues) => {
     const enabledStocks = stocks.filter(({ enabled }) => enabled);
     /** 필요한 투자금 */
     const investment = totalInvestment;
@@ -137,10 +137,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       stocks: enabledStocks,
     });
     setValue('calculatedCategory', 'dividend');
-  }, []);
+  };
 
   /** 투자금 계산: 목표 배당금 → 필요한 투자금 */
-  const calculateInvestmentFromDividend = useCallback(({ stocks, targetAnnualDividend, exchangeRates }: FormValues) => {
+  const calculateInvestmentFromDividend = ({ stocks, targetAnnualDividend, exchangeRates }: FormValues) => {
     const enabledStocks = stocks.filter(({ enabled }) => enabled);
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
     const weightedDividendYield = enabledStocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
@@ -159,9 +159,9 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       stocks: enabledStocks,
     });
     setValue('calculatedCategory', 'investment');
-  }, []);
+  };
 
-  const handleReset = useCallback(() => {
+  const handleReset = () => {
     const currentExchangeRates = getValues('exchangeRates');
     reset({
       totalInvestment: 0,
@@ -171,9 +171,9 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       calculatedCategory: undefined,
       chartData: undefined,
     });
-  }, [reset, getValues]);
+  };
 
-  const onSubmit = useCallback((data: FormValues) => {
+  const onSubmit = (data: FormValues) => {
     const error = validateFormData(data);
     if (error) {
       alert(error);
@@ -190,7 +190,7 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       default:
         break;
     }
-  }, [activeTab, calculateDividendFromInvestment, calculateInvestmentFromDividend]);
+  };
 
   return (
     <FormProvider {...methods}>

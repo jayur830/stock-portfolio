@@ -1,7 +1,6 @@
 'use client';
 
 import { Plus, Scale } from 'lucide-react';
-import { useCallback } from 'react';
 import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -23,12 +22,12 @@ export default function StockCards() {
     .filter(({ enabled }) => enabled)
     .reduce((total, { ratio }) => total + (Number(ratio) || 0), 0);
 
-  const handleNormalizeRatios = useCallback(() => {
+  const handleNormalizeRatios = () => {
     const normalized = normalizeStockRatios(stocks);
     setValue('stocks', normalized, { shouldValidate: true, shouldDirty: true });
-  }, [setValue, stocks]);
+  };
 
-  const handleAddStock = useCallback(() => {
+  const handleAddStock = () => {
     append({
       name: '',
       ticker: '',
@@ -40,7 +39,7 @@ export default function StockCards() {
       purchaseDate: undefined,
       enabled: true,
     });
-  }, [append]);
+  };
 
   return (
     <section className="stock-list-surface">

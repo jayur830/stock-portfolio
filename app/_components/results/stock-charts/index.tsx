@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
-import { memo, useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Select,
@@ -21,7 +21,7 @@ import ProfitChart from './ProfitChart';
 export interface StockChartsProps {
   stocks: Stock[];
   totalInvestment: number;
-  exchangeRates: { [key: string]: number };
+  exchangeRates: Record<string, number>;
 }
 
 export interface HistoryData {
@@ -42,8 +42,8 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
 
   const [currency, setCurrency] = useState('KRW');
 
-  /** ticker만 추출하여 메모이제이션 (ratio, price 등 변경 시 재fetch 방지) */
-  const tickers = useMemo(() => stocks.map((s) => s.ticker).filter(Boolean).join(','), [stocks]);
+  /** ticker만 추출 (ratio, price 등 변경 시 불필요한 재fetch 방지 위해 쿼리키로 사용) */
+  const tickers = stocks.map((s) => s.ticker).filter(Boolean).join(',');
 
   /** 주식 히스토리 데이터 조회 */
   const { data: histories = [], isLoading } = useQuery({
@@ -67,7 +67,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
     staleTime: 1000 * 60 * 5, // 5분
   });
 
-  const currencies = useMemo(() => ['KRW', ...Object.keys(exchangeRates)], [exchangeRates]);
+  const currencies = ['KRW', ...Object.keys(exchangeRates)];
 
   if (isLoading) {
     return (
@@ -141,4 +141,4 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   );
 };
 
-export default memo(StockCharts);
+export default StockCharts;

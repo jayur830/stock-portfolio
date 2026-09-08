@@ -1,7 +1,6 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
 
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { setSearchParams } from '@/lib/utils';
@@ -13,9 +12,9 @@ export default function CalculatorTabs() {
   const searchParamsObject = Object.fromEntries(searchParams.entries());
   const activeTab = (searchParams.get('tab') || 'dividend') as Category;
 
-  const handleTabChange = useCallback((value: string) => {
+  const handleTabChange = (value: string) => {
     setSearchParams(pathname, { ...searchParamsObject, tab: value });
-  }, [pathname, searchParamsObject]);
+  };
 
   return (
     <Tabs aria-label="계산 모드 선택" className="calculator-mode-tabs" onValueChange={handleTabChange} value={activeTab}>

@@ -1,7 +1,7 @@
 'use client';
 
 import { FileDown } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -20,7 +20,7 @@ export default function ExportButton({
   const { getValues } = useFormContext<FormValues>();
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExport = useCallback(() => {
+  const handleExport = () => {
     try {
       setIsExporting(true);
       const values = getValues();
@@ -30,7 +30,7 @@ export default function ExportButton({
     } finally {
       setIsExporting(false);
     }
-  }, [getValues]);
+  };
 
   return (
     <Button

@@ -5,7 +5,7 @@ import { ko } from 'date-fns/locale';
 import dayjs from 'dayjs';
 import { CalendarIcon, Search, X } from 'lucide-react';
 import type { KeyboardEvent } from 'react';
-import { memo, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Control } from 'react-hook-form';
 import { Controller, useController } from 'react-hook-form';
 
@@ -625,4 +625,4 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   );
 };
 
-export default memo(StockCard);
+export default StockCard;

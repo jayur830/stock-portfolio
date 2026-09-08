@@ -1,5 +1,6 @@
 import nextPlugin from '@next/eslint-plugin-next';
 import stylistic from '@stylistic/eslint-plugin';
+import reactCompiler from 'eslint-plugin-react-compiler';
 import simpleImportSort from 'eslint-plugin-simple-import-sort';
 import unusedImports from 'eslint-plugin-unused-imports';
 import tseslint from 'typescript-eslint';
@@ -20,6 +21,15 @@ const eslintConfig = [
     ],
   },
   ...tseslint.configs.recommended,
+  {
+    files: ['**/*.{js,mjs,cjs,jsx,ts,tsx}'],
+    plugins: {
+      'react-compiler': reactCompiler,
+    },
+    rules: {
+      'react-compiler/react-compiler': 'error',
+    },
+  },
   {
     files: ['**/*.{js,mjs,cjs,jsx,ts,tsx}'],
     plugins: {

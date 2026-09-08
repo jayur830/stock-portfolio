@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, LineChart, RefreshCw } from 'lucide-react';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -58,12 +58,12 @@ export default function ExchangeRates() {
   }, [exchangeRateData]);
 
   /** 환율 조회 버튼 핸들러 */
-  const handleFetchExchangeRate = useCallback(async () => {
+  const handleFetchExchangeRate = async () => {
     const result = await refetchExchangeRate();
     if (result.data) {
       onChange(result.data);
     }
-  }, [refetchExchangeRate]);
+  };
 
   return (
     <section className="input-surface exchange-rates-surface">
