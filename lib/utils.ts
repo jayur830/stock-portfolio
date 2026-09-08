@@ -295,3 +295,70 @@ export function getComprehensiveTax(
   /** 추가 납부세액 = 총 세액 - 국내 원천징수 - 외국납부세액공제 */
   return Math.round(totalTax - domesticWithheldTax - foreignTaxCredit);
 }
+
+/**
+ * 종목들의 비중을 상대 비율을 유지한 채 합계가 정확히 100%가 되도록 정규화
+ * @param stocks 종목 리스트
+ * @returns 비율이 100%로 정규화된 종목 리스트
+ */
+export function normalizeStockRatios(stocks: Stock[]): Stock[] {
+  const enabledStocks = stocks.filter((s) => s.enabled);
+  if (enabledStocks.length === 0) {
+    return stocks;
+  }
+
+  const totalRatio = enabledStocks.reduce((sum, s) => sum + (Number(s.ratio) || 0), 0);
+
+  // 모든 비중의 합이 0 이하인 경우 균등 배분
+  if (totalRatio <= 0) {
+    const equalRatio = Math.floor((100 / enabledStocks.length) * 10) / 10;
+    let remainder = +(100 - equalRatio * enabledStocks.length).toFixed(1);
+
+    return stocks.map((stock) => {
+      if (!stock.enabled) return stock;
+      let ratio = equalRatio;
+      if (remainder > 0.001) {
+        ratio = +(ratio + 0.1).toFixed(1);
+        remainder = +(remainder - 0.1).toFixed(1);
+      }
+      return { ...stock, ratio };
+    });
+  }
+
+  // 각 종목의 상대적 비율을 유지하며 100%로 환산 (소수점 1자리)
+  const normalizedRatios: number[] = [];
+  let currentSum = 0;
+
+  enabledStocks.forEach((stock) => {
+    const rawRatio = ((Number(stock.ratio) || 0) / totalRatio) * 100;
+    const rounded = Math.round(rawRatio * 10) / 10;
+    normalizedRatios.push(rounded);
+    currentSum += rounded;
+  });
+
+  // 소수점 반올림으로 발생한 미세 오차(예: 99.9% 또는 100.1%) 보정
+  currentSum = +currentSum.toFixed(1);
+  const diff = +(100 - currentSum).toFixed(1);
+
+  if (diff !== 0 && normalizedRatios.length > 0) {
+    // 가장 비중이 큰 종목에 차이를 더하거나 빼서 정확히 100.0%로 맞춤
+    let maxIndex = 0;
+    let maxVal = normalizedRatios[0];
+    for (let i = 1; i < normalizedRatios.length; i++) {
+      if (normalizedRatios[i] > maxVal) {
+        maxVal = normalizedRatios[i];
+        maxIndex = i;
+      }
+    }
+    normalizedRatios[maxIndex] = +(normalizedRatios[maxIndex] + diff).toFixed(1);
+  }
+
+  let enabledIdx = 0;
+  return stocks.map((stock) => {
+    if (!stock.enabled) {
+      return stock;
+    }
+    const ratio = normalizedRatios[enabledIdx++];
+    return { ...stock, ratio };
+  });
+}

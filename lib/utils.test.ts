@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { Stock } from '@/types';
 
-import { calculateStockMonthlyDividends, cn, convertCurrency, convertToKRW, decodeStocksFromBase64, encodeStocksToBase64, getComprehensiveTax, getStockDividends, mergeMonthlyDividends, setSearchParams } from './utils';
+import { calculateStockMonthlyDividends, cn, convertCurrency, convertToKRW, decodeStocksFromBase64, encodeStocksToBase64, getComprehensiveTax, getStockDividends, mergeMonthlyDividends, normalizeStockRatios, setSearchParams } from './utils';
 
 describe('@/lib/utils', () => {
   beforeEach(() => {
@@ -394,5 +394,57 @@ describe('@/lib/utils', () => {
     expect(result[1].isForeign).toBe(true);
     expect(result[1].taxRate).toBe(0.15);
     expect(result[1].annualDividend).toBe(1020);
+  });
+
+  /** {@link normalizeStockRatios} */
+  describe('normalizeStockRatios()', () => {
+    it('normalizes ratios proportionally when sum exceeds 100%', () => {
+      const stocks: Stock[] = [
+        { ...TQQQ, ratio: 100, enabled: true },
+        { ...JEPQ, ratio: 50, enabled: true },
+      ];
+      const normalized = normalizeStockRatios(stocks);
+      expect(normalized[0].ratio).toBe(66.7);
+      expect(normalized[1].ratio).toBe(33.3);
+      expect(normalized[0].ratio + normalized[1].ratio).toBe(100);
+    });
+
+    it('normalizes ratios proportionally when sum is less than 100%', () => {
+      const stocks: Stock[] = [
+        { ...TQQQ, ratio: 10, enabled: true },
+        { ...JEPQ, ratio: 10, enabled: true },
+        { ...TQQQ, ticker: 'SCHD', ratio: 10, enabled: true },
+      ];
+      const normalized = normalizeStockRatios(stocks);
+      const total = +normalized.reduce((sum, s) => sum + s.ratio, 0).toFixed(1);
+      expect(total).toBe(100);
+    });
+
+    it('skips disabled stocks during normalization', () => {
+      const stocks: Stock[] = [
+        { ...TQQQ, ratio: 40, enabled: true },
+        { ...JEPQ, ratio: 60, enabled: false },
+      ];
+      const normalized = normalizeStockRatios(stocks);
+      expect(normalized[0].ratio).toBe(100);
+      expect(normalized[1].ratio).toBe(60); // disabled stock unchanged
+    });
+
+    it('distributes equally when all ratios are 0', () => {
+      const stocks: Stock[] = [
+        { ...TQQQ, ratio: 0, enabled: true },
+        { ...JEPQ, ratio: 0, enabled: true },
+      ];
+      const normalized = normalizeStockRatios(stocks);
+      expect(normalized[0].ratio).toBe(50);
+      expect(normalized[1].ratio).toBe(50);
+      expect(normalized[0].ratio + normalized[1].ratio).toBe(100);
+    });
+
+    it('returns original array when all stocks are disabled or empty', () => {
+      expect(normalizeStockRatios([])).toEqual([]);
+      const allDisabled: Stock[] = [{ ...TQQQ, ratio: 50, enabled: false }];
+      expect(normalizeStockRatios(allDisabled)).toEqual(allDisabled);
+    });
   });
 });

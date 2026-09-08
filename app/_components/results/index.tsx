@@ -1,11 +1,11 @@
 'use client';
 
-import { Calculator, ChevronRight, CircleDollarSign } from 'lucide-react';
-import { useMemo } from 'react';
+import { Calculator, ChevronRight, CircleDollarSign, Scale } from 'lucide-react';
+import { useCallback, useMemo } from 'react';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import { mergeMonthlyDividends } from '@/lib/utils';
+import { mergeMonthlyDividends, normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import CalculateButton from './calculate-button';
@@ -16,7 +16,7 @@ import StockCharts from './stock-charts';
 import TaxInfo from './tax-info';
 
 export default function Results() {
-  const { control } = useFormContext<FormValues>();
+  const { control, setValue } = useFormContext<FormValues>();
 
   const { field: { value: stocks } } = useController({ control, name: 'stocks' });
   const { field: { value: targetAnnualDividend } } = useController({ control, name: 'targetAnnualDividend' });
@@ -59,6 +59,11 @@ export default function Results() {
   const ratioState = totalRatio === 100 ? 'is-complete' : totalRatio > 100 ? 'is-over' : '';
   const ratioMessage = totalRatio === 100 ? '배분이 완성됐어요. 이제 결과를 계산해보세요.' : totalRatio > 100 ? '비율 합계가 100%를 초과했어요. 비중을 조정해주세요.' : '종목 비중의 합계를 100%에 맞추면 가장 정확해요.';
 
+  const handleNormalizeRatios = useCallback(() => {
+    const normalized = normalizeStockRatios(stocks);
+    setValue('stocks', normalized, { shouldValidate: true, shouldDirty: true });
+  }, [setValue, stocks]);
+
   // #region 종합과세 계산은 복잡하여 추후 과제로 보류
   /** 배당금 계산 모드: 종합소득세 추가 납부세액 */
   // const annualDividendAdditionalTax = getComprehensiveTax(annualDividend, foreignDividends);
@@ -70,7 +75,20 @@ export default function Results() {
     <div className="results-stack">
       <div className="allocation-card">
         <div className="allocation-topline">
-          <span className="allocation-label">현재 포트폴리오 배분</span>
+          <div className="flex items-center gap-2">
+            <span className="allocation-label">현재 포트폴리오 배분</span>
+            {totalRatio !== 100 && stocks.some((s) => s.enabled) && (
+              <button
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all cursor-pointer shadow-xs active:scale-95"
+                onClick={handleNormalizeRatios}
+                title="각 종목의 상대적 비율을 유지한 채 합계가 정확히 100%가 되도록 비례 환산합니다"
+                type="button"
+              >
+                <Scale size={12} />
+                <span>100% 자동 맞춤</span>
+              </button>
+            )}
+          </div>
           <strong className={`allocation-value ${ratioState}`}>{totalRatio.toFixed(1)}%</strong>
         </div>
         <div aria-label={`포트폴리오 배분 ${totalRatio.toFixed(1)}%`} aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.min(totalRatio, 100)} className="allocation-track" role="progressbar">

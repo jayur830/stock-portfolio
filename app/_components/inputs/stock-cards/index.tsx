@@ -1,21 +1,32 @@
 'use client';
 
-import { Plus } from 'lucide-react';
+import { Plus, Scale } from 'lucide-react';
 import { useCallback } from 'react';
-import { useFieldArray, useFormContext } from 'react-hook-form';
+import { useFieldArray, useFormContext, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
+import { normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import StockCard from './stock-card';
 
 export default function StockCards() {
-  const { control } = useFormContext<FormValues>();
+  const { control, setValue } = useFormContext<FormValues>();
 
   const { fields, append, remove } = useFieldArray({
     control,
     name: 'stocks',
   });
+
+  const stocks = useWatch({ control, name: 'stocks' }) || [];
+  const totalRatio = stocks
+    .filter(({ enabled }) => enabled)
+    .reduce((total, { ratio }) => total + (Number(ratio) || 0), 0);
+
+  const handleNormalizeRatios = useCallback(() => {
+    const normalized = normalizeStockRatios(stocks);
+    setValue('stocks', normalized, { shouldValidate: true, shouldDirty: true });
+  }, [setValue, stocks]);
 
   const handleAddStock = useCallback(() => {
     append({
@@ -42,7 +53,22 @@ export default function StockCards() {
             <p className="surface-description">보유 종목의 배당률과 비중을 입력하면 예상 현금흐름이 완성됩니다.</p>
           </div>
         </div>
-        <span className="stock-count">{fields.length} POSITIONS</span>
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {totalRatio !== 100 && stocks.some((s) => s.enabled) && (
+            <Button
+              className="h-7 text-[11px] font-bold gap-1 px-2.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-xs"
+              onClick={handleNormalizeRatios}
+              size="sm"
+              title="각 종목의 상대적 비율을 유지한 채 합계가 정확히 100%가 되도록 비례 환산합니다"
+              type="button"
+              variant="outline"
+            >
+              <Scale size={12} />
+              100% 자동 맞춤
+            </Button>
+          )}
+          <span className="stock-count">{fields.length} POSITIONS</span>
+        </div>
       </div>
 
       <div className="stock-list">
