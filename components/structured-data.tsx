@@ -32,12 +32,50 @@ const structuredData = {
   browserRequirements: 'Requires JavaScript. Requires HTML5.',
 };
 
+const faqStructuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: '배당소득세(15.4%)는 언제, 어떻게 차감되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '국내 주식 및 해외 주식의 배당금은 계좌에 입금될 때 원천징수세(국내 14% + 지방소득세 1.4% = 총 15.4%)가 자동으로 차감된 후 "세후 실수령액"으로 입금됩니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '연간 배당금이 2,000만원을 초과하면 어떻게 되나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '1년 동안 발생한 금융소득(이자+배당) 합계액이 2,000만원을 초과할 경우, 2,000만원 초과분에 대해 다른 종합소득과 합산하여 5월에 금융소득종합과세 신고를 진행해야 합니다.',
+      },
+    },
+    {
+      '@type': 'Question',
+      name: '배당을 받으려면 배당락일 며칠 전에 매수해야 하나요?',
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: '주식 거래는 결제일까지 통상 2영업일(T+2)이 소요되므로, 배당기준일 2영업일 전이자 배당락일 최소 1영업일 전 장 마감 전까지 매수 체결을 완료해야 합니다.',
+      },
+    },
+  ],
+};
+
 export default function StructuredData() {
   return (
-    <Script
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      id="structured-data"
-      type="application/ld+json"
-    />
+    <>
+      <Script
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        id="structured-data"
+        type="application/ld+json"
+      />
+      <Script
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
+        id="faq-structured-data"
+        type="application/ld+json"
+      />
+    </>
   );
 }

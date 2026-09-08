@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { OpenToyAppLogo, OpenToyAppTextLogo } from '@/components/opentoyapp-logo';
 
 export default function Footer() {
@@ -26,9 +28,18 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* 하단 카피라이트 */}
-        <div className="mt-6 border-t border-border/40 pt-4 text-[11px] text-muted-foreground/70">
+        {/* 하단 카피라이트 & 정책 링크 */}
+        <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-border/40 pt-4 text-[11px] text-muted-foreground/70">
           <p>© {new Date().getFullYear()} opentoyapp. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <Link className="hover:text-foreground transition-colors underline-offset-4 hover:underline" href="/privacy">
+              개인정보처리방침
+            </Link>
+            <span>•</span>
+            <Link className="hover:text-foreground transition-colors underline-offset-4 hover:underline" href="/">
+              서비스 소개
+            </Link>
+          </div>
         </div>
       </div>
     </footer>

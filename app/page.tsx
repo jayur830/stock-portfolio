@@ -6,6 +6,7 @@ import Footer from '@/components/footer';
 
 import CalculatorFormProvider from './_components/calculator-form-provider';
 import CalculatorTabs from './_components/calculator-tabs';
+import GuideSection from './_components/guide-section';
 import Inputs from './_components/inputs';
 import Results from './_components/results';
 
@@ -65,6 +66,9 @@ export default async function Page() {
               </aside>
             </div>
           </CalculatorFormProvider>
+
+          {/* 배당 투자 가이드 & FAQ 섹션 (애드센스 고가치 정보성 콘텐츠) */}
+          <GuideSection />
         </div>
       </main>
 
