@@ -4,9 +4,9 @@ import BrandLogo from '@/components/brand-logo';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import Footer from '@/components/footer';
 
-import CalculatorFormProvider from './_components/calculator-form-provider';
-import CalculatorTabs from './_components/calculator-tabs';
-import GuideSection from './_components/guide-section';
+import CalculatorFormProvider from './_components/CalculatorFormProvider';
+import CalculatorTabs from './_components/CalculatorTabs';
+import GuideSection from './_components/GuideSection';
 import Inputs from './_components/inputs';
 import Results from './_components/results';
 

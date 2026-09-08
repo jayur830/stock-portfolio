@@ -14,9 +14,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Stock } from '@/types';
 
-import CombinedChart from './combined-chart';
-import IndividualCharts from './individual-charts';
-import ProfitChart from './profit-chart';
+import CombinedChart from './CombinedChart';
+import IndividualCharts from './IndividualCharts';
+import ProfitChart from './ProfitChart';
 
 export interface StockChartsProps {
   stocks: Stock[];

@@ -8,12 +8,12 @@ import { Button } from '@/components/ui/button';
 import { mergeMonthlyDividends, normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
-import CalculateButton from './calculate-button';
-import CountPerStock from './count-per-stock';
-import ExportButton from './export-button';
-import MonthlyDividends from './monthly-dividends';
+import CalculateButton from './CalculateButton';
+import CountPerStock from './CountPerStock';
+import ExportButton from './ExportButton';
+import MonthlyDividends from './MonthlyDividends';
 import StockCharts from './stock-charts';
-import TaxInfo from './tax-info';
+import TaxInfo from './TaxInfo';
 
 export default function Results() {
   const { control, setValue } = useFormContext<FormValues>();

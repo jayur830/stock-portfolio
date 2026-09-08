@@ -3,7 +3,7 @@
 import { CalendarDays, LayoutGrid } from 'lucide-react';
 import { useState } from 'react';
 
-import DividendCalendar from './dividend-calendar';
+import DividendCalendar from './DividendCalendar';
 
 export interface MonthlyDividendsProps {
   amounts: number[];

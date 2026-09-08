@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
-import StockCard from './stock-card';
+import StockCard from './StockCard';
 
 export default function StockCards() {
   const { control, setValue } = useFormContext<FormValues>();

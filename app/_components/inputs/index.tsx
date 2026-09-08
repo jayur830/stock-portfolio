@@ -1,6 +1,6 @@
-import ExchangeRates from './exchange-rates';
+import ExchangeRates from './ExchangeRates';
 import StockCards from './stock-cards';
-import TargetInput from './target-input';
+import TargetInput from './TargetInput';
 
 export default function Inputs() {
   return (

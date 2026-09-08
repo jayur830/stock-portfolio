@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
-import ExchangeRateChart, { currencySymbols } from './exchange-rate-chart';
+import ExchangeRateChart, { currencySymbols } from './ExchangeRateChart';
 
 const _exchangeRateCodes = exchangeRateCodes.filter((key) => key !== 'KRW');
 
