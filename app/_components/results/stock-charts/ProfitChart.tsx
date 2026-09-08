@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
-import { useMemo } from 'react';
 
 import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
 
@@ -14,7 +13,7 @@ export interface ProfitChartProps extends StockChartsProps {
 
 /** 수익금 차트 (매수일 기준) */
 export default function ProfitChart({ isDark, histories, stocks, totalInvestment, exchangeRates, currency }: ProfitChartProps) {
-  const profitChartOption = useMemo(() => {
+  const getProfitChartOption = () => {
     if (stocks.every(({ purchaseDate }) => !purchaseDate)) {
       return null;
     }
@@ -361,9 +360,8 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
         containLabel: true,
       },
     };
-  }, [
-    histories, stocks, totalInvestment, exchangeRates, isDark, currency,
-  ]);
+  };
+  const profitChartOption = getProfitChartOption();
 
   if (profitChartOption == null) {
     return <></>;

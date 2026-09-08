@@ -2,7 +2,7 @@
 
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import {
   Select,
@@ -35,7 +35,7 @@ export default function IndividualCharts({
 }: IndividualChartsProps) {
   const [selectedTicker, setSelectedTicker] = useState<string>(stocks[0]?.ticker || '');
 
-  const chartOptions = useMemo(() => {
+  const getChartOptions = () => {
     const stock = stocks.find((s) => s.ticker === selectedTicker);
     const history = histories.find((h) => h.symbol === selectedTicker);
 
@@ -199,9 +199,8 @@ export default function IndividualCharts({
         title: { left: 'center', text: '누적 수익 vs 재투자 수익', textStyle: { color: isDark ? '#e5e7eb' : '#111827', fontSize: 18 } },
       },
     };
-  }, [
-    selectedTicker, stocks, histories, exchangeRates, currency, isDark, totalInvestment,
-  ]);
+  };
+  const chartOptions = getChartOptions();
 
   return (
     <div className="individual-chart-stack">

@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
 import { Loader2 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -66,7 +66,7 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
   });
 
   /** 기간 필터링된 데이터 */
-  const filteredData = useMemo(() => {
+  const getFilteredData = () => {
     if (!historyData || historyData.length === 0) return [];
     const validData = historyData.filter((d) => d.close != null && !isNaN(d.close) && d.close > 0);
 
@@ -76,10 +76,11 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
     const startDate = dayjs().subtract(periodOption.months, 'month');
     const sliced = validData.filter((d) => dayjs(d.date).isAfter(startDate) || dayjs(d.date).isSame(startDate, 'day'));
     return sliced.length > 0 ? sliced : validData;
-  }, [historyData, selectedPeriod]);
+  };
+  const filteredData = getFilteredData();
 
   /** 통계 데이터 (최고, 최저, 시작가, 현재가, 변동률) */
-  const stats = useMemo(() => {
+  const getStats = () => {
     if (filteredData.length === 0) return null;
     const closes = filteredData.map((d) => d.close);
     const min = Math.min(...closes);
@@ -90,10 +91,11 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
     const changeRate = first > 0 ? (change / first) * 100 : 0;
 
     return { min, max, first, latest, change, changeRate };
-  }, [filteredData]);
+  };
+  const stats = getStats();
 
   /** ECharts 옵션 */
-  const chartOption = useMemo(() => {
+  const getChartOption = () => {
     if (filteredData.length === 0) return null;
 
     const xData = filteredData.map((d) => dayjs(d.date).format('YYYY-MM-DD'));
@@ -140,32 +142,30 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
         axisLine: { lineStyle: { color: isDark ? '#475569' : '#cbd5e1' } },
         axisLabel: {
           color: isDark ? '#94a3b8' : '#64748b',
-          fontSize: 11,
+          fontSize: 10,
           formatter: (value: string) => dayjs(value).format('YY.MM'),
         },
+        axisTick: { show: false },
       },
       yAxis: {
         type: 'value',
         scale: true,
-        splitLine: {
-          lineStyle: {
-            color: isDark ? 'rgba(51, 65, 85, 0.5)' : 'rgba(226, 232, 240, 0.8)',
-            type: 'dashed',
-          },
-        },
+        axisLine: { show: false },
+        axisTick: { show: false },
+        splitLine: { lineStyle: { color: isDark ? '#334155' : '#f1f5f9' } },
         axisLabel: {
           color: isDark ? '#94a3b8' : '#64748b',
-          fontSize: 11,
-          formatter: (val: number) => val.toLocaleString('ko-KR'),
+          fontSize: 10,
+          formatter: (value: number) => value.toLocaleString('ko-KR'),
         },
       },
       series: [
         {
-          name: `${currency}/KRW`,
+          name: currency,
           type: 'line',
           data: yData,
-          showSymbol: false,
           smooth: true,
+          showSymbol: false,
           lineStyle: {
             width: 2.2,
             color: lineColor,
@@ -189,13 +189,8 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
         },
       ],
     };
-  }, [
-    currency,
-    currencyInfo,
-    filteredData,
-    isDark,
-    stats,
-  ]);
+  };
+  const chartOption = getChartOption();
 
   if (isLoading) {
     return (

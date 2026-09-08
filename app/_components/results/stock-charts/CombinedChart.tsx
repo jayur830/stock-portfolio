@@ -1,6 +1,6 @@
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { convertCurrency } from '@/lib/utils';
@@ -40,7 +40,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
   /** 오버랩 차트 표시 여부 */
   const [isOverlap, setOverlap] = useState<boolean>(true);
 
-  const combinedChartOption = useMemo(() => {
+  const getCombinedChartOption = () => {
     if (histories.length === 0) {
       return null;
     }
@@ -210,9 +210,8 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
         containLabel: true,
       },
     };
-  }, [
-    histories, stocks, exchangeRates, selectedPeriod, isDark, isOverlap, currency,
-  ]);
+  };
+  const combinedChartOption = getCombinedChartOption();
 
   return (
     <div className="chart-card">
