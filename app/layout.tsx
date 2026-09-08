@@ -101,7 +101,9 @@ export default function RootLayout({
           enableSystem
         >
           <ReactQueryProvider>
-            {children}
+            <div className="w-full min-h-screen">
+              {children}
+            </div>
           </ReactQueryProvider>
         </ThemeProvider>
       </body>

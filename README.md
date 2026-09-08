@@ -52,20 +52,19 @@ yarn build
 ```
 stock-portfolio/
 ├── app/
-│   ├── (web)/
-│   │   ├── _components/
-│   │   │   ├── inputs/               # 사용자 입력 섹션
-│   │   │   │   ├── stock-cards/      # 종목 카드 및 검색창
-│   │   │   │   ├── exchange-rates.tsx# 환율 입력 및 모바일 아코디언
-│   │   │   │   └── exchange-rate-chart.tsx # 환율 추이 차트 & 모달
-│   │   │   └── results/              # 결과 및 차트 섹션
-│   │   │       ├── stock-charts/     # ECharts 기반 주가/배당/수익률 차트
-│   │   │       ├── monthly-dividends.tsx # 월별 배당금 분포
-│   │   │       └── tax-breakdown.tsx # 세금 및 실수령액 상세
-│   │   └── page.tsx                  # 메인 웹 페이지
+│   ├── _components/
+│   │   ├── inputs/               # 사용자 입력 섹션
+│   │   │   ├── stock-cards/      # 종목 카드 및 검색창
+│   │   │   ├── exchange-rates.tsx# 환율 입력 및 모바일 아코디언
+│   │   │   └── exchange-rate-chart.tsx # 환율 추이 차트 & 모달
+│   │   └── results/              # 결과 및 차트 섹션
+│   │       ├── stock-charts/     # ECharts 기반 주가/배당/수익률 차트
+│   │       ├── monthly-dividends.tsx # 월별 배당금 분포
+│   │       └── tax-breakdown.tsx # 세금 및 실수령액 상세
 │   ├── api/                          # Next.js API Routes (주가/환율/검색)
 │   ├── globals.css                   # 글로벌 스타일 & 반응형 디자인
 │   ├── layout.tsx                    # 루트 레이아웃 (애드센스, GA, 메타데이터)
+│   ├── page.tsx                      # 메인 웹 페이지
 │   ├── robots.ts                     # SEO robots.txt
 │   └── sitemap.ts                    # SEO sitemap.xml
 ├── components/
