@@ -2,7 +2,7 @@ import dayjs from 'dayjs';
 
 import type { Stock } from '@/types';
 
-import { calculateStockMonthlyDividends, cn, convertCurrency, convertToKRW, decodeStocksFromBase64, encodeStocksToBase64, getComprehensiveTax, getStockDividends, mergeMonthlyDividends, normalizeStockRatios, setSearchParams } from './utils';
+import { calculateStockMonthlyDividends, cn, convertCurrency, convertToKRW, decodeStocksFromBase64, encodeStocksToBase64, getComprehensiveTax, getMonthlyDistributionWeights, getStockDividends, mergeMonthlyDividends, normalizeStockRatios, setSearchParams } from './utils';
 
 describe('@/lib/utils', () => {
   beforeEach(() => {
@@ -304,6 +304,31 @@ describe('@/lib/utils', () => {
     ).toEqual([
       100.25, 0, 0, 0, 0, 199.75, 0, 0, 0, 0, 0, 0,
     ]);
+  });
+
+  /** {@link getMonthlyDistributionWeights} + 가중 분배 (차트식 월별 편차) */
+  it('distributes monthly dividends by actual payout ratios', () => {
+    /** JEPQ식 매월 다른 DPS: 1월 0.5, 2월 1.5 (최근 1년) */
+    const weights = getMonthlyDistributionWeights([
+      { amount: 0.5, date: '2025-01-15' },
+      { amount: 1.5, date: '2025-02-15' },
+    ]);
+    expect(weights).toEqual({ 1: 0.5, 2: 1.5 });
+
+    /** 연 8500원(세후 7225원)을 1:3 비율로 분배 → 월별이 조금씩 달라짐 */
+    const weighted = calculateStockMonthlyDividends([1, 2], 'USD', 8500, [
+      { amount: 0.5, date: '2025-01-15' },
+      { amount: 1.5, date: '2025-02-15' },
+    ]);
+    expect(weighted[1]).toBeCloseTo(1806.25, 2);
+    expect(weighted[2]).toBeCloseTo(5418.75, 2);
+    expect(weighted[1] + weighted[2]).toBeCloseTo(7225, 2);
+
+    /** 이력 없으면 기존 N등분 fallback */
+    expect(calculateStockMonthlyDividends([1, 2], 'USD', 8500)).toEqual({
+      1: 3612.5,
+      2: 3612.5,
+    });
   });
 
   /** {@link getComprehensiveTax} */

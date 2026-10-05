@@ -160,6 +160,64 @@ export function convertCurrency(
   return amountInKRW / toRate;
 }
 
+/** 배당 히스토리 항목 (Yahoo Finance dividends) */
+export interface DividendHistoryItem {
+  date: Date | string;
+  amount: number;
+}
+
+/** 세후 월별 배당금 계산에 사용할 세율 구하기 */
+function resolveMonthlyTaxRate(currency: Currency): number {
+  let taxRate = FOREIGN_TAX_RATES[currency || 'KRW'];
+
+  if (taxRate <= KRW_CGT) {
+    taxRate += (KRW_CGT - taxRate) * 1.1;
+  }
+
+  return taxRate;
+}
+
+/**
+ * 최근 1년 실제 배당 이력 기반 월별 분배 가중치 구하기
+ * @returns 월(1~12)별 지급액 합계. 데이터가 없으면 null (균등분할 fallback)
+ */
+export function getMonthlyDistributionWeights(
+  /** Yahoo Finance 배당 히스토리 */
+  historyDividends?: DividendHistoryItem[] | null,
+): Record<number, number> | null {
+  if (!historyDividends || historyDividends.length === 0) {
+    return null;
+  }
+
+  const valid = historyDividends.filter((d) => d && d.amount > 0 && d.date);
+  if (valid.length === 0) {
+    return null;
+  }
+
+  /** 가장 최근 배당일 기준 최근 1년치만 사용 (stale 캐시 대응) */
+  const maxDate = valid.reduce((max, d) => {
+    const t = dayjs(d.date);
+    return t.isAfter(max) ? t : max;
+  }, dayjs(valid[0].date));
+  const cutoff = maxDate.subtract(1, 'year');
+
+  const weights: Record<number, number> = {};
+  valid.forEach((d) => {
+    const t = dayjs(d.date);
+    if (t.isBefore(cutoff) && !t.isSame(cutoff, 'day')) {
+      return;
+    }
+    const month = t.month() + 1;
+    weights[month] = (weights[month] || 0) + d.amount;
+  });
+
+  if (Object.keys(weights).length === 0) {
+    return null;
+  }
+
+  return weights;
+}
+
 /** 단일 종목의 월별 배당금 계산 */
 export function calculateStockMonthlyDividends(
   /** 배당 지급 월 */
@@ -168,20 +226,55 @@ export function calculateStockMonthlyDividends(
   currency: Currency,
   /** 단일종목 연 배당금 */
   annualDividend: number,
+  /** 실제 배당 히스토리 (있으면 최근 1년 비율로 가중 분배, 없으면 N등분) */
+  historyDividends?: DividendHistoryItem[] | null,
 ): Record<number, number> {
   if (!dividendMonths || dividendMonths.length === 0) {
     return {};
   }
 
   /** 통화에 따라 세율 선택 */
-  let taxRate = FOREIGN_TAX_RATES[currency || 'KRW'];
+  const taxRate = resolveMonthlyTaxRate(currency);
+  const afterTaxTotal = annualDividend * (1 - taxRate);
 
-  if (taxRate <= KRW_CGT) {
-    taxRate += (KRW_CGT - taxRate) * 1.1;
+  const weights = getMonthlyDistributionWeights(historyDividends);
+
+  /** 실제 패턴이 없으면 기존 N등분 */
+  if (!weights) {
+    const monthlyAmount = +(afterTaxTotal / dividendMonths.length).toFixed(2);
+    return Object.fromEntries(dividendMonths.map((month) => [month, monthlyAmount]));
   }
 
-  const monthlyAmount = +((annualDividend / dividendMonths.length) * (1 - taxRate)).toFixed(2);
-  return Object.fromEntries(dividendMonths.map((month) => [month, monthlyAmount]));
+  /** 예상 지급월에 해당하는 가중치 합계 (스케줄 변경 시 해당 월만 반영) */
+  const totalWeight = dividendMonths.reduce((sum, m) => sum + (weights[m] || 0), 0);
+
+  /** 가중치가 예상 월과 전혀 겹치지 않으면 N등분 fallback */
+  if (totalWeight <= 0) {
+    const monthlyAmount = +(afterTaxTotal / dividendMonths.length).toFixed(2);
+    return Object.fromEntries(dividendMonths.map((month) => [month, monthlyAmount]));
+  }
+
+  const result: Record<number, number> = {};
+  dividendMonths.forEach((month) => {
+    result[month] = +((afterTaxTotal * (weights[month] || 0)) / totalWeight).toFixed(2);
+  });
+
+  /** 소수점 반올림 오차 보정 (가중치가 가장 큰 월에 몰아주기) */
+  const currentSum = Object.values(result).reduce((sum, v) => sum + v, 0);
+  const diff = +(afterTaxTotal - currentSum).toFixed(2);
+  if (diff !== 0) {
+    let maxMonth = dividendMonths[0];
+    let maxWeight = weights[maxMonth] || 0;
+    dividendMonths.forEach((m) => {
+      if ((weights[m] || 0) > maxWeight) {
+        maxWeight = weights[m] || 0;
+        maxMonth = m;
+      }
+    });
+    result[maxMonth] = +(result[maxMonth] + diff).toFixed(2);
+  }
+
+  return result;
 }
 
 /**
@@ -191,14 +284,19 @@ export function calculateStockMonthlyDividends(
    * @param exchangeRates 환율 정보
    * @returns 종목별 배당정보 리스트
    */
-export function getStockDividends(stocks: Stock[], investment: number) {
+export function getStockDividends(
+  stocks: Stock[],
+  investment: number,
+  /** ticker별 실제 배당 히스토리 (있으면 월별 가중 분배) */
+  historiesMap?: Record<string, DividendHistoryItem[] | undefined>,
+) {
   return stocks.map((stock) => {
     /** 종목별 투자금 */
     const investmentAmount = (investment * stock.ratio) / 100;
     /** 종목별 연 배당금 */
     const annualDividend = Math.floor(investmentAmount * stock.yield / 100);
-    /** 종목별 월별 배당금 */
-    const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend);
+    /** 종목별 월별 배당금 (최근 1년 실제 비율 반영, 없으면 N등분) */
+    const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend, historiesMap?.[stock.ticker]);
     /** 종목별 세율 */
     const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
     return {
