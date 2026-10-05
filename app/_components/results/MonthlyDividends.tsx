@@ -2,7 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, LayoutGrid } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 import { calculateStockMonthlyDividends, mergeMonthlyDividends } from '@/lib/utils';
@@ -25,13 +25,10 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
   const { watch, setValue } = useFormContext<FormValues>();
   const stocks = watch('stocks') || [];
   const stockDividends = watch('stockDividends') || [];
-  const enabledStocks = useMemo(() => stocks.filter((s) => s.enabled), [stocks]);
+  const enabledStocks = stocks.filter((s) => s.enabled);
 
   /** StockCharts/DividendCalendar와 동일한 캐시 키 공유 */
-  const tickers = useMemo(
-    () => enabledStocks.map((s) => s.ticker).filter(Boolean).join(','),
-    [enabledStocks],
-  );
+  const tickers = enabledStocks.map((s) => s.ticker).filter(Boolean).join(',');
 
   const { data: histories = [] } = useQuery({
     enabled: !!tickers && stockDividends.length > 0,
@@ -55,50 +52,35 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
   });
 
   /** 최근 1년 실제 비율로 가중한 종목별 배당정보 (연 총액은 유지) */
-  const { weightedStockDividends, appliedCount } = useMemo(() => {
-    if (histories.length === 0 || enabledStocks.length === 0 || stockDividends.length === 0) {
-      return { appliedCount: 0, weightedStockDividends: null };
+  const historiesMap = histories.length > 0 ? new Map(histories.map((h) => [h.symbol, h.dividends || []])) : null;
+
+  const weightedStockDividends = historiesMap && enabledStocks.length > 0 && stockDividends.length > 0 ? stockDividends.map((div, index) => {
+    const stock = enabledStocks[index];
+    if (!stock) {
+      return div;
     }
-
-    const historiesMap = new Map(histories.map((h) => [h.symbol, h.dividends || []]));
-    let applied = 0;
-
-    const weighted = stockDividends.map((div, index) => {
-      const stock = enabledStocks[index];
-      if (!stock) {
-        return div;
-      }
-      const history = historiesMap.get(stock.ticker);
-      if (!history || history.length === 0) {
-        return div;
-      }
-      const recalculated = calculateStockMonthlyDividends(
-        stock.dividendMonths,
-        stock.currency,
-        div.annualDividend,
-        history,
-      );
-      if (JSON.stringify(recalculated) !== JSON.stringify(div.monthlyDividends)) {
-        applied += 1;
-      }
-      return {
-        ...div,
-        monthlyDividends: recalculated,
-      };
-    });
-
-    return { appliedCount: applied, weightedStockDividends: weighted };
-  }, [histories, enabledStocks, stockDividends]);
-
-  const displayAmounts = useMemo(() => {
-    if (!weightedStockDividends) {
-      return amounts;
+    const history = historiesMap.get(stock.ticker);
+    if (!history || history.length === 0) {
+      return div;
     }
-    return mergeMonthlyDividends(weightedStockDividends);
-  }, [weightedStockDividends, amounts]);
+    const recalculated = calculateStockMonthlyDividends(
+      stock.dividendMonths,
+      stock.currency,
+      div.annualDividend,
+      history,
+    );
+    return {
+      ...div,
+      monthlyDividends: recalculated,
+    };
+  }) : null;
 
-  const ledgerMax = useMemo(() => Math.max(0, ...displayAmounts), [displayAmounts]);
-  const ledgerTotal = useMemo(() => displayAmounts.reduce((sum, v) => sum + v, 0), [displayAmounts]);
+  const appliedCount = weightedStockDividends ? weightedStockDividends.filter((div, idx) => JSON.stringify(div.monthlyDividends) !== JSON.stringify(stockDividends[idx]?.monthlyDividends)).length : 0;
+
+  const displayAmounts = weightedStockDividends ? mergeMonthlyDividends(weightedStockDividends) : amounts;
+
+  const ledgerMax = Math.max(0, ...displayAmounts);
+  const ledgerTotal = displayAmounts.reduce((sum, v) => sum + v, 0);
 
   /** 가중 결과를 폼에 반영 (캘린더/CSV와 정합성 유지, 연 총액은 불변) */
   useEffect(() => {
