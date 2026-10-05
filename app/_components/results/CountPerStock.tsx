@@ -27,7 +27,7 @@ export default function CountPerStock() {
               className="quantity-item"
               key={index}
             >
-              <div className="flex items-center gap-1.5 min-w-0">
+              <div className="flex items-center gap-2 min-w-0 flex-1">
                 {growthInfo?.badge && (
                   <span
                     className={cn(
@@ -40,7 +40,10 @@ export default function CountPerStock() {
                     <span>{growthInfo.badge.label}</span>
                   </span>
                 )}
-                <span className="quantity-name truncate">
+                <span
+                  className="quantity-name truncate"
+                  title={stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
+                >
                   {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
                 </span>
               </div>
