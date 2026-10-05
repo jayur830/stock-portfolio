@@ -3,6 +3,7 @@ import { connection } from 'next/server';
 import BrandLogo from '@/components/brand-logo';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import Footer from '@/components/footer';
+import GlassBox, { defaultOptics } from '@/components/glass-box';
 
 import CalculatorFormProvider from './_components/CalculatorFormProvider';
 import CalculatorTabs from './_components/CalculatorTabs';
@@ -16,17 +17,30 @@ export default async function Page() {
   return (
     <div className="app-shell flex flex-col justify-between w-full min-h-screen">
       <header className="topbar">
-        <div className="topbar-inner">
-          <div className="topbar-brand">
-            <div aria-hidden="true" className="brand-mark">
-              <BrandLogo size={18} />
+        <GlassBox
+          optics={{
+            ...defaultOptics,
+            strength: 0.04,
+            depth: 1,
+            curvature: 1,
+            dispersion: 0.8,
+            frost: 2,
+            brightness: 0.1,
+          }}
+          style={{ width: '100%' }}
+        >
+          <div className="topbar-inner">
+            <div className="topbar-brand">
+              <div aria-hidden="true" className="brand-mark">
+                <BrandLogo size={18} />
+              </div>
+              <span className="topbar-name">Dividend Lab</span>
             </div>
-            <span className="topbar-name">Dividend Lab</span>
+            {/** 배당금 계산/투자금 계산 탭 */}
+            <CalculatorTabs />
+            <DarkModeSwitch />
           </div>
-          {/** 배당금 계산/투자금 계산 탭 */}
-          <CalculatorTabs />
-          <DarkModeSwitch />
-        </div>
+        </GlassBox>
       </header>
 
       <main aria-label="배당주 포트폴리오 계산기" className="page-content flex-1 w-full">

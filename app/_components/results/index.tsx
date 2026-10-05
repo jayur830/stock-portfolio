@@ -3,6 +3,7 @@
 import { Calculator, ChevronRight, CircleDollarSign, Scale } from 'lucide-react';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
+import GlassBox, { defaultOptics } from '@/components/glass-box';
 import { Button } from '@/components/ui/button';
 import { mergeMonthlyDividends, normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
@@ -85,12 +86,46 @@ export default function Results() {
       </div>
 
       <div className="result-action-row">
-        <CalculateButton className="calculate-action" control={control}>
-          <Calculator size={17} />
-          결과 계산하기
-        </CalculateButton>
-        <Button className="reset-action" type="reset" variant="outline">초기화</Button>
-        {calculatedCategory && <ExportButton />}
+        <GlassBox
+          className="glass-action glass-action-main"
+          optics={{
+            ...defaultOptics,
+            strength: 0.4,
+            curvature: 0.3,
+            glow: 0,
+          }}
+          radius={12}
+        >
+          <CalculateButton className="calculate-action" control={control}>
+            <Calculator size={17} />
+            결과 계산하기
+          </CalculateButton>
+        </GlassBox>
+        <GlassBox
+          className="glass-action"
+          optics={{
+            ...defaultOptics,
+            strength: 0.4,
+            curvature: 0.3,
+            glow: 0,
+          }}
+        >
+          <Button className="reset-action" type="reset" variant="outline">초기화</Button>
+        </GlassBox>
+        {calculatedCategory && (
+          <GlassBox
+            className="glass-action"
+            optics={{
+              ...defaultOptics,
+              strength: 0.4,
+              curvature: 0.3,
+              glow: 0,
+            }}
+            radius={12}
+          >
+            <ExportButton />
+          </GlassBox>
+        )}
       </div>
 
       {!calculatedCategory && (

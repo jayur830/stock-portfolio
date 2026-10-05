@@ -124,6 +124,8 @@
     width: 100%;
     min-height: 100%;
     background-color: var(--background);
+    background-image: radial-gradient(60rem 22rem at 50% -10rem, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%);
+    background-repeat: no-repeat;
   }
 
   body {
@@ -174,8 +176,6 @@
     z-index: 40;
     width: 100%;
     border-bottom: 1px solid var(--border);
-    background: color-mix(in srgb, var(--background) 88%, transparent);
-    backdrop-filter: blur(16px);
   }
 
   .topbar-inner {
@@ -1424,6 +1424,20 @@
     gap: 0.65rem;
   }
 
+  .result-action-row > .glass-action {
+    display: flex;
+    min-width: 0;
+  }
+
+  .result-action-row > .glass-action-main {
+    flex: 1 1 auto;
+  }
+
+  .glass-action > * {
+    flex: 1 1 auto;
+    width: 100%;
+  }
+
   .calculate-action,
   .reset-action,
   .export-action {
@@ -1444,24 +1458,26 @@
   .calculate-action {
     flex: 1;
     color: var(--primary-foreground);
-    background: var(--primary);
+    /* background: var(--primary); */
+    background: color-mix(in srgb, var(--primary) 70%, black);
     box-shadow: none;
     transition: background 0.15s ease;
   }
 
   .calculate-action:hover {
-    background: color-mix(in srgb, var(--primary) 88%, black);
+    background: color-mix(in srgb, var(--primary) 55%, black);
     box-shadow: none;
   }
 
   .dark .calculate-action {
     color: #0e100d;
-    background: var(--primary);
+    /* background: var(--primary); */
+    background: color-mix(in srgb, var(--primary) 85%, white);
     box-shadow: none;
   }
 
   .dark .calculate-action:hover {
-    background: color-mix(in srgb, var(--primary) 85%, white);
+    background: color-mix(in srgb, var(--primary) 65%, white);
     box-shadow: none;
   }
 
