@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
-import { Loader2 } from 'lucide-react';
+import { CandlestickChart, Loader2, TrendingUp } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
 
@@ -20,11 +20,20 @@ export const currencySymbols: Record<string, { symbol: string; name: string; uni
 };
 
 type TimePeriod = '1M' | '3M' | '6M' | '1Y' | '3Y' | '5Y';
+type ChartType = 'candle' | 'line';
 
 interface TimePeriodOption {
   value: TimePeriod;
   label: string;
   months: number;
+}
+
+interface HistoryItem {
+  date: string;
+  open?: number;
+  high?: number;
+  low?: number;
+  close: number;
 }
 
 const periodOptions: TimePeriodOption[] = [
@@ -43,6 +52,7 @@ interface ExchangeRateChartProps {
 
 export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRateChartProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<TimePeriod>('1Y');
+  const [chartType, setChartType] = useState<ChartType>('candle');
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
@@ -60,7 +70,7 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
         throw new Error('환율 데이터를 불러오지 못했습니다.');
       }
       const json = await res.json();
-      return (json.histories?.[0]?.data || []) as { date: string; close: number }[];
+      return (json.histories?.[0]?.data || []) as HistoryItem[];
     },
     staleTime: 1000 * 60 * 30, // 30분
   });
@@ -100,6 +110,12 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
 
     const xData = filteredData.map((d) => dayjs(d.date).format('YYYY-MM-DD'));
     const yData = filteredData.map((d) => +d.close.toFixed(2));
+    const candleData = filteredData.map((d) => [
+      +(d.open ?? d.close).toFixed(2),
+      +d.close.toFixed(2),
+      +(d.low ?? d.close).toFixed(2),
+      +(d.high ?? d.close).toFixed(2),
+    ]);
 
     const isPositive = (stats?.changeRate ?? 0) >= 0;
     const lineColor = isPositive ? '#f43f5e' : '#3b82f6'; // 상승 빨강/로즈, 하락 파랑
@@ -120,11 +136,52 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
         formatter: (params: any) => {
           if (!params || params.length === 0) return '';
           const item = params[0];
+          const dataIndex = item.dataIndex;
+          const current = filteredData[dataIndex];
+          if (!current) return '';
+
+          const dateStr = dayjs(current.date).format('YYYY년 MM월 DD일');
+
+          if (chartType === 'candle') {
+            const open = current.open ?? current.close;
+            const close = current.close;
+            const high = current.high ?? current.close;
+            const low = current.low ?? current.close;
+            const diff = close - open;
+            const diffRate = open > 0 ? (diff / open) * 100 : 0;
+            const isUp = diff >= 0;
+            const color = isUp ? '#ef4444' : '#3b82f6';
+
+            return `
+              <div style="font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; padding-bottom: 4px;">
+                ${dateStr} (${currencyInfo.unit})
+              </div>
+              <div style="display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 11px;">
+                <span style="color: ${isDark ? '#94a3b8' : '#64748b'};">종가:</span>
+                <span style="font-weight: 700; text-align: right; color: ${color};">
+                  ${close.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원 (${isUp ? '+' : ''}${diffRate.toFixed(2)}%)
+                </span>
+                <span style="color: ${isDark ? '#94a3b8' : '#64748b'};">시가:</span>
+                <span style="font-weight: 600; text-align: right;">
+                  ${open.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원
+                </span>
+                <span style="color: ${isDark ? '#94a3b8' : '#64748b'};">고가:</span>
+                <span style="font-weight: 600; text-align: right; color: #ef4444;">
+                  ${high.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원
+                </span>
+                <span style="color: ${isDark ? '#94a3b8' : '#64748b'};">저가:</span>
+                <span style="font-weight: 600; text-align: right; color: #3b82f6;">
+                  ${low.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원
+                </span>
+              </div>
+            `;
+          }
+
           return `
-            <div style="font-weight: 600; margin-bottom: 4px;">${item.axisValue}</div>
+            <div style="font-weight: 600; margin-bottom: 4px;">${dateStr}</div>
             <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
               <span style="color: ${item.color}; font-size: 11px;">${currencyInfo.unit}</span>
-              <span style="font-weight: 700;">${item.data.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 원</span>
+              <span style="font-weight: 700;">${current.close.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} 원</span>
             </div>
           `;
         },
@@ -159,7 +216,20 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
           formatter: (value: number) => value.toLocaleString('ko-KR'),
         },
       },
-      series: [
+      dataZoom: [{ type: 'inside' }],
+      series: chartType === 'candle' ? [
+        {
+          name: currency,
+          type: 'candlestick',
+          data: candleData,
+          itemStyle: {
+            color: '#ef4444',
+            color0: '#3b82f6',
+            borderColor: '#ef4444',
+            borderColor0: '#3b82f6',
+          },
+        },
+      ] : [
         {
           name: currency,
           type: 'line',
@@ -240,20 +310,47 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
         </div>
       )}
 
-      {/* 기간 필터 버튼 */}
-      <div className="flex items-center justify-end gap-1">
-        {periodOptions.map((option) => (
+      {/* 뷰 전환 및 기간 필터 버튼 */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* 차트 뷰 모드: 캔들 / 선 */}
+        <div className="inline-flex items-center rounded-lg border bg-muted/30 p-0.5">
           <Button
-            className="h-7 px-2.5 text-xs font-medium"
-            key={option.value}
-            onClick={() => setSelectedPeriod(option.value)}
+            className="h-7 gap-1 px-2.5 text-xs font-medium"
+            onClick={() => setChartType('candle')}
             size="sm"
             type="button"
-            variant={selectedPeriod === option.value ? 'default' : 'ghost'}
+            variant={chartType === 'candle' ? 'secondary' : 'ghost'}
           >
-            {option.label}
+            <CandlestickChart size={13} />
+            캔들 차트
           </Button>
-        ))}
+          <Button
+            className="h-7 gap-1 px-2.5 text-xs font-medium"
+            onClick={() => setChartType('line')}
+            size="sm"
+            type="button"
+            variant={chartType === 'line' ? 'secondary' : 'ghost'}
+          >
+            <TrendingUp size={13} />
+            선 차트
+          </Button>
+        </div>
+
+        {/* 기간 필터 버튼 */}
+        <div className="flex items-center gap-1">
+          {periodOptions.map((option) => (
+            <Button
+              className="h-7 px-2.5 text-xs font-medium"
+              key={option.value}
+              onClick={() => setSelectedPeriod(option.value)}
+              size="sm"
+              type="button"
+              variant={selectedPeriod === option.value ? 'default' : 'ghost'}
+            >
+              {option.label}
+            </Button>
+          ))}
+        </div>
       </div>
 
       {/* ECharts 렌더링 */}

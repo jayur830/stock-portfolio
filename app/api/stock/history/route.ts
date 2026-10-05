@@ -28,6 +28,9 @@ export async function POST(request: NextRequest) {
             .filter((item) => item.close != null && !isNaN(item.close) && item.close > 0)
             .map((item) => ({
               date: item.date,
+              open: item.open != null && !isNaN(item.open) ? item.open : item.close,
+              high: item.high != null && !isNaN(item.high) ? item.high : item.close,
+              low: item.low != null && !isNaN(item.low) ? item.low : item.close,
               close: item.close,
             }));
 

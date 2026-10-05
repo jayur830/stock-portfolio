@@ -2,8 +2,10 @@
 
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
+import { CandlestickChart, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -34,6 +36,7 @@ export default function IndividualCharts({
   totalInvestment,
 }: IndividualChartsProps) {
   const [selectedTicker, setSelectedTicker] = useState<string>(stocks[0]?.ticker || '');
+  const [priceChartType, setPriceChartType] = useState<'candle' | 'line'>('candle');
 
   const getChartOptions = () => {
     const stock = stocks.find((s) => s.ticker === selectedTicker);
@@ -61,6 +64,12 @@ export default function IndividualCharts({
 
     // 1. 주가 차트 (선택한 통화 기준)
     const priceData = filteredData.map((d) => convertCurrency(d.close, stock.currency, currency, exchangeRates));
+    const candleData = filteredData.map((d) => [
+      convertCurrency(d.open ?? d.close, stock.currency, currency, exchangeRates),
+      convertCurrency(d.close, stock.currency, currency, exchangeRates),
+      convertCurrency(d.low ?? d.close, stock.currency, currency, exchangeRates),
+      convertCurrency(d.high ?? d.close, stock.currency, currency, exchangeRates),
+    ]);
 
     // 2. 월별 배당 및 배당 재투자 계산
     const taxRate = FOREIGN_TAX_RATES[stock.currency] ?? DIVIDEND_TAX_RATE;
@@ -150,11 +159,78 @@ export default function IndividualCharts({
       },
     };
 
+    const formatCurrencyValue = (val: number) => (currency === 'KRW' ? Math.round(val).toLocaleString('ko-KR') : val.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+
     return {
       price: {
         ...commonOption,
         title: { text: '주가 추이', left: 'center', textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' } },
-        series: [{ name: '주가', type: 'line', data: priceData, smooth: true, showSymbol: false, lineStyle: { width: 2, color: '#2451f5' } }],
+        tooltip: {
+          ...commonOption.tooltip,
+          formatter(params: any) {
+            if (!params) return '';
+            const param = Array.isArray(params) ? params[0] : params;
+            const dataIndex = param.dataIndex;
+            const current = filteredData[dataIndex];
+            if (!current) return '';
+
+            const dateStr = dayjs(current.date).format('YYYY.MM.DD');
+
+            if (priceChartType === 'candle') {
+              const open = convertCurrency(current.open ?? current.close, stock.currency, currency, exchangeRates);
+              const close = convertCurrency(current.close, stock.currency, currency, exchangeRates);
+              const high = convertCurrency(current.high ?? current.close, stock.currency, currency, exchangeRates);
+              const low = convertCurrency(current.low ?? current.close, stock.currency, currency, exchangeRates);
+              const diff = close - open;
+              const diffRate = open > 0 ? (diff / open) * 100 : 0;
+              const isUp = diff >= 0;
+              const color = isUp ? '#ef4444' : '#3b82f6';
+
+              return `
+                <div style="font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#374151' : '#e5e7eb'}; padding-bottom: 4px;">
+                  ${dateStr} (${stock.ticker})
+                </div>
+                <div style="display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 11px;">
+                  <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">종가:</span>
+                  <span style="font-weight: 700; text-align: right; color: ${color};">
+                    ${formatCurrencyValue(close)} ${currency} (${isUp ? '+' : ''}${diffRate.toFixed(2)}%)
+                  </span>
+                  <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">시가:</span>
+                  <span style="font-weight: 600; text-align: right;">${formatCurrencyValue(open)} ${currency}</span>
+                  <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">고가:</span>
+                  <span style="font-weight: 600; text-align: right; color: #ef4444;">${formatCurrencyValue(high)} ${currency}</span>
+                  <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">저가:</span>
+                  <span style="font-weight: 600; text-align: right; color: #3b82f6;">${formatCurrencyValue(low)} ${currency}</span>
+                </div>
+              `;
+            }
+
+            const formattedValue = formatCurrencyValue(param.value);
+            return `${param.name}<br />${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
+          },
+        },
+        series: priceChartType === 'candle' ? [
+          {
+            name: '주가',
+            type: 'candlestick',
+            data: candleData,
+            itemStyle: {
+              color: '#ef4444',
+              color0: '#3b82f6',
+              borderColor: '#ef4444',
+              borderColor0: '#3b82f6',
+            },
+          },
+        ] : [
+          {
+            name: '주가',
+            type: 'line',
+            data: priceData,
+            smooth: true,
+            showSymbol: false,
+            lineStyle: { width: 2, color: '#2451f5' },
+          },
+        ],
       },
       dividend: {
         ...commonOption,
@@ -226,18 +302,42 @@ export default function IndividualCharts({
       ) : (
         <div className="flex flex-col gap-6">
           <div className="chart-card">
+            <div className="flex items-center justify-end p-3 pb-0">
+              <div className="inline-flex items-center rounded-lg border bg-muted/30 p-0.5">
+                <Button
+                  className="h-7 gap-1 px-2.5 text-xs font-medium"
+                  onClick={() => setPriceChartType('candle')}
+                  size="sm"
+                  type="button"
+                  variant={priceChartType === 'candle' ? 'secondary' : 'ghost'}
+                >
+                  <CandlestickChart size={13} />
+                  캔들 차트
+                </Button>
+                <Button
+                  className="h-7 gap-1 px-2.5 text-xs font-medium"
+                  onClick={() => setPriceChartType('line')}
+                  size="sm"
+                  type="button"
+                  variant={priceChartType === 'line' ? 'secondary' : 'ghost'}
+                >
+                  <TrendingUp size={13} />
+                  선 차트
+                </Button>
+              </div>
+            </div>
             <div className="chart-viewport">
-              <ReactECharts option={chartOptions.price} style={{ height: '320px', width: '100%' }} />
+              <ReactECharts notMerge option={chartOptions.price} style={{ height: '320px', width: '100%' }} />
             </div>
           </div>
           <div className="chart-card">
             <div className="chart-viewport">
-              <ReactECharts option={chartOptions.dividend} style={{ height: '320px', width: '100%' }} />
+              <ReactECharts notMerge option={chartOptions.dividend} style={{ height: '320px', width: '100%' }} />
             </div>
           </div>
           <div className="chart-card">
             <div className="chart-viewport">
-              <ReactECharts option={chartOptions.profit} style={{ height: '400px', width: '100%' }} />
+              <ReactECharts notMerge option={chartOptions.profit} style={{ height: '400px', width: '100%' }} />
             </div>
           </div>
         </div>

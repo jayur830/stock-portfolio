@@ -28,6 +28,9 @@ export interface HistoryData {
   symbol: string;
   data: {
     date: Date;
+    open?: number;
+    high?: number;
+    low?: number;
     close: number;
   }[];
   dividends: {
