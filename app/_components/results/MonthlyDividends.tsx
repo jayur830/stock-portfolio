@@ -33,7 +33,7 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
     [enabledStocks],
   );
 
-  const { data: histories = [], isLoading } = useQuery({
+  const { data: histories = [] } = useQuery({
     enabled: !!tickers && stockDividends.length > 0,
     queryFn: async ({ queryKey: [, tickersParam] }) => {
       const symbols = (tickersParam as string).split(',').filter(Boolean);
@@ -90,16 +90,12 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
     return { appliedCount: applied, weightedStockDividends: weighted };
   }, [histories, enabledStocks, stockDividends]);
 
-  const hasHistory = histories.some((h) => h.dividends && h.dividends.length > 0);
   const displayAmounts = useMemo(() => {
     if (!weightedStockDividends) {
       return amounts;
     }
     return mergeMonthlyDividends(weightedStockDividends);
   }, [weightedStockDividends, amounts]);
-
-  /** props(amounts)가 폼 반영 후 가중값으로 바뀌어도 뱃지가 꺼지지 않도록 적용 여부로 판단 */
-  const isWeighted = !!weightedStockDividends && hasHistory && appliedCount > 0;
 
   const ledgerMax = useMemo(() => Math.max(0, ...displayAmounts), [displayAmounts]);
   const ledgerTotal = useMemo(() => displayAmounts.reduce((sum, v) => sum + v, 0), [displayAmounts]);
@@ -121,12 +117,6 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
       <div className="monthly-head">
         <div className="flex items-center gap-2">
           <h3 className="monthly-title">월별 현금흐름</h3>
-          <span
-            className={`ledger-badge ${isWeighted ? 'is-live' : ''}`}
-            title={isWeighted ? '최근 1년 실제 지급 비율로 월별 분배' : '실제 이력 없음 또는 분석 중: 균등 분할 표시'}
-          >
-            {isWeighted ? '실측 반영' : isLoading ? '집계 중' : '균등 분할'}
-          </span>
         </div>
 
         {/* 뷰 전환 탭 버튼 */}
