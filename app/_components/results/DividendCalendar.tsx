@@ -212,7 +212,7 @@ export default function DividendCalendar() {
                   </span>
 
                   {hasEvents && (
-                    <span className="hidden sm:inline-flex rounded-full bg-emerald-500/15 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400">
+                    <span className="hidden sm:inline-flex rounded-full bg-primary/10 px-1.5 py-0.5 text-[9px] font-bold text-primary">
                       +{cell.totalNetAmount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}
                     </span>
                   )}

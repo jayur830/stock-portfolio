@@ -33,7 +33,7 @@ export default function GuideSection() {
     <section aria-labelledby="dividend-guide-title" className="mt-16 w-full space-y-12 border-t border-border/70 pt-12 pb-6">
       {/* 섹션 헤더 */}
       <div className="flex flex-col gap-2">
-        <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">
+        <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
           <BookOpen size={15} />
           <span>KNOWLEDGE BASE & GUIDES</span>
         </div>
@@ -50,7 +50,7 @@ export default function GuideSection() {
         {/* 가이드 1 */}
         <article className="p-5 sm:p-6 rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
               <TrendingUp size={20} />
             </div>
             <div>
@@ -82,7 +82,7 @@ export default function GuideSection() {
         {/* 가이드 3 */}
         <article className="p-5 sm:p-6 rounded-2xl border border-border/70 bg-card/60 backdrop-blur-sm space-y-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400">
               <Coins size={20} />
             </div>
             <div>

@@ -24,7 +24,7 @@ export default function PrivacyPage() {
               <BrandLogo size={20} />
             </div>
             <div>
-              <span className="text-base font-extrabold tracking-tight">DIVIDEND<span className="text-emerald-500">LAB</span></span>
+              <span className="text-base font-extrabold tracking-tight">DIVIDEND<span className="text-primary">LAB</span></span>
             </div>
           </Link>
           <Link
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
       <main className="flex-1 w-full max-w-4xl mx-auto px-[clamp(1.25rem,4vw,3.5rem)] py-12">
         <div className="space-y-8">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary mb-3">
               <ShieldCheck size={14} />
               <span>개인정보보호 및 쿠키 정책</span>
             </div>
@@ -87,7 +87,7 @@ export default function PrivacyPage() {
                 <li>
                   이용자는{' '}
                   <a
-                    className="text-emerald-600 dark:text-emerald-400 underline underline-offset-2"
+                    className="text-primary underline underline-offset-2"
                     href="https://www.google.com/settings/ads"
                     rel="noopener noreferrer"
                     target="_blank"
@@ -99,7 +99,7 @@ export default function PrivacyPage() {
                 <li>
                   또한{' '}
                   <a
-                    className="text-emerald-600 dark:text-emerald-400 underline underline-offset-2"
+                    className="text-primary underline underline-offset-2"
                     href="https://www.aboutads.info/choices"
                     rel="noopener noreferrer"
                     target="_blank"

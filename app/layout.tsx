@@ -22,7 +22,7 @@ const monoFont = JetBrains_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: '#f4f1e8',
+  themeColor: '#f2f4f9',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -105,6 +105,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
+          disableTransitionOnChange={false}
           enableSystem
         >
           <ReactQueryProvider>

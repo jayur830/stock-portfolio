@@ -66,7 +66,7 @@ export default function Results() {
             <span className="allocation-label">현재 포트폴리오 배분</span>
             {totalRatio !== 100 && stocks.some((s) => s.enabled) && (
               <button
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 border border-emerald-500/30 transition-all cursor-pointer shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-primary/10 text-primary hover:bg-primary/15 border border-primary/25 transition-all cursor-pointer shadow-xs active:scale-95"
                 onClick={handleNormalizeRatios}
                 title="각 종목의 상대적 비율을 유지한 채 합계가 정확히 100%가 되도록 비례 환산합니다"
                 type="button"

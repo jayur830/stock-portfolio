@@ -55,7 +55,7 @@ export default function StockCards() {
         <div className="flex items-center gap-2 flex-wrap justify-end">
           {totalRatio !== 100 && stocks.some((s) => s.enabled) && (
             <Button
-              className="h-7 text-[11px] font-bold gap-1 px-2.5 border-emerald-500/40 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 shadow-xs"
+              className="h-7 text-[11px] font-bold gap-1 px-2.5 border-primary/30 text-primary hover:bg-primary/10 shadow-xs"
               onClick={handleNormalizeRatios}
               size="sm"
               title="각 종목의 상대적 비율을 유지한 채 합계가 정확히 100%가 되도록 비례 환산합니다"

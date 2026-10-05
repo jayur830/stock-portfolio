@@ -42,7 +42,7 @@ export default function ExportButton({
       type="button"
       variant={variant}
     >
-      <FileDown className="size-5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+      <FileDown className="size-5 shrink-0 text-primary" />
       <span className="hidden sm:inline">{isExporting ? '내보내는 중...' : '엑셀 내보내기'}</span>
     </Button>
   );

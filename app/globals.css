@@ -45,38 +45,38 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 1rem;
   --font-sans-kr: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-  --background: #f6f7f9;
-  --foreground: #1f2430;
-  --card: #fdfbf4;
-  --card-foreground: #1f2430;
-  --popover: #fdfbf4;
-  --popover-foreground: #1f2430;
-  --primary: #0c5b4c;
-  --primary-foreground: #f4f1e8;
-  --secondary: #e7e2d0;
-  --secondary-foreground: #0c5b4c;
-  --muted: #e9e4d3;
-  --muted-foreground: #6f6a58;
-  --accent: #e3ecdf;
-  --accent-foreground: #0c5b4c;
-  --destructive: #c2402a;
-  --border: #d6cfb8;
-  --input: #c4bda4;
-  --ring: #0c5b4c;
-  --chart-1: #0c5b4c;
-  --chart-2: #b8860b;
-  --chart-3: #2e7d6f;
-  --chart-4: #6d5fc0;
-  --chart-5: #c2402a;
+  --background: #f2f4f9;
+  --foreground: #101828;
+  --card: #ffffff;
+  --card-foreground: #101828;
+  --popover: #ffffff;
+  --popover-foreground: #101828;
+  --primary: #2451f5;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ecf4;
+  --secondary-foreground: #1d2939;
+  --muted: #e8ecf4;
+  --muted-foreground: #667085;
+  --accent: #e8edfd;
+  --accent-foreground: #1b3fd4;
+  --destructive: #f04438;
+  --border: #dde3ee;
+  --input: #c3cad9;
+  --ring: #2451f5;
+  --chart-1: #2451f5;
+  --chart-2: #7a5af8;
+  --chart-3: #3b82f6;
+  --chart-4: #a855f7;
+  --chart-5: #f04438;
   --sidebar: #ffffff;
   --sidebar-foreground: #101828;
   --sidebar-primary: #2451f5;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #e8edfd;
   --sidebar-accent-foreground: #1b3fd4;
-  --sidebar-border: #e4e7ec;
+  --sidebar-border: #dde3ee;
   --sidebar-ring: #2451f5;
 }
 
@@ -138,6 +138,25 @@
   ::selection {
     background: color-mix(in srgb, var(--primary) 22%, transparent);
     color: var(--foreground);
+  }
+
+  body,
+  .topbar,
+  .input-surface,
+  .target-surface,
+  .stock-list-surface,
+  .stock-card,
+  .allocation-card,
+  .empty-result,
+  .tax-surface,
+  .result-highlight,
+  .result-surface,
+  .monthly-surface,
+  .chart-section,
+  .chart-card,
+  .ledger-total,
+  .search-dropdown {
+    transition: background-color 0.3s ease, border-color 0.3s ease;
   }
 }
 
@@ -558,7 +577,7 @@
 
   .input-grid {
     display: grid;
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    grid-template-columns: minmax(0, 65fr) minmax(0, 35fr);
     align-items: start;
     gap: 1rem;
     width: 100%;
@@ -720,8 +739,8 @@
     width: 0.42rem;
     height: 0.42rem;
     border-radius: 9999px;
-    background: #10b981;
-    box-shadow: 0 0 0 3px color-mix(in srgb, #10b981 22%, transparent);
+    background: var(--primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 22%, transparent);
   }
 
   .rate-grid {
@@ -1324,8 +1343,8 @@
   }
 
   .results-live-badge {
-    color: #b36d21;
-    background: color-mix(in srgb, #ef9c54 13%, transparent);
+    color: var(--primary);
+    background: color-mix(in srgb, var(--primary) 10%, transparent);
   }
 
   .results-live-badge::before {
@@ -1333,7 +1352,7 @@
     height: 0.38rem;
     border-radius: 50%;
     content: "";
-    background: #ef9c54;
+    background: var(--primary);
   }
 
   .allocation-card {
@@ -1738,7 +1757,7 @@
   }
 
   .ledger-row.is-peak .ledger-bar-fill {
-    background: var(--destructive);
+    background: var(--chart-4);
   }
 
   .ledger-amount {
