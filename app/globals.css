@@ -1269,6 +1269,13 @@
     box-shadow: 0 0.3rem 0.7rem color-mix(in srgb, var(--primary) 18%, transparent);
   }
 
+  .dark .month-button.is-selected {
+    color: #ffffff;
+    border-color: #1e40d8;
+    background: #1e40d8;
+    box-shadow: none;
+  }
+
   .stock-metric-grid {
     display: grid;
     grid-template-columns: minmax(0, 0.65fr) minmax(0, 1.35fr);
@@ -1470,14 +1477,14 @@
   }
 
   .dark .calculate-action {
-    color: #0e100d;
-    /* background: var(--primary); */
-    background: color-mix(in srgb, var(--primary) 85%, white);
+    color: #ffffff;
+    background: #1e40d8;
     box-shadow: none;
   }
 
   .dark .calculate-action:hover {
-    background: color-mix(in srgb, var(--primary) 65%, white);
+    color: #ffffff;
+    background: #1b3ab8;
     box-shadow: none;
   }
 
@@ -2373,5 +2380,67 @@
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
     }
+  }
+}
+
+@layer utilities {
+  /* shadcn Button/Tabs 유틸리티보다 우선해야 하는 상태 스타일 (Tailwind v4 레이어 우선순위 대응) */
+  .calculate-action {
+    color: var(--primary-foreground);
+    background: color-mix(in srgb, var(--primary) 70%, black);
+  }
+
+  .calculate-action:hover {
+    background: color-mix(in srgb, var(--primary) 55%, black);
+  }
+
+  .dark .calculate-action {
+    color: #ffffff;
+    background: #1e40d8;
+  }
+
+  .dark .calculate-action:hover {
+    color: #ffffff;
+    background: #1b3ab8;
+  }
+
+  .month-button {
+    background: color-mix(in srgb, var(--muted) 72%, var(--card));
+  }
+
+  .month-button.is-selected {
+    color: var(--primary-foreground);
+    background: var(--primary);
+  }
+
+  .dark .month-button.is-selected {
+    color: #ffffff;
+    background: #1e40d8;
+  }
+
+  .chart-period-button.is-active {
+    color: var(--primary-foreground);
+    background: var(--primary);
+  }
+
+  .reset-action {
+    background: var(--card);
+  }
+
+  .reset-action:hover {
+    background: var(--muted);
+  }
+
+  .quick-add-button {
+    background: color-mix(in srgb, var(--card) 65%, transparent);
+  }
+
+  .quick-add-button:hover {
+    background: color-mix(in srgb, var(--primary) 9%, var(--card));
+  }
+
+  .calculator-mode-trigger[data-slot="tabs-trigger"][data-state="active"] {
+    color: var(--foreground);
+    background: var(--card);
   }
 }

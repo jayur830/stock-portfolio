@@ -92,6 +92,8 @@ export default function Results() {
             ...defaultOptics,
             strength: 0.4,
             curvature: 0.3,
+            sheen: 0.15,
+            specular: 0.3,
             glow: 0,
           }}
           radius={12}
@@ -107,6 +109,8 @@ export default function Results() {
             ...defaultOptics,
             strength: 0.4,
             curvature: 0.3,
+            sheen: 0.15,
+            specular: 0.3,
             glow: 0,
           }}
         >
@@ -119,6 +123,8 @@ export default function Results() {
               ...defaultOptics,
               strength: 0.4,
               curvature: 0.3,
+              sheen: 0.15,
+              specular: 0.3,
               glow: 0,
             }}
             radius={12}
