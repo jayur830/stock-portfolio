@@ -12,41 +12,37 @@ import Results from './_components/results';
 
 export default async function Page() {
   await connection();
+
   return (
     <div className="app-shell flex flex-col justify-between w-full min-h-screen">
-      <header className="site-header w-full border-b border-border/70 bg-background/80 backdrop-blur-xl">
-        <div className="site-header-inner">
-          <div className="brand-lockup">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="topbar-brand">
             <div aria-hidden="true" className="brand-mark">
-              <BrandLogo size={20} />
+              <BrandLogo size={18} />
             </div>
-            <div>
-              <span className="brand-name">DIVIDEND<span>LAB</span></span>
-              <span className="brand-subtitle">INCOME, BY DESIGN</span>
-            </div>
+            <span className="topbar-name">Dividend Lab</span>
           </div>
-
-          <div className="header-actions">
-            {/** 배당금 계산/투자금 계산 탭 */}
-            <CalculatorTabs />
-            <div aria-hidden="true" className="header-divider" />
-            {/** 다크모드 스위치 */}
-            <DarkModeSwitch />
-          </div>
+          {/** 배당금 계산/투자금 계산 탭 */}
+          <CalculatorTabs />
+          <DarkModeSwitch />
         </div>
       </header>
 
       <main aria-label="배당주 포트폴리오 계산기" className="page-content flex-1 w-full">
         <div className="mx-auto w-full max-w-desktop">
+          <div className="page-hero">
+            <h1 className="page-hero-title">배당 포트폴리오, 현금흐름으로 설계하기</h1>
+            <p className="page-hero-desc">투자금과 목표 배당금을 입력하면 월별 입금 흐름과 세후 실수령액을 바로 계산합니다.</p>
+          </div>
           <CalculatorFormProvider>
             <div className="workspace-grid">
               <section aria-labelledby="portfolio-builder-title" className="input-column">
                 <div className="section-heading">
                   <span className="section-index">01</span>
                   <div>
-                    <span className="section-kicker">BUILD YOUR PLAN</span>
+                    <span className="section-kicker">Build your plan</span>
                     <h2 className="section-title" id="portfolio-builder-title">포트폴리오 구성</h2>
-                    <p className="section-description">기준 금액과 종목별 비중을 입력해 나만의 배당 설계를 시작하세요.</p>
                   </div>
                 </div>
                 <Inputs />
@@ -57,7 +53,7 @@ export default async function Page() {
                   <div className="section-heading">
                     <span className="section-index">02</span>
                     <div>
-                      <span className="section-kicker">SEE THE FLOW</span>
+                      <span className="section-kicker">See the flow</span>
                       <h2 className="section-title" id="portfolio-result-title">현금흐름 미리보기</h2>
                     </div>
                   </div>

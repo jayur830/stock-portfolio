@@ -80,19 +80,19 @@ export default function StockCards() {
             onDelete={() => remove(index)}
           />
         ))}
-      </div>
 
-      {/** 종목 추가 버튼 */}
-      <Button
-        aria-label="종목 추가"
-        className="add-stock-button"
-        onClick={handleAddStock}
-        type="button"
-        variant="outline"
-      >
-        <Plus size={16} />
-        종목 추가
-      </Button>
+        {/** 종목 추가 버튼 */}
+        <Button
+          aria-label="종목 추가"
+          className="add-stock-button"
+          onClick={handleAddStock}
+          type="button"
+          variant="outline"
+        >
+          <Plus size={16} />
+          종목 추가
+        </Button>
+      </div>
     </section>
   );
 }

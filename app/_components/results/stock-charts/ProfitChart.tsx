@@ -208,7 +208,7 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
           let result = `${params[0].axisValue}<br/>`;
           params.forEach((param: any) => {
             const value = currency === 'KRW' ? Math.round(param.value).toLocaleString('ko-KR') : param.value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const color = value >= 0 ? '#16a34a' : '#dc2626';
+            const color = value >= 0 ? '#10b981' : '#dc2626';
             result += `${param.marker}<span style="color:${color}">${param.seriesName}: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}</span><br/>`;
           });
           return result;
@@ -281,10 +281,10 @@ export default function ProfitChart({ isDark, histories, stocks, totalInvestment
           },
           lineStyle: {
             width: 2,
-            color: '#16a34a',
+            color: '#10b981',
           },
           itemStyle: {
-            color: '#16a34a',
+            color: '#10b981',
           },
         },
         {

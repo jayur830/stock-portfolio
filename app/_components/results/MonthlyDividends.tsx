@@ -101,6 +101,9 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
   /** props(amounts)가 폼 반영 후 가중값으로 바뀌어도 뱃지가 꺼지지 않도록 적용 여부로 판단 */
   const isWeighted = !!weightedStockDividends && hasHistory && appliedCount > 0;
 
+  const ledgerMax = useMemo(() => Math.max(0, ...displayAmounts), [displayAmounts]);
+  const ledgerTotal = useMemo(() => displayAmounts.reduce((sum, v) => sum + v, 0), [displayAmounts]);
+
   /** 가중 결과를 폼에 반영 (캘린더/CSV와 정합성 유지, 연 총액은 불변) */
   useEffect(() => {
     if (!weightedStockDividends || appliedCount === 0) {
@@ -115,55 +118,67 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
 
   return (
     <div className="monthly-surface">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-4">
+      <div className="monthly-head">
         <div className="flex items-center gap-2">
-          <h3 className="monthly-title mb-0">예상 월별 배당금 (세후)</h3>
+          <h3 className="monthly-title">월별 현금흐름</h3>
           <span
-            className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold border ${isWeighted ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : 'bg-muted/40 text-muted-foreground border-border/60'}`}
+            className={`ledger-badge ${isWeighted ? 'is-live' : ''}`}
             title={isWeighted ? '최근 1년 실제 지급 비율로 월별 분배' : '실제 이력 없음 또는 분석 중: 균등 분할 표시'}
           >
-            {isWeighted ? '실제 패턴 반영' : isLoading ? '패턴 분석 중...' : '균등 분할'}
+            {isWeighted ? '실측 반영' : isLoading ? '집계 중' : '균등 분할'}
           </span>
         </div>
 
         {/* 뷰 전환 탭 버튼 */}
-        <div className="inline-flex items-center rounded-lg border border-border/70 bg-muted/40 p-0.5">
+        <div className="inline-flex items-center gap-1">
           <button
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
-              viewMode === 'grid' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={`ledger-tab ${viewMode === 'grid' ? 'is-active' : ''}`}
             onClick={() => setViewMode('grid')}
             type="button"
           >
             <LayoutGrid size={13} />
-            <span>12개월 요약</span>
+            <span>월별</span>
           </button>
           <button
-            className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold cursor-pointer transition-all ${
-              viewMode === 'calendar' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'
-            }`}
+            className={`ledger-tab ${viewMode === 'calendar' ? 'is-active' : ''}`}
             onClick={() => setViewMode('calendar')}
             type="button"
           >
             <CalendarDays size={13} />
-            <span>배당 캘린더</span>
+            <span>달력</span>
           </button>
         </div>
       </div>
 
       {viewMode === 'grid' ? (
-        <div className="monthly-grid">
-          {displayAmounts.map((amount, index) => (
-            <div className="monthly-item" key={index}>
-              <span className="monthly-month">{index + 1}월</span>
-              <span className="monthly-amount">
-                {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-              </span>
-            </div>
-          ))}
-        </div>
+        <>
+          <div className="ledger-rows">
+            {displayAmounts.map((amount, index) => (
+              <div
+                className={`ledger-row${amount <= 0 ? ' is-zero' : ''}${amount > 0 && amount === ledgerMax ? ' is-peak' : ''}`}
+                key={index}
+              >
+                <span className="ledger-month">{String(index + 1).padStart(2, '0')}월</span>
+                <span aria-hidden="true" className="ledger-bar">
+                  <span className="ledger-bar-fill" style={{ width: `${ledgerMax > 0 ? (amount / ledgerMax) * 100 : 0}%` }} />
+                </span>
+                <span className="ledger-amount">
+                  {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="ledger-total">
+            <span className="ledger-total-label">연간 합계 · 세후</span>
+            <span className="ledger-total-value">
+              {ledgerTotal.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+            </span>
+          </div>
+        </>
       ) : (
-        <DividendCalendar />
+        <div className="calendar-pad">
+          <DividendCalendar />
+        </div>
       )}
     </div>
   );

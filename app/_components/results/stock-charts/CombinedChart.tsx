@@ -128,6 +128,9 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
 
     return {
       backgroundColor: 'transparent',
+      color: [
+        '#6366f1', '#f59e0b', '#10b981', '#8b5cf6', '#ec4899', '#06b6d4',
+      ],
       textStyle: {
         color: isDark ? '#d1d5db' : '#374151',
       },

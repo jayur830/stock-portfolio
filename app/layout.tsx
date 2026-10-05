@@ -2,25 +2,27 @@ import './globals.css';
 
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
 import StructuredData from '@/components/structured-data';
 import { ThemeProvider } from '@/components/theme-provider';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const displayFont = Space_Grotesk({
+  variable: '--font-display',
   subsets: ['latin'],
+  weight: ['500', '600', '700'],
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const monoFont = JetBrains_Mono({
+  variable: '--font-mono-kr',
   subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
 });
 
 export const viewport: Viewport = {
-  themeColor: '#fff',
+  themeColor: '#f4f1e8',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
@@ -79,6 +81,11 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <link
+          crossOrigin="anonymous"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+          rel="stylesheet"
+        />
         {adsenseClientId && (
           <>
             <meta content={adsenseClientId} name="google-adsense-account" />
@@ -93,7 +100,7 @@ export default function RootLayout({
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${displayFont.variable} ${monoFont.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

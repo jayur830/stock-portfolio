@@ -113,68 +113,76 @@ export default function Results() {
 
       {/** 배당금 결과 */}
       {calculatedCategory === 'dividend' && (
-        <>
-          <div aria-live="polite" className="result-highlight is-dividend">
-            <div className="result-highlight-head">
-              <div>
-                <span className="result-overline">CALCULATED INCOME</span>
-                <h3 className="result-highlight-title">예상 배당금</h3>
+        <div className="results-bento">
+          <div className="bento-main">
+            <div aria-live="polite" className="result-highlight is-dividend">
+              <div className="result-highlight-head">
+                <div>
+                  <span className="result-overline">CALCULATED INCOME</span>
+                  <h3 className="result-highlight-title">예상 배당금</h3>
+                </div>
+                <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
               </div>
-              <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
+              <div className="result-highlight-values">
+                <div className="result-value-card">
+                  <span className="result-value-label">세전 연 배당금</span>
+                  <strong className="result-value">{annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <span className="result-value-subtext">계산된 연간 배당</span>
+                </div>
+                <div className="result-value-card">
+                  <span className="result-value-label">세후 연 배당금</span>
+                  <strong className="result-value">{afterTaxAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <span className="result-value-subtext">실수령 기준</span>
+                </div>
+              </div>
             </div>
-            <div className="result-highlight-values">
-              <div className="result-value-card">
-                <span className="result-value-label">세전 연 배당금</span>
-                <strong className="result-value">{annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
-                <span className="result-value-subtext">계산된 연간 배당</span>
-              </div>
-              <div className="result-value-card">
-                <span className="result-value-label">세후 연 배당금</span>
-                <strong className="result-value">{afterTaxAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
-                <span className="result-value-subtext">실수령 기준</span>
-              </div>
+            <MonthlyDividends amounts={monthlyDividends} />
+          </div>
+          <div className="bento-side">
+            <CountPerStock />
+            <div className="tax-surface">
+              <h3 className="tax-surface-title">배당소득세 정보</h3>
+              <TaxInfo stockDividends={stockDividends} />
             </div>
           </div>
-          <CountPerStock />
-          <MonthlyDividends amounts={monthlyDividends} />
-          <div className="tax-surface">
-            <h3 className="tax-surface-title">배당소득세 정보</h3>
-            <TaxInfo stockDividends={stockDividends} />
-          </div>
-        </>
+        </div>
       )}
 
       {/** 투자금 결과 */}
       {calculatedCategory === 'investment' && (
-        <>
-          <div aria-live="polite" className="result-highlight is-investment">
-            <div className="result-highlight-head">
-              <div>
-                <span className="result-overline">YOUR REQUIRED CAPITAL</span>
-                <h3 className="result-highlight-title">필요한 투자금</h3>
+        <div className="results-bento">
+          <div className="bento-main">
+            <div aria-live="polite" className="result-highlight is-investment">
+              <div className="result-highlight-head">
+                <div>
+                  <span className="result-overline">YOUR REQUIRED CAPITAL</span>
+                  <h3 className="result-highlight-title">필요한 투자금</h3>
+                </div>
+                <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
               </div>
-              <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
+              <div className="result-highlight-values">
+                <div className="result-value-card">
+                  <span className="result-value-label">목표 연 배당금</span>
+                  <strong className="result-value">{targetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <span className="result-value-subtext">목표 현금흐름을 만들기 위한 기준</span>
+                </div>
+                <div className="result-value-card">
+                  <span className="result-value-label">필요한 투자금</span>
+                  <strong className="result-value">{requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <span className="result-value-subtext">현재 입력한 배당률과 비중 기준</span>
+                </div>
+              </div>
             </div>
-            <div className="result-highlight-values">
-              <div className="result-value-card">
-                <span className="result-value-label">목표 연 배당금</span>
-                <strong className="result-value">{targetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
-                <span className="result-value-subtext">목표 현금흐름을 만들기 위한 기준</span>
-              </div>
-              <div className="result-value-card">
-                <span className="result-value-label">필요한 투자금</span>
-                <strong className="result-value">{requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
-                <span className="result-value-subtext">현재 입력한 배당률과 비중 기준</span>
-              </div>
+            <MonthlyDividends amounts={monthlyDividends} />
+          </div>
+          <div className="bento-side">
+            <CountPerStock />
+            <div className="tax-surface">
+              <h3 className="tax-surface-title">배당소득세 정보</h3>
+              {targetAnnualDividend > 0 && <TaxInfo stockDividends={stockDividends} />}
             </div>
           </div>
-          <CountPerStock />
-          <MonthlyDividends amounts={monthlyDividends} />
-          <div className="tax-surface">
-            <h3 className="tax-surface-title">배당소득세 정보</h3>
-            {targetAnnualDividend > 0 && <TaxInfo stockDividends={stockDividends} />}
-          </div>
-        </>
+        </div>
       )}
 
       {/** 차트 */}
