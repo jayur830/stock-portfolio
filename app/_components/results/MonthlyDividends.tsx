@@ -5,6 +5,7 @@ import { CalendarDays, LayoutGrid } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
+import { Button } from '@/components/ui/button';
 import { calculateStockMonthlyDividends, mergeMonthlyDividends } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
@@ -103,22 +104,26 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
 
         {/* 뷰 전환 탭 버튼 */}
         <div className="inline-flex items-center gap-1">
-          <button
+          <Button
             className={`ledger-tab ${viewMode === 'grid' ? 'is-active' : ''}`}
             onClick={() => setViewMode('grid')}
+            size="sm"
             type="button"
+            variant="ghost"
           >
             <LayoutGrid size={13} />
             <span>월별</span>
-          </button>
-          <button
+          </Button>
+          <Button
             className={`ledger-tab ${viewMode === 'calendar' ? 'is-active' : ''}`}
             onClick={() => setViewMode('calendar')}
+            size="sm"
             type="button"
+            variant="ghost"
           >
             <CalendarDays size={13} />
             <span>달력</span>
-          </button>
+          </Button>
         </div>
       </div>
 
