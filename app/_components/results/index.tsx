@@ -28,7 +28,7 @@ export default function Results() {
 
   /** 세후 연 배당금 */
   const afterTaxAnnualDividend = stockDividends.reduce(
-    (sum, { annualDividend, taxRate }) => sum + annualDividend * (1 - taxRate),
+    (sum, { annualDividend, taxRate }) => sum + Math.round(annualDividend * (1 - taxRate)),
     0,
   );
 

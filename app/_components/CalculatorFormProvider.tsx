@@ -123,7 +123,7 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     /** 필요한 투자금 */
     const investment = totalInvestment;
 
-    const stockDividends = getStockDividends(enabledStocks, investment);
+    const stockDividends = getStockDividends(enabledStocks, investment, exchangeRates);
 
     setValue('stockDividends', stockDividends);
     setValue('chartData', {
@@ -145,7 +145,7 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     /** 필요한 투자금 */
     const investment = targetAnnualDividend / weightedDividendYield;
 
-    const stockDividends = getStockDividends(enabledStocks, investment);
+    const stockDividends = getStockDividends(enabledStocks, investment, exchangeRates);
 
     setValue('stockDividends', stockDividends);
     setValue('chartData', {

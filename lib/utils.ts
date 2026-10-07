@@ -71,7 +71,7 @@ export const DIVIDEND_TAX_RATE = KRW_CGT * 1.1;
 
 /** 국가별 배당소득세율 */
 export const FOREIGN_TAX_RATES: { [key: string]: number } = {
-  KRW: KRW_CGT, // 한국
+  KRW: DIVIDEND_TAX_RATE, // 한국 (15.4%)
   USD: 0.15, // 미국
   EUR: 0.26375, // 유럽 (독일 기준, 국가마다 상이)
   JPY: 0.15315, // 일본
@@ -167,10 +167,14 @@ export interface DividendHistoryItem {
 }
 
 /** 세후 월별 배당금 계산에 사용할 세율 구하기 */
-function resolveMonthlyTaxRate(currency: Currency): number {
-  let taxRate = FOREIGN_TAX_RATES[currency || 'KRW'];
+export function resolveMonthlyTaxRate(currency: Currency): number {
+  if (currency === 'KRW') {
+    return DIVIDEND_TAX_RATE;
+  }
 
-  if (taxRate <= KRW_CGT) {
+  let taxRate = FOREIGN_TAX_RATES[currency || 'KRW'] ?? DIVIDEND_TAX_RATE;
+
+  if (taxRate < KRW_CGT) {
     taxRate += (KRW_CGT - taxRate) * 1.1;
   }
 
@@ -278,27 +282,50 @@ export function calculateStockMonthlyDividends(
 }
 
 /**
-   * 종목별 배당정보 리스트 구하기
-   * @param stocks 종목 리스트
-   * @param investment 필요한 투자금
-   * @param exchangeRates 환율 정보
-   * @returns 종목별 배당정보 리스트
-   */
+ * 종목별 배당정보 리스트 구하기
+ * @param stocks 종목 리스트
+ * @param investment 필요한 투자금
+ * @param exchangeRates 환율 정보
+ * @param historiesMap ticker별 실제 배당 히스토리
+ * @returns 종목별 배당정보 리스트
+ */
 export function getStockDividends(
   stocks: Stock[],
   investment: number,
-  /** ticker별 실제 배당 히스토리 (있으면 월별 가중 분배) */
+  exchangeRates: { [key: string]: number } = {},
   historiesMap?: Record<string, DividendHistoryItem[] | undefined>,
 ) {
   return stocks.map((stock) => {
-    /** 종목별 투자금 */
+    /** 종목별 투자금 (원화) */
     const investmentAmount = (investment * stock.ratio) / 100;
-    /** 종목별 연 배당금 */
-    const annualDividend = Math.floor(investmentAmount * stock.yield / 100);
-    /** 종목별 월별 배당금 (최근 1년 실제 비율 반영, 없으면 N등분) */
-    const monthlyDividends = calculateStockMonthlyDividends(stock.dividendMonths, stock.currency, annualDividend, historiesMap?.[stock.ticker]);
-    /** 종목별 세율 */
-    const taxRate = FOREIGN_TAX_RATES[stock.currency || 'KRW'];
+
+    /** 1주당 원화 가격 */
+    const priceInKRW = convertToKRW(stock.price, stock.currency, exchangeRates);
+
+    let annualDividend = 0;
+    if (priceInKRW > 0 && stock.price > 0) {
+      /** 실제 매수 가능한 보유 주수 (정수 주수) */
+      const quantity = Math.floor(investmentAmount / priceInKRW);
+      /** 1주당 연간 배당금 (원화 환산) = 주가 * (배당률 / 100) * 환율 */
+      const dpsInKRW = convertToKRW((stock.price * stock.yield) / 100, stock.currency, exchangeRates);
+      /** 보유 주수 기준 실제 연 배당금 (세전) */
+      annualDividend = Math.floor(quantity * dpsInKRW);
+    } else {
+      /** 주가 정보가 없을 경우 투자금 * 배당률 fallback */
+      annualDividend = Math.floor((investmentAmount * stock.yield) / 100);
+    }
+
+    /** 종목별 실효 원천징수 세율 (국내 15.4%, 해외 조세조약 반영) */
+    const taxRate = resolveMonthlyTaxRate(stock.currency);
+
+    /** 종목별 월별 배당금 (지정된 배당월에만 세후 배분) */
+    const monthlyDividends = calculateStockMonthlyDividends(
+      stock.dividendMonths,
+      stock.currency,
+      annualDividend,
+      historiesMap?.[stock.ticker],
+    );
+
     return {
       annualDividend,
       monthlyDividends,

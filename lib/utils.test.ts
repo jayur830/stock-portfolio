@@ -407,6 +407,7 @@ describe('@/lib/utils', () => {
 
   /** {@link getStockDividends} */
   it('getStockDividends()', () => {
+    // 1. 환율 정보가 없을 때: 투자금 기준 fallback 계산
     const result = getStockDividends([TQQQ, JEPQ], 1000000);
     expect(result).toHaveLength(2);
 
@@ -419,6 +420,34 @@ describe('@/lib/utils', () => {
     expect(result[1].isForeign).toBe(true);
     expect(result[1].taxRate).toBe(0.15);
     expect(result[1].annualDividend).toBe(1020);
+
+    // 2. 환율 및 주가가 주어졌을 때: 실제 매수 가능한 주식 수(보유 주수) × 주당 배당금 × 환율 기준 계산
+    const exchangeRates = { USD: 1300 };
+    // 투자금 13,000,000원, TQQQ(비중 100%, 주가 $100 -> 1주 130,000원, yield 10%)
+    const singleStock: Stock = {
+      ...TQQQ,
+      price: 100,
+      yield: 10,
+      ratio: 100,
+      dividendMonths: [3, 6, 9, 12],
+    };
+    // 13,000,000 / 130,000 = 100주
+    // 1주당 연간 배당금: $100 * 10% * 1300 = 13,000원
+    // 실제 세전 연 배당금: 100주 * 13,000원 = 1,300,000원
+    const withRates = getStockDividends([singleStock], 13000000, exchangeRates);
+    expect(withRates[0].annualDividend).toBe(1300000);
+    // 지정된 배당월(3, 6, 9, 12월)에만 분배되고 나머지 달은 0원
+    expect(withRates[0].monthlyDividends[1]).toBeUndefined();
+    expect(withRates[0].monthlyDividends[3]).toBe(276250); // 세후 1,300,000 * 0.85 / 4 = 276,250원
+    expect(withRates[0].monthlyDividends[6]).toBe(276250);
+    expect(withRates[0].monthlyDividends[9]).toBe(276250);
+    expect(withRates[0].monthlyDividends[12]).toBe(276250);
+
+    // 단주(소수점 미만 잔여금)가 발생하는 경우: 10주만 매수 가능
+    // 투자금 1,350,000원 -> 10주 매수 (잔여금 50,000원)
+    // 세전 연 배당금: 10주 * 13,000원 = 130,000원
+    const withFractional = getStockDividends([singleStock], 1350000, exchangeRates);
+    expect(withFractional[0].annualDividend).toBe(130000);
   });
 
   /** {@link normalizeStockRatios} */
