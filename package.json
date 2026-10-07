@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "format": "eslint --fix",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
