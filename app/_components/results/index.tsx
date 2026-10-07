@@ -1,6 +1,7 @@
 'use client';
 
 import { Calculator, ChevronRight, CircleDollarSign, Scale } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
 import GlassBox, { defaultOptics } from '@/components/glass-box';
@@ -12,8 +13,12 @@ import CalculateButton from './CalculateButton';
 import CountPerStock from './CountPerStock';
 import ExportButton from './ExportButton';
 import MonthlyDividends from './MonthlyDividends';
-import StockCharts from './stock-charts';
 import TaxInfo from './TaxInfo';
+
+const StockCharts = dynamic(() => import('./stock-charts'), {
+  loading: () => <div className="h-96 rounded-2xl bg-card/40 animate-pulse" />,
+  ssr: false,
+});
 
 export default function Results() {
   const { control, setValue } = useFormContext<FormValues>();

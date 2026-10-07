@@ -3,6 +3,7 @@ import './globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
+import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
@@ -81,20 +82,15 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <link crossOrigin="anonymous" href="https://cdn.jsdelivr.net" rel="preconnect" />
+        <link href="https://cdn.jsdelivr.net" rel="dns-prefetch" />
         <link
           crossOrigin="anonymous"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
           rel="stylesheet"
         />
         {adsenseClientId && (
-          <>
-            <meta content={adsenseClientId} name="google-adsense-account" />
-            <script
-              async
-              crossOrigin="anonymous"
-              src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
-            />
-          </>
+          <meta content={adsenseClientId} name="google-adsense-account" />
         )}
         <StructuredData />
       </head>
@@ -102,6 +98,14 @@ export default function RootLayout({
       <body
         className={`${displayFont.variable} ${monoFont.variable} antialiased`}
       >
+        {adsenseClientId && (
+          <Script
+            async
+            crossOrigin="anonymous"
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
+            strategy="lazyOnload"
+          />
+        )}
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

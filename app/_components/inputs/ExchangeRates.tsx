@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, LineChart, RefreshCw } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
@@ -15,10 +16,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { exchangeRateCodes } from '@/lib/utils';
+import { currencySymbols, exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
-import ExchangeRateChart, { currencySymbols } from './ExchangeRateChart';
+const ExchangeRateChart = dynamic(() => import('./ExchangeRateChart'), {
+  loading: () => <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">차트 불러오는 중...</div>,
+  ssr: false,
+});
 
 const _exchangeRateCodes = exchangeRateCodes.filter((key) => key !== 'KRW');
 

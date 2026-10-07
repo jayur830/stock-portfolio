@@ -487,3 +487,14 @@ export function normalizeStockRatios(stocks: Stock[]): Stock[] {
     return { ...stock, ratio };
   });
 }
+
+/** 통화별 심볼 및 표시 정보 */
+export const currencySymbols: Record<string, { symbol: string; name: string; unit: string }> = {
+  USD: { symbol: 'USDKRW=X', name: '미국 달러', unit: '1 USD' },
+  JPY: { symbol: 'JPYKRW=X', name: '일본 엔', unit: '1 JPY' },
+  EUR: { symbol: 'EURKRW=X', name: '유럽 유로', unit: '1 EUR' },
+  CNY: { symbol: 'CNYKRW=X', name: '중국 위안', unit: '1 CNY' },
+  GBP: { symbol: 'GBPKRW=X', name: '영국 파운드', unit: '1 GBP' },
+  HKD: { symbol: 'HKDKRW=X', name: '홍콩 달러', unit: '1 HKD' },
+  VND: { symbol: 'VNDKRW=X', name: '베트남 동', unit: '1 VND' },
+};
