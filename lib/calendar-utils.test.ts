@@ -122,9 +122,11 @@ describe('calendar-utils', () => {
 
       const day5 = currentMonthCells.find((c) => c.dayNumber === 5);
       expect(day5?.events.some((e) => e.ticker === 'JEPI')).toBe(true);
+      expect(day5?.events[0]?.isExDividendDate).toBe(true);
 
       const day28 = currentMonthCells.find((c) => c.dayNumber === 28);
       expect(day28?.events.some((e) => e.ticker === 'JEPI')).toBe(true);
+      expect(day28?.events[0]?.isExDividendDate).toBe(true);
     });
 
     it('histories가 객체 래핑({ histories: [...] }) 형태로 전달되어도 안전하게 작동해야 함', () => {

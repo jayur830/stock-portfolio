@@ -105,6 +105,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               currency: data.currency,
               yield: data.yield,
               dividendGrowth: data.dividendGrowth,
+              exDividendDate: data.exDividendDate,
             };
 
             if (data.dividendMonths && data.dividendMonths.length > 0) {
@@ -234,6 +235,15 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   title="최근 5년간 주당 배당금(DPS) 연평균 성장률"
                 >
                   5년 성장률 {growthInfo.cagr5Y > 0 ? `+${growthInfo.cagr5Y}%` : `${growthInfo.cagr5Y}%`}
+                </span>
+              )}
+              {stock.exDividendDate && (
+                <span
+                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                  title="가장 최근 배당락일 (이 날짜 전 거래일까지 매수해야 배당 수령 가능)"
+                >
+                  <CalendarIcon className="size-2.5 shrink-0" />
+                  배당락일 {stock.exDividendDate}
                 </span>
               )}
             </div>

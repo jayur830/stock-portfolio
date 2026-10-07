@@ -225,9 +225,19 @@ export default function DividendCalendar() {
                       className="flex items-center justify-between rounded bg-card/90 px-1 py-0.5 text-[10px] border border-border/60 shadow-2xs"
                       key={eIdx}
                     >
-                      <span className="font-bold text-foreground truncate max-w-16 sm:max-w-none">
-                        {event.ticker}
-                      </span>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <span className="font-bold text-foreground truncate max-w-14 sm:max-w-none">
+                          {event.ticker}
+                        </span>
+                        {event.isExDividendDate && (
+                          <span
+                            className="text-[8px] px-1 py-0 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-semibold shrink-0"
+                            title="배당락일 기준"
+                          >
+                            락
+                          </span>
+                        )}
+                      </div>
                       <span className="font-semibold text-primary text-[9px] shrink-0">
                         {event.netAmount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
                       </span>
@@ -288,9 +298,14 @@ export default function DividendCalendar() {
                       <span className="text-xs text-muted-foreground truncate max-w-40 sm:max-w-[16rem]">
                         {event.stockName}
                       </span>
+                      {event.isExDividendDate && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                          배당락일
+                        </span>
+                      )}
                     </div>
                     <span className="text-[11px] text-muted-foreground/80 mt-0.5">
-                      {selectedMonthIndex + 1}월 {event.day}일 지급 예정
+                      {event.isExDividendDate ? `${selectedMonthIndex + 1}월 ${event.day}일 배당락 기준` : `${selectedMonthIndex + 1}월 ${event.day}일 지급 예정`}
                     </span>
                   </div>
                 </div>

@@ -10,6 +10,8 @@ export interface DividendEvent {
   netAmount: number;
   currency: string;
   isForeign: boolean;
+  /** 실제 야후 파이낸스 배당락일 기준 여부 */
+  isExDividendDate?: boolean;
 }
 
 export interface DayCalendarCell {
@@ -156,6 +158,7 @@ export function generateMonthCalendar(
           currency: stock.currency,
           day,
           grossAmount,
+          isExDividendDate: true,
           isForeign: dividendInfo.isForeign,
           netAmount,
           stockName: stock.name,
@@ -181,6 +184,7 @@ export function generateMonthCalendar(
         currency: stock.currency,
         day,
         grossAmount: monthlyGross,
+        isExDividendDate: false,
         isForeign: dividendInfo.isForeign,
         netAmount: monthlyNet,
         stockName: stock.name,

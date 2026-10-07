@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
     const dividendMonths: number[] = [];
     let annualDividend = 0;
     let dividendGrowthData = null;
+    let exDividendDate: string | null = null;
 
     try {
       const { events } = await yahooFinance.chart(symbol, {
@@ -35,6 +36,16 @@ export async function GET(request: NextRequest) {
       const dividendHistory = events?.dividends;
 
       if (dividendHistory && dividendHistory.length > 0) {
+        // 가장 최근 배당락일 추출 (YYYY-MM-DD)
+        const latestDiv = dividendHistory[dividendHistory.length - 1];
+        if (latestDiv?.date) {
+          const d = new Date(latestDiv.date);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          const day = String(d.getDate()).padStart(2, '0');
+          exDividendDate = `${y}-${m}-${day}`;
+        }
+
         // 최근 1년 배당 필터링
         const recentDividends = dividendHistory.filter(
           (div) => new Date(div.date) >= oneYearAgo,
@@ -80,6 +91,7 @@ export async function GET(request: NextRequest) {
       dividendMonths,
       exchange: quote.exchange,
       dividendGrowth: dividendGrowthData,
+      exDividendDate,
     });
   } catch (error) {
     console.error('Stock quote error:', error);

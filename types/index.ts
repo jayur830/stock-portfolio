@@ -29,6 +29,8 @@ export interface Stock {
   enabled: boolean;
   /** 배당 성장 지표 (5년 CAGR, 연속 증액 연수, 배지) */
   dividendGrowth?: DividendGrowthInfo | null;
+  /** 최근 배당락일 (YYYY-MM-DD) */
+  exDividendDate?: string | null;
 }
 
 export interface StockDividend {
