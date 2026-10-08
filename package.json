@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "postinstall": "node scripts/patch-size-sensor.mjs"
   },
   "dependencies": {
     "@next/third-parties": "16.4.0",
