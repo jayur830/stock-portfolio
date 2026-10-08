@@ -1,4 +1,3 @@
-
 import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
@@ -6,10 +5,7 @@ import { cn } from '@/lib/utils';
 function Card({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn(
-        'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
-        className,
-      )}
+      className={cn('bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm', className)}
       data-slot="card"
       {...props}
     />
@@ -30,32 +26,17 @@ function CardHeader({ className, ...props }: ComponentProps<'div'>) {
 }
 
 function CardTitle({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      className={cn('leading-none font-semibold', className)}
-      data-slot="card-title"
-      {...props}
-    />
-  );
+  return <div className={cn('leading-none font-semibold', className)} data-slot="card-title" {...props} />;
 }
 
 function CardDescription({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      className={cn('text-muted-foreground text-sm', className)}
-      data-slot="card-description"
-      {...props}
-    />
-  );
+  return <div className={cn('text-muted-foreground text-sm', className)} data-slot="card-description" {...props} />;
 }
 
 function CardAction({ className, ...props }: ComponentProps<'div'>) {
   return (
     <div
-      className={cn(
-        'col-start-2 row-span-2 row-start-1 self-start justify-self-end',
-        className,
-      )}
+      className={cn('col-start-2 row-span-2 row-start-1 self-start justify-self-end', className)}
       data-slot="card-action"
       {...props}
     />
@@ -63,31 +44,13 @@ function CardAction({ className, ...props }: ComponentProps<'div'>) {
 }
 
 function CardContent({ className, ...props }: ComponentProps<'div'>) {
-  return (
-    <div
-      className={cn('px-6', className)}
-      data-slot="card-content"
-      {...props}
-    />
-  );
+  return <div className={cn('px-6', className)} data-slot="card-content" {...props} />;
 }
 
 function CardFooter({ className, ...props }: ComponentProps<'div'>) {
   return (
-    <div
-      className={cn('flex items-center px-6 [.border-t]:pt-6', className)}
-      data-slot="card-footer"
-      {...props}
-    />
+    <div className={cn('flex items-center px-6 [.border-t]:pt-6', className)} data-slot="card-footer" {...props} />
   );
 }
 
-export {
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-};
+export { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle };

@@ -80,19 +80,34 @@ export default function IncomeTaxInfo({ additionalTax }: IncomeTaxInfoProps) {
           </div>
         </div>
       </div>
-      <div className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
-        additionalTax > 0 ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800' : additionalTax === 0 ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800' : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
-      }`}
-      >
-        <span className={`text-sm font-semibold ${
-          additionalTax > 0 ? 'text-red-900 dark:text-red-100' : additionalTax === 0 ? 'text-blue-900 dark:text-blue-100' : 'text-green-900 dark:text-green-100'
+      <div
+        className={`flex flex-col md:flex-row md:justify-between md:items-center gap-2 rounded-md p-3 ${
+          additionalTax > 0
+            ? 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800'
+            : additionalTax === 0
+              ? 'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
+              : 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800'
         }`}
+      >
+        <span
+          className={`text-sm font-semibold ${
+            additionalTax > 0
+              ? 'text-red-900 dark:text-red-100'
+              : additionalTax === 0
+                ? 'text-blue-900 dark:text-blue-100'
+                : 'text-green-900 dark:text-green-100'
+          }`}
         >
           {additionalTax > 0 ? '내년 추가 납부 예정' : additionalTax === 0 ? '내년 납부 없음' : '내년 환급 예정'}
         </span>
-        <span className={`text-base md:text-lg font-bold ${
-          additionalTax > 0 ? 'text-red-600 dark:text-red-400' : additionalTax === 0 ? 'text-blue-600 dark:text-blue-400' : 'text-green-600 dark:text-green-400'
-        }`}
+        <span
+          className={`text-base md:text-lg font-bold ${
+            additionalTax > 0
+              ? 'text-red-600 dark:text-red-400'
+              : additionalTax === 0
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-green-600 dark:text-green-400'
+          }`}
         >
           {additionalTax.toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
         </span>

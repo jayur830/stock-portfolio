@@ -17,10 +17,19 @@ export default function CalculatorTabs() {
   };
 
   return (
-    <Tabs aria-label="계산 모드 선택" className="calculator-mode-tabs" onValueChange={handleTabChange} value={activeTab}>
+    <Tabs
+      aria-label="계산 모드 선택"
+      className="calculator-mode-tabs"
+      onValueChange={handleTabChange}
+      value={activeTab}
+    >
       <TabsList className="calculator-mode-list">
-        <TabsTrigger className="calculator-mode-trigger" value="dividend">배당금 계산</TabsTrigger>
-        <TabsTrigger className="calculator-mode-trigger" value="investment">투자금 계산</TabsTrigger>
+        <TabsTrigger className="calculator-mode-trigger" value="dividend">
+          배당금 계산
+        </TabsTrigger>
+        <TabsTrigger className="calculator-mode-trigger" value="investment">
+          투자금 계산
+        </TabsTrigger>
       </TabsList>
     </Tabs>
   );

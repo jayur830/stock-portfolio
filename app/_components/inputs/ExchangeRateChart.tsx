@@ -49,9 +49,17 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
   const { resolvedTheme } = useTheme();
   const isDark = resolvedTheme === 'dark';
 
-  const currencyInfo = currencySymbols[currency] || { symbol: `${currency}KRW=X`, name: currency, unit: `1 ${currency}` };
+  const currencyInfo = currencySymbols[currency] || {
+    symbol: `${currency}KRW=X`,
+    name: currency,
+    unit: `1 ${currency}`,
+  };
 
-  const { data: historyData, isLoading, isError } = useQuery({
+  const {
+    data: historyData,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['exchangeRateHistory', currencyInfo.symbol],
     queryFn: async () => {
       const res = await fetch('/api/stock/history', {
@@ -210,47 +218,50 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
         },
       },
       dataZoom: [{ type: 'inside' }],
-      series: chartType === 'candle' ? [
-        {
-          name: currency,
-          type: 'candlestick',
-          data: candleData,
-          itemStyle: {
-            color: '#ef4444',
-            color0: '#3b82f6',
-            borderColor: '#ef4444',
-            borderColor0: '#3b82f6',
-          },
-        },
-      ] : [
-        {
-          name: currency,
-          type: 'line',
-          data: yData,
-          smooth: true,
-          showSymbol: false,
-          lineStyle: {
-            width: 2.2,
-            color: lineColor,
-          },
-          itemStyle: {
-            color: lineColor,
-          },
-          areaStyle: {
-            color: {
-              type: 'linear',
-              x: 0,
-              y: 0,
-              x2: 0,
-              y2: 1,
-              colorStops: [
-                { offset: 0, color: areaColorStart },
-                { offset: 1, color: areaColorEnd },
-              ],
-            },
-          },
-        },
-      ],
+      series:
+        chartType === 'candle'
+          ? [
+              {
+                name: currency,
+                type: 'candlestick',
+                data: candleData,
+                itemStyle: {
+                  color: '#ef4444',
+                  color0: '#3b82f6',
+                  borderColor: '#ef4444',
+                  borderColor0: '#3b82f6',
+                },
+              },
+            ]
+          : [
+              {
+                name: currency,
+                type: 'line',
+                data: yData,
+                smooth: true,
+                showSymbol: false,
+                lineStyle: {
+                  width: 2.2,
+                  color: lineColor,
+                },
+                itemStyle: {
+                  color: lineColor,
+                },
+                areaStyle: {
+                  color: {
+                    type: 'linear',
+                    x: 0,
+                    y: 0,
+                    x2: 0,
+                    y2: 1,
+                    colorStops: [
+                      { offset: 0, color: areaColorStart },
+                      { offset: 1, color: areaColorEnd },
+                    ],
+                  },
+                },
+              },
+            ],
     };
   };
   const chartOption = getChartOption();
@@ -324,8 +335,7 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
             type="button"
             variant={chartType === 'line' ? 'secondary' : 'ghost'}
           >
-            <TrendingUp size={13} />
-            선 차트
+            <TrendingUp size={13} />선 차트
           </Button>
         </div>
 

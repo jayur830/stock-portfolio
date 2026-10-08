@@ -23,10 +23,18 @@ const StockCharts = dynamic(() => import('./stock-charts'), {
 export default function Results() {
   const { control, setValue } = useFormContext<FormValues>();
 
-  const { field: { value: stocks } } = useController({ control, name: 'stocks' });
-  const { field: { value: targetAnnualDividend } } = useController({ control, name: 'targetAnnualDividend' });
-  const { field: { value: calculatedCategory } } = useController({ control, name: 'calculatedCategory' });
-  const { field: { value: stockDividends } } = useController({ control, name: 'stockDividends' });
+  const {
+    field: { value: stocks },
+  } = useController({ control, name: 'stocks' });
+  const {
+    field: { value: targetAnnualDividend },
+  } = useController({ control, name: 'targetAnnualDividend' });
+  const {
+    field: { value: calculatedCategory },
+  } = useController({ control, name: 'calculatedCategory' });
+  const {
+    field: { value: stockDividends },
+  } = useController({ control, name: 'stockDividends' });
 
   /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
   const annualDividend = stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
@@ -46,11 +54,14 @@ export default function Results() {
   /** 종목별 월별 배당금 합산 */
   const monthlyDividends = mergeMonthlyDividends(stockDividends);
 
-  const totalRatio = stocks
-    .filter(({ enabled }) => enabled)
-    .reduce((total, { ratio }) => total + (ratio || 0), 0);
+  const totalRatio = stocks.filter(({ enabled }) => enabled).reduce((total, { ratio }) => total + (ratio || 0), 0);
   const ratioState = totalRatio === 100 ? 'is-complete' : totalRatio > 100 ? 'is-over' : '';
-  const ratioMessage = totalRatio === 100 ? '배분이 완성됐어요. 이제 결과를 계산해보세요.' : totalRatio > 100 ? '비율 합계가 100%를 초과했어요. 비중을 조정해주세요.' : '종목 비중의 합계를 100%에 맞추면 가장 정확해요.';
+  const ratioMessage =
+    totalRatio === 100
+      ? '배분이 완성됐어요. 이제 결과를 계산해보세요.'
+      : totalRatio > 100
+        ? '비율 합계가 100%를 초과했어요. 비중을 조정해주세요.'
+        : '종목 비중의 합계를 100%에 맞추면 가장 정확해요.';
 
   const handleNormalizeRatios = () => {
     const normalized = normalizeStockRatios(stocks);
@@ -84,8 +95,18 @@ export default function Results() {
           </div>
           <strong className={`allocation-value ${ratioState}`}>{totalRatio.toFixed(1)}%</strong>
         </div>
-        <div aria-label={`포트폴리오 배분 ${totalRatio.toFixed(1)}%`} aria-valuemax={100} aria-valuemin={0} aria-valuenow={Math.min(totalRatio, 100)} className="allocation-track" role="progressbar">
-          <div className={`allocation-track-fill ${ratioState === 'is-over' ? 'is-over' : ''}`} style={{ width: `${Math.min(totalRatio, 100)}%` }} />
+        <div
+          aria-label={`포트폴리오 배분 ${totalRatio.toFixed(1)}%`}
+          aria-valuemax={100}
+          aria-valuemin={0}
+          aria-valuenow={Math.min(totalRatio, 100)}
+          className="allocation-track"
+          role="progressbar"
+        >
+          <div
+            className={`allocation-track-fill ${ratioState === 'is-over' ? 'is-over' : ''}`}
+            style={{ width: `${Math.min(totalRatio, 100)}%` }}
+          />
         </div>
         <p className={`allocation-help ${ratioState}`}>{ratioMessage}</p>
       </div>
@@ -119,7 +140,9 @@ export default function Results() {
             glow: 0,
           }}
         >
-          <Button className="reset-action" type="reset" variant="outline">초기화</Button>
+          <Button className="reset-action" type="reset" variant="outline">
+            초기화
+          </Button>
         </GlassBox>
         {calculatedCategory && (
           <GlassBox
@@ -141,9 +164,13 @@ export default function Results() {
 
       {!calculatedCategory && (
         <div className="empty-result">
-          <div className="empty-icon"><CircleDollarSign size={25} /></div>
+          <div className="empty-icon">
+            <CircleDollarSign size={25} />
+          </div>
           <h3 className="empty-title">계산 결과가 이곳에 표시됩니다</h3>
-          <p className="empty-description">투자금 또는 목표 배당금을 입력하고, 종목별 비중을 정한 뒤 결과를 확인하세요.</p>
+          <p className="empty-description">
+            투자금 또는 목표 배당금을 입력하고, 종목별 비중을 정한 뒤 결과를 확인하세요.
+          </p>
           <div className="empty-steps">
             <span className="empty-step-number">1</span>
             <span>입력</span>
@@ -167,17 +194,23 @@ export default function Results() {
                   <span className="result-overline">CALCULATED INCOME</span>
                   <h3 className="result-highlight-title">예상 배당금</h3>
                 </div>
-                <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
+                <div className="result-highlight-icon">
+                  <CircleDollarSign size={18} />
+                </div>
               </div>
               <div className="result-highlight-values">
                 <div className="result-value-card">
                   <span className="result-value-label">세전 연 배당금</span>
-                  <strong className="result-value">{annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <strong className="result-value">
+                    {annualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                  </strong>
                   <span className="result-value-subtext">계산된 연간 배당</span>
                 </div>
                 <div className="result-value-card">
                   <span className="result-value-label">세후 연 배당금</span>
-                  <strong className="result-value">{afterTaxAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <strong className="result-value">
+                    {afterTaxAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                  </strong>
                   <span className="result-value-subtext">실수령 기준</span>
                 </div>
               </div>
@@ -204,17 +237,23 @@ export default function Results() {
                   <span className="result-overline">YOUR REQUIRED CAPITAL</span>
                   <h3 className="result-highlight-title">필요한 투자금</h3>
                 </div>
-                <div className="result-highlight-icon"><CircleDollarSign size={18} /></div>
+                <div className="result-highlight-icon">
+                  <CircleDollarSign size={18} />
+                </div>
               </div>
               <div className="result-highlight-values">
                 <div className="result-value-card">
                   <span className="result-value-label">목표 연 배당금</span>
-                  <strong className="result-value">{targetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <strong className="result-value">
+                    {targetAnnualDividend.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                  </strong>
                   <span className="result-value-subtext">목표 현금흐름을 만들기 위한 기준</span>
                 </div>
                 <div className="result-value-card">
                   <span className="result-value-label">필요한 투자금</span>
-                  <strong className="result-value">{requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</strong>
+                  <strong className="result-value">
+                    {requiredInvestment.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
+                  </strong>
                   <span className="result-value-subtext">현재 입력한 배당률과 비중 기준</span>
                 </div>
               </div>

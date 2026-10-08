@@ -13,10 +13,7 @@ interface ExportButtonProps {
   variant?: 'outline' | 'default' | 'secondary' | 'ghost';
 }
 
-export default function ExportButton({
-  className = '',
-  variant = 'outline',
-}: ExportButtonProps) {
+export default function ExportButton({ className = '', variant = 'outline' }: ExportButtonProps) {
   const { getValues } = useFormContext<FormValues>();
   const [isExporting, setIsExporting] = useState(false);
 

@@ -6,7 +6,9 @@ import type { FormValues } from '@/types';
 
 export default function CountPerStock() {
   const { control } = useFormContext<FormValues>();
-  const { field: { value: chartData } } = useController({ control, name: 'chartData' });
+  const {
+    field: { value: chartData },
+  } = useController({ control, name: 'chartData' });
 
   if (!chartData || chartData.stocks.length === 0) {
     return null;
@@ -23,10 +25,7 @@ export default function CountPerStock() {
           const growthInfo = stock.dividendGrowth || (stock.ticker ? calculateDividendGrowth(stock.ticker) : null);
 
           return (
-            <div
-              className="quantity-item"
-              key={index}
-            >
+            <div className="quantity-item" key={index}>
               <div className="flex items-center gap-2 min-w-0 flex-1">
                 {growthInfo?.badge && (
                   <span
@@ -47,9 +46,7 @@ export default function CountPerStock() {
                   {stock.name ? `[${stock.ticker}] ${stock.name}` : stock.ticker}
                 </span>
               </div>
-              <span className="quantity-value shrink-0 font-bold">
-                {quantity.toLocaleString('ko-KR')}주
-              </span>
+              <span className="quantity-value shrink-0 font-bold">{quantity.toLocaleString('ko-KR')}주</span>
             </div>
           );
         })}

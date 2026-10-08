@@ -24,7 +24,9 @@ export default function PrivacyPage() {
               <BrandLogo size={20} />
             </div>
             <div>
-              <span className="text-base font-extrabold tracking-tight">DIVIDEND<span className="text-primary">LAB</span></span>
+              <span className="text-base font-extrabold tracking-tight">
+                DIVIDEND<span className="text-primary">LAB</span>
+              </span>
             </div>
           </Link>
           <Link
@@ -57,32 +59,47 @@ export default function PrivacyPage() {
             <section className="space-y-3">
               <h2 className="text-base font-bold text-foreground">1. 총칙</h2>
               <p>
-                배당주 포트폴리오 계산기(이하 &apos;서비스&apos;, Dividend Lab)는 이용자의 개인정보를 중요시하며, &apos;개인정보 보호법&apos; 및 &apos;정보통신망 이용촉진 및 정보보호 등에 관한 법률&apos;을 준수하고 있습니다. 본 서비스는 별도의 회원가입 없이 누구나 무료로 시뮬레이션 기능을 이용할 수 있는 웹 도구입니다.
+                배당주 포트폴리오 계산기(이하 &apos;서비스&apos;, Dividend Lab)는 이용자의 개인정보를 중요시하며,
+                &apos;개인정보 보호법&apos; 및 &apos;정보통신망 이용촉진 및 정보보호 등에 관한 법률&apos;을 준수하고
+                있습니다. 본 서비스는 별도의 회원가입 없이 누구나 무료로 시뮬레이션 기능을 이용할 수 있는 웹 도구입니다.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-base font-bold text-foreground">2. 수집하는 개인정보 항목 및 수집 방법</h2>
               <p>
-                본 서비스는 회원가입을 받지 않으며, 이용자의 성명, 주민등록번호, 연락처 등 직접적인 개인 식별 정보를 일체 서버에 수집·저장하지 않습니다.
+                본 서비스는 회원가입을 받지 않으며, 이용자의 성명, 주민등록번호, 연락처 등 직접적인 개인 식별 정보를
+                일체 서버에 수집·저장하지 않습니다.
               </p>
               <ul className="list-disc pl-5 space-y-1">
-                <li><strong>포트폴리오 입력 데이터:</strong> 사용자가 입력한 종목명, 매수가, 비중, 목표 배당금 등의 데이터는 이용자의 웹 브라우저 로컬(URL 파라미터 등)에서만 처리되며, 서버 데이터베이스에 영구 저장되지 않습니다.</li>
-                <li><strong>자동 수집 정보:</strong> 서비스 이용 과정에서 접속 IP, 브라우저 종류, 방문 일시, 기기 정보 등의 표준 웹 로그가 통계 및 서비스 안정성 유지를 위해 생성될 수 있습니다.</li>
+                <li>
+                  <strong>포트폴리오 입력 데이터:</strong> 사용자가 입력한 종목명, 매수가, 비중, 목표 배당금 등의
+                  데이터는 이용자의 웹 브라우저 로컬(URL 파라미터 등)에서만 처리되며, 서버 데이터베이스에 영구 저장되지
+                  않습니다.
+                </li>
+                <li>
+                  <strong>자동 수집 정보:</strong> 서비스 이용 과정에서 접속 IP, 브라우저 종류, 방문 일시, 기기 정보
+                  등의 표준 웹 로그가 통계 및 서비스 안정성 유지를 위해 생성될 수 있습니다.
+                </li>
               </ul>
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-base font-bold text-foreground">3. Google 애드센스 및 제3자 광고 쿠키(Cookie) 안내</h2>
+              <h2 className="text-base font-bold text-foreground">
+                3. Google 애드센스 및 제3자 광고 쿠키(Cookie) 안내
+              </h2>
               <p>
-                본 서비스는 웹사이트 유지 및 운영 비용 충당을 위해 Google AdSense(구글 애드센스)를 통한 광고를 게재하고 있습니다. 이와 관련하여 다음과 같은 정책이 적용됩니다:
+                본 서비스는 웹사이트 유지 및 운영 비용 충당을 위해 Google AdSense(구글 애드센스)를 통한 광고를 게재하고
+                있습니다. 이와 관련하여 다음과 같은 정책이 적용됩니다:
               </p>
               <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  Google 및 제3자 공급업체는 쿠키(Cookie)를 사용하여 이용자의 이전 웹사이트 방문 기록을 바탕으로 관련성 높은 맞춤형 광고를 게재합니다.
+                  Google 및 제3자 공급업체는 쿠키(Cookie)를 사용하여 이용자의 이전 웹사이트 방문 기록을 바탕으로 관련성
+                  높은 맞춤형 광고를 게재합니다.
                 </li>
                 <li>
-                  광고 쿠키를 사용함으로써 Google과 파트너사는 이용자가 본 사이트 및 인터넷의 다른 사이트를 방문한 기록을 토대로 맞춤형 광고를 제공할 수 있습니다.
+                  광고 쿠키를 사용함으로써 Google과 파트너사는 이용자가 본 사이트 및 인터넷의 다른 사이트를 방문한
+                  기록을 토대로 맞춤형 광고를 제공할 수 있습니다.
                 </li>
                 <li>
                   이용자는{' '}
@@ -114,29 +131,32 @@ export default function PrivacyPage() {
             <section className="space-y-3">
               <h2 className="text-base font-bold text-foreground">4. 웹로그 분석 도구 (Google Analytics)</h2>
               <p>
-                서비스는 사이트 트래픽 및 사용 현황 분석을 위해 Google Analytics(구글 애널리틱스)를 사용하고 있습니다. 구글 애널리틱스는 익명화된 이용자 행태 데이터를 수집하며, 특정 개인을 식별할 수 없습니다.
+                서비스는 사이트 트래픽 및 사용 현황 분석을 위해 Google Analytics(구글 애널리틱스)를 사용하고 있습니다.
+                구글 애널리틱스는 익명화된 이용자 행태 데이터를 수집하며, 특정 개인을 식별할 수 없습니다.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-base font-bold text-foreground">5. 개인정보의 파기</h2>
               <p>
-                본 서비스는 이용자의 개인식별 정보를 수집·보관하지 않으므로 원칙적으로 별도의 파기 대상 정보가 존재하지 않습니다. 브라우저에 임시 저장된 상태 정보는 사용자가 브라우저 캐시를 지우거나 창을 닫음으로써 언제든지 삭제할 수 있습니다.
+                본 서비스는 이용자의 개인식별 정보를 수집·보관하지 않으므로 원칙적으로 별도의 파기 대상 정보가 존재하지
+                않습니다. 브라우저에 임시 저장된 상태 정보는 사용자가 브라우저 캐시를 지우거나 창을 닫음으로써 언제든지
+                삭제할 수 있습니다.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-base font-bold text-foreground">6. 투자 정보에 대한 면책 고지</h2>
               <p>
-                본 서비스가 제공하는 배당금, 배당수익률, 주가, 환율, 세금 계산 결과는 공개 시장 데이터를 바탕으로 한 추정치 및 시뮬레이션입니다. 실제 지급액 및 과세 금액은 시장 상황, 환율 변동, 개별 세법 적용 여부에 따라 달라질 수 있으며, 본 서비스는 본 정보에 기반한 투자 결과에 대해 법적 책임을 지지 않습니다.
+                본 서비스가 제공하는 배당금, 배당수익률, 주가, 환율, 세금 계산 결과는 공개 시장 데이터를 바탕으로 한
+                추정치 및 시뮬레이션입니다. 실제 지급액 및 과세 금액은 시장 상황, 환율 변동, 개별 세법 적용 여부에 따라
+                달라질 수 있으며, 본 서비스는 본 정보에 기반한 투자 결과에 대해 법적 책임을 지지 않습니다.
               </p>
             </section>
 
             <section className="space-y-3">
               <h2 className="text-base font-bold text-foreground">7. 문의처</h2>
-              <p>
-                개인정보 처리방침 및 서비스 관련 문의사항은 아래로 연락해 주시기 바랍니다.
-              </p>
+              <p>개인정보 처리방침 및 서비스 관련 문의사항은 아래로 연락해 주시기 바랍니다.</p>
               <div className="p-4 rounded-xl border border-border/70 bg-card/60">
                 <p className="font-semibold text-foreground">운영자: opentoyapp</p>
                 <p className="text-xs text-muted-foreground mt-1">웹사이트: https://stock-portfolio.opentoyapp.kr</p>

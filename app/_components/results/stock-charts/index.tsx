@@ -4,13 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTheme } from 'next-themes';
 import { useState } from 'react';
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { Stock } from '@/types';
 
@@ -46,7 +40,10 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   const [currency, setCurrency] = useState('KRW');
 
   /** ticker만 추출 (ratio, price 등 변경 시 불필요한 재fetch 방지 위해 쿼리키로 사용) */
-  const tickers = stocks.map((s) => s.ticker).filter(Boolean).join(',');
+  const tickers = stocks
+    .map((s) => s.ticker)
+    .filter(Boolean)
+    .join(',');
 
   /** 주식 히스토리 데이터 조회 */
   const { data: histories = [], isLoading } = useQuery({

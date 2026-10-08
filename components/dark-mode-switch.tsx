@@ -55,11 +55,7 @@ export function DarkModeSwitch() {
           'theme-switch-thumb bg-card text-primary pointer-events-none flex items-center justify-center size-5 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0',
         )}
       >
-        {theme === 'dark' ? (
-          <Moon className="h-3.5 w-3.5" />
-        ) : (
-          <Sun className="h-3.5 w-3.5" />
-        )}
+        {theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
       </SwitchPrimitive.Thumb>
     </SwitchPrimitive.Root>
   );

@@ -17,7 +17,9 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
   const methods = useForm<FormValues>({
     defaultValues: {
       totalInvestment: searchParams.has('totalInvestment') ? +searchParams.get('totalInvestment')! : undefined,
-      targetAnnualDividend: searchParams.has('targetAnnualDividend') ? +searchParams.get('targetAnnualDividend')! : undefined,
+      targetAnnualDividend: searchParams.has('targetAnnualDividend')
+        ? +searchParams.get('targetAnnualDividend')!
+        : undefined,
       exchangeRates: {},
       stocks: searchParams.has('stocks') ? decodeStocksFromBase64(searchParams.get('stocks')!) : [],
       stockDividends: [],
@@ -29,13 +31,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     const params = new URLSearchParams(searchParamsString);
     if (!params.has('tab')) {
       const searchParamsObject = Object.fromEntries(params.entries());
-      setSearchParams(
-        pathname,
-        {
-          ...searchParamsObject,
-          tab: 'dividend',
-        },
-      );
+      setSearchParams(pathname, {
+        ...searchParamsObject,
+        tab: 'dividend',
+      });
     }
   }, [pathname, searchParamsString]);
 
@@ -47,24 +46,18 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       const searchParamsObject = Object.fromEntries(new URLSearchParams(window.location.search).entries());
 
       if (name === 'totalInvestment' || name === 'targetAnnualDividend') {
-        setSearchParams(
-          pathname,
-          {
-            ...searchParamsObject,
-            [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
-          },
-        );
+        setSearchParams(pathname, {
+          ...searchParamsObject,
+          [name]: value[name] != null && !isNaN(+value[name]) ? value[name] : undefined,
+        });
       } else if (name === 'stocks' || name.startsWith('stocks.')) {
         /** stocks 배열 또는 하위 필드가 변경되면 전체 stocks를 URL에 저장 */
         const stocksData = value.stocks || [];
         const encodedStocks = stocksData.length > 0 ? encodeStocksToBase64(stocksData as Stock[]) : undefined;
-        setSearchParams(
-          pathname,
-          {
-            ...searchParamsObject,
-            stocks: encodedStocks,
-          },
-        );
+        setSearchParams(pathname, {
+          ...searchParamsObject,
+          stocks: encodedStocks,
+        });
       }
     });
 
@@ -72,7 +65,12 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
   }, [watch, pathname]);
 
   /** 폼 데이터 검증 */
-  const validateFormData = ({ stocks, totalInvestment, targetAnnualDividend, exchangeRates }: FormValues): string | null => {
+  const validateFormData = ({
+    stocks,
+    totalInvestment,
+    targetAnnualDividend,
+    exchangeRates,
+  }: FormValues): string | null => {
     const enabledStocks = stocks.filter(({ enabled }) => enabled);
     const currentTotalRatio = enabledStocks.reduce((sum, { ratio }) => sum + ratio, 0);
     if (currentTotalRatio > 100) {
@@ -92,7 +90,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
         return '목표 연 배당금을 입력해주세요.';
       }
 
-      const weightedDividendYield = enabledStocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
+      const weightedDividendYield = enabledStocks.reduce(
+        (sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100),
+        0,
+      );
       if (weightedDividendYield <= 0) {
         return '활성화된 종목들의 배당 수익률과 비율의 합이 0보다 커야 투자금을 계산할 수 있습니다.';
       }
@@ -138,7 +139,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
   const calculateInvestmentFromDividend = ({ stocks, targetAnnualDividend, exchangeRates }: FormValues) => {
     const enabledStocks = stocks.filter(({ enabled }) => enabled);
     /** 각 종목별 비율에 따른 배당 수익률의 합 */
-    const weightedDividendYield = enabledStocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
+    const weightedDividendYield = enabledStocks.reduce(
+      (sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100),
+      0,
+    );
     if (weightedDividendYield <= 0) {
       return;
     }

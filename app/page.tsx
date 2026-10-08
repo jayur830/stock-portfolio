@@ -47,7 +47,9 @@ export default function Page() {
         <div className="mx-auto w-full max-w-desktop">
           <div className="page-hero">
             <h1 className="page-hero-title">배당 포트폴리오, 현금흐름으로 설계하기</h1>
-            <p className="page-hero-desc">투자금과 목표 배당금을 입력하면 월별 입금 흐름과 세후 실수령액을 바로 계산합니다.</p>
+            <p className="page-hero-desc">
+              투자금과 목표 배당금을 입력하면 월별 입금 흐름과 세후 실수령액을 바로 계산합니다.
+            </p>
           </div>
           <Suspense
             fallback={
@@ -64,7 +66,9 @@ export default function Page() {
                     <span className="section-index">01</span>
                     <div>
                       <span className="section-kicker">Build your plan</span>
-                      <h2 className="section-title" id="portfolio-builder-title">포트폴리오 구성</h2>
+                      <h2 className="section-title" id="portfolio-builder-title">
+                        포트폴리오 구성
+                      </h2>
                     </div>
                   </div>
                   <Inputs />
@@ -76,7 +80,9 @@ export default function Page() {
                       <span className="section-index">02</span>
                       <div>
                         <span className="section-kicker">See the flow</span>
-                        <h2 className="section-title" id="portfolio-result-title">현금흐름 미리보기</h2>
+                        <h2 className="section-title" id="portfolio-result-title">
+                          현금흐름 미리보기
+                        </h2>
                       </div>
                     </div>
                   </div>

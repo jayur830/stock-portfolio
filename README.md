@@ -9,16 +9,16 @@
 
 ## 🛠 기술 스택
 
-| 분류 | 기술 |
-| :--- | :--- |
-| **Framework** | **Next.js 16** (App Router, Turbopack) |
-| **Language** | **TypeScript 5** |
-| **State & Form** | **React Hook Form**, **TanStack Query (React Query v5)** |
+| 분류             | 기술                                                                              |
+| :--------------- | :-------------------------------------------------------------------------------- |
+| **Framework**    | **Next.js 16** (App Router, Turbopack)                                            |
+| **Language**     | **TypeScript 5**                                                                  |
+| **State & Form** | **React Hook Form**, **TanStack Query (React Query v5)**                          |
 | **UI & Styling** | **Tailwind CSS v4**, **Radix UI** (Dialog, Select, Popover, Slider, Tabs, Switch) |
-| **Icons & Font** | **Lucide React**, **Geist Sans / Geist Mono** |
-| **Charts** | **Apache ECharts**, **echarts-for-react** |
-| **Market Data** | **Yahoo Finance 2 (`yahoo-finance2`)**, **ExchangeRate-API** |
-| **Deployment** | **Netlify** (`@netlify/plugin-nextjs`), **Let's Encrypt SSL** |
+| **Icons & Font** | **Lucide React**, **Geist Sans / Geist Mono**                                     |
+| **Charts**       | **Apache ECharts**, **echarts-for-react**                                         |
+| **Market Data**  | **Yahoo Finance 2 (`yahoo-finance2`)**, **ExchangeRate-API**                      |
+| **Deployment**   | **Netlify** (`@netlify/plugin-nextjs`), **Let's Encrypt SSL**                     |
 
 ---
 

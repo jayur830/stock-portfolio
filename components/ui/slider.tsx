@@ -5,14 +5,7 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Slider({
-  className,
-  defaultValue,
-  value,
-  min = 0,
-  max = 100,
-  ...props
-}: ComponentProps<typeof Root>) {
+function Slider({ className, defaultValue, value, min = 0, max = 100, ...props }: ComponentProps<typeof Root>) {
   const _values = Array.isArray(value) ? value : Array.isArray(defaultValue) ? defaultValue : [min, max];
 
   return (
@@ -35,9 +28,7 @@ function Slider({
         data-slot="slider-track"
       >
         <Range
-          className={cn(
-            'bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full',
-          )}
+          className={cn('bg-primary absolute data-[orientation=horizontal]:h-full data-[orientation=vertical]:w-full')}
           data-slot="slider-range"
         />
       </Track>

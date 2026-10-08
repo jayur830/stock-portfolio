@@ -73,12 +73,7 @@ export default function StockCards() {
       <div className="stock-list">
         {/** 종목 리스트 */}
         {fields.map((stock, index) => (
-          <StockCard
-            control={control}
-            index={index}
-            key={stock.id}
-            onDelete={() => remove(index)}
-          />
+          <StockCard control={control} index={index} key={stock.id} onDelete={() => remove(index)} />
         ))}
 
         {/** 종목 추가 버튼 */}

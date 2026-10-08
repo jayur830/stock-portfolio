@@ -30,15 +30,21 @@ export async function GET(request: NextRequest) {
     console.error('Stock search error:', error.message, error.name);
 
     if (error.name === 'BadRequestError') {
-      return NextResponse.json({
-        quotes: [],
-        error: error.message,
-      }, { status: 400 });
+      return NextResponse.json(
+        {
+          quotes: [],
+          error: error.message,
+        },
+        { status: 400 },
+      );
     }
 
-    return NextResponse.json({
-      quotes: [],
-      error: 'Failed to search stocks',
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        quotes: [],
+        error: 'Failed to search stocks',
+      },
+      { status: 500 },
+    );
   }
 }

@@ -5,24 +5,15 @@ import type { ComponentProps } from 'react';
 
 import { cn } from '@/lib/utils';
 
-function Popover({
-  ...props
-}: ComponentProps<typeof Root>) {
+function Popover({ ...props }: ComponentProps<typeof Root>) {
   return <Root data-slot="popover" {...props} />;
 }
 
-function PopoverTrigger({
-  ...props
-}: ComponentProps<typeof Trigger>) {
+function PopoverTrigger({ ...props }: ComponentProps<typeof Trigger>) {
   return <Trigger data-slot="popover-trigger" {...props} />;
 }
 
-function PopoverContent({
-  className,
-  align = 'center',
-  sideOffset = 4,
-  ...props
-}: ComponentProps<typeof Content>) {
+function PopoverContent({ className, align = 'center', sideOffset = 4, ...props }: ComponentProps<typeof Content>) {
   return (
     <Portal>
       <Content
@@ -39,9 +30,7 @@ function PopoverContent({
   );
 }
 
-function PopoverAnchor({
-  ...props
-}: ComponentProps<typeof Anchor>) {
+function PopoverAnchor({ ...props }: ComponentProps<typeof Anchor>) {
   return <Anchor data-slot="popover-anchor" {...props} />;
 }
 

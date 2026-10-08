@@ -6,11 +6,19 @@ export async function proxy(request: NextRequest) {
 
   /** 모바일 주소로 접속한 요청이 앱 요청이 아닌 경우 */
   if (process.env.NODE_ENV === 'production') {
-    if (request.nextUrl.pathname.startsWith('/m/') && agent.browser.name && !['Chrome WebView', 'WebKit'].includes(agent.browser.name)) {
+    if (
+      request.nextUrl.pathname.startsWith('/m/') &&
+      agent.browser.name &&
+      !['Chrome WebView', 'WebKit'].includes(agent.browser.name)
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = '/';
       return NextResponse.redirect(url);
-    } else if (!request.nextUrl.pathname.startsWith('/m/') && agent.browser.name && ['Chrome WebView', 'WebKit'].includes(agent.browser.name)) {
+    } else if (
+      !request.nextUrl.pathname.startsWith('/m/') &&
+      agent.browser.name &&
+      ['Chrome WebView', 'WebKit'].includes(agent.browser.name)
+    ) {
       const url = request.nextUrl.clone();
       url.pathname = '/m';
       return NextResponse.redirect(url);

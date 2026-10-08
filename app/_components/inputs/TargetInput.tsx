@@ -35,7 +35,11 @@ export default function TargetInput() {
           <div>
             <span className="surface-kicker">SET YOUR TARGET</span>
             <h3 className="surface-title">{labels[tab]}</h3>
-            <p className="surface-description">{tab === 'dividend' ? '현재 투자금으로 기대하는 연간 배당을 계산합니다.' : '원하는 연간 배당을 만들기 위한 투자금을 계산합니다.'}</p>
+            <p className="surface-description">
+              {tab === 'dividend'
+                ? '현재 투자금으로 기대하는 연간 배당을 계산합니다.'
+                : '원하는 연간 배당을 만들기 위한 투자금을 계산합니다.'}
+            </p>
           </div>
         </div>
         <span className="target-badge">{tab === 'dividend' ? 'INVESTMENT' : 'INCOME GOAL'}</span>

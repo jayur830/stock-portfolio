@@ -37,31 +37,13 @@ export interface HistoryDataForCalendar {
  */
 export function getEstimatedDividendDay(ticker: string, name: string): number {
   const upper = ticker.toUpperCase();
-  if ([
-    'JEPI',
-    'JEPQ',
-    'O',
-    'MAIN',
-    'STAG',
-  ].includes(upper)) {
+  if (['JEPI', 'JEPQ', 'O', 'MAIN', 'STAG'].includes(upper)) {
     return 15;
   }
-  if ([
-    'SCHD',
-    'SPY',
-    'VOO',
-    'QQQ',
-    'IVV',
-  ].includes(upper)) {
+  if (['SCHD', 'SPY', 'VOO', 'QQQ', 'IVV'].includes(upper)) {
     return 25;
   }
-  if ([
-    'AAPL',
-    'MSFT',
-    'NVDA',
-    'KO',
-    'PEP',
-  ].includes(upper)) {
+  if (['AAPL', 'MSFT', 'NVDA', 'KO', 'PEP'].includes(upper)) {
     return 22;
   }
   if (ticker.endsWith('.KS') || ticker.endsWith('.KQ') || name.includes('삼성전자') || name.includes('현대차')) {
@@ -100,7 +82,14 @@ export function generateMonthCalendar(
   const currentMonthNumber = monthIndex + 1;
   const monthEventsMap = new Map<number, DividendEvent[]>();
 
-  const historyList = Array.isArray(histories) ? histories : (histories && typeof histories === 'object' && 'histories' in histories && Array.isArray((histories as { histories: HistoryDataForCalendar[] }).histories)) ? (histories as { histories: HistoryDataForCalendar[] }).histories : [];
+  const historyList = Array.isArray(histories)
+    ? histories
+    : histories &&
+        typeof histories === 'object' &&
+        'histories' in histories &&
+        Array.isArray((histories as { histories: HistoryDataForCalendar[] }).histories)
+      ? (histories as { histories: HistoryDataForCalendar[] }).histories
+      : [];
 
   stocks.forEach((stock, index) => {
     if (!stock.enabled) return;
@@ -144,7 +133,9 @@ export function generateMonthCalendar(
     if (actualDividendsInThisMonth.length > 0) {
       const totalDivAmount = actualDividendsInThisMonth.reduce((sum, d) => sum + d.amount, 0);
       const totalDivMonthsCount = stock.dividendMonths?.length || 4;
-      const singleMonthNet = dividendInfo.monthlyDividends[currentMonthNumber] ?? (dividendInfo.annualDividend * (1 - taxRate) / totalDivMonthsCount);
+      const singleMonthNet =
+        dividendInfo.monthlyDividends[currentMonthNumber] ??
+        (dividendInfo.annualDividend * (1 - taxRate)) / totalDivMonthsCount;
       const singleMonthGross = singleMonthNet / (1 - taxRate > 0 ? 1 - taxRate : 1);
 
       actualDividendsInThisMonth.forEach(({ day, amount }) => {

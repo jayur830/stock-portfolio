@@ -61,11 +61,12 @@ export default function MonthlyDividends({ amounts }: MonthlyDividendsProps) {
               >
                 <span className="ledger-month">{String(index + 1).padStart(2, '0')}월</span>
                 <span aria-hidden="true" className="ledger-bar">
-                  <span className="ledger-bar-fill" style={{ width: `${ledgerMax > 0 ? (amount / ledgerMax) * 100 : 0}%` }} />
+                  <span
+                    className="ledger-bar-fill"
+                    style={{ width: `${ledgerMax > 0 ? (amount / ledgerMax) * 100 : 0}%` }}
+                  />
                 </span>
-                <span className="ledger-amount">
-                  {amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원
-                </span>
+                <span className="ledger-amount">{amount.toLocaleString('ko-KR', { maximumFractionDigits: 0 })}원</span>
               </div>
             ))}
           </div>

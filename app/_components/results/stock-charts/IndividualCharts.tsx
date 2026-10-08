@@ -6,13 +6,7 @@ import { CandlestickChart, TrendingUp } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES } from '@/lib/utils';
 import type { Stock } from '@/types';
 
@@ -46,7 +40,12 @@ export default function IndividualCharts({
 
     const purchaseDate = dayjs(stock.purchaseDate);
     const filteredData = history.data
-      .filter((d) => d.close != null && d.close > 0 && (dayjs(d.date).isAfter(purchaseDate, 'day') || dayjs(d.date).isSame(purchaseDate, 'day')))
+      .filter(
+        (d) =>
+          d.close != null &&
+          d.close > 0 &&
+          (dayjs(d.date).isAfter(purchaseDate, 'day') || dayjs(d.date).isSame(purchaseDate, 'day')),
+      )
       .sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
 
     if (filteredData.length === 0) return null;
@@ -116,17 +115,19 @@ export default function IndividualCharts({
       }
 
       // 1) 일반 누적 평가수익 (현재 평가금액 - 투자원금) : 순수 주가 변동에 따른 평가수익
-      const normalProfit = (currentPriceInKRW * initialShares) - investmentAmount;
+      const normalProfit = currentPriceInKRW * initialShares - investmentAmount;
       profitData.push(convertCurrency(normalProfit, 'KRW', currency, exchangeRates));
 
       // 2) 배당 재투자 수익 (재투자 후 평가금액 - 투자원금) : 늘어난 주식 수 기반 평가수익
-      const reinvestProfit = (currentPriceInKRW * reinvestShares) - investmentAmount;
+      const reinvestProfit = currentPriceInKRW * reinvestShares - investmentAmount;
       reinvestData.push(convertCurrency(reinvestProfit, 'KRW', currency, exchangeRates));
     });
 
     // 배당 차트 전용 월별 데이터 구성
     const monthlyLabels = [...new Set(filteredData.map((d) => dayjs(d.date).format('YYYY.MM')))].sort();
-    const monthlyDivChartData = monthlyLabels.map((m) => convertCurrency(monthlyDivSumMap.get(m) || 0, 'KRW', currency, exchangeRates));
+    const monthlyDivChartData = monthlyLabels.map((m) =>
+      convertCurrency(monthlyDivSumMap.get(m) || 0, 'KRW', currency, exchangeRates),
+    );
 
     const commonOption = {
       backgroundColor: 'transparent',
@@ -140,7 +141,10 @@ export default function IndividualCharts({
         formatter(params: any) {
           const param = Array.isArray(params) ? params[0] : params;
           const value = param.value;
-          const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+          const formattedValue =
+            currency === 'KRW'
+              ? Math.round(value).toLocaleString('ko-KR')
+              : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           return `${param.name}<br />${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
         },
       },
@@ -159,12 +163,19 @@ export default function IndividualCharts({
       },
     };
 
-    const formatCurrencyValue = (val: number) => (currency === 'KRW' ? Math.round(val).toLocaleString('ko-KR') : val.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    const formatCurrencyValue = (val: number) =>
+      currency === 'KRW'
+        ? Math.round(val).toLocaleString('ko-KR')
+        : val.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     return {
       price: {
         ...commonOption,
-        title: { text: '주가 추이', left: 'center', textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' } },
+        title: {
+          text: '주가 추이',
+          left: 'center',
+          textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' },
+        },
         tooltip: {
           ...commonOption.tooltip,
           formatter(params: any) {
@@ -209,28 +220,31 @@ export default function IndividualCharts({
             return `${param.name}<br />${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
           },
         },
-        series: priceChartType === 'candle' ? [
-          {
-            name: '주가',
-            type: 'candlestick',
-            data: candleData,
-            itemStyle: {
-              color: '#ef4444',
-              color0: '#3b82f6',
-              borderColor: '#ef4444',
-              borderColor0: '#3b82f6',
-            },
-          },
-        ] : [
-          {
-            name: '주가',
-            type: 'line',
-            data: priceData,
-            smooth: true,
-            showSymbol: false,
-            lineStyle: { width: 2, color: '#2451f5' },
-          },
-        ],
+        series:
+          priceChartType === 'candle'
+            ? [
+                {
+                  name: '주가',
+                  type: 'candlestick',
+                  data: candleData,
+                  itemStyle: {
+                    color: '#ef4444',
+                    color0: '#3b82f6',
+                    borderColor: '#ef4444',
+                    borderColor0: '#3b82f6',
+                  },
+                },
+              ]
+            : [
+                {
+                  name: '주가',
+                  type: 'line',
+                  data: priceData,
+                  smooth: true,
+                  showSymbol: false,
+                  lineStyle: { width: 2, color: '#2451f5' },
+                },
+              ],
       },
       dividend: {
         ...commonOption,
@@ -238,7 +252,11 @@ export default function IndividualCharts({
           ...commonOption.xAxis,
           data: monthlyLabels,
         },
-        title: { text: '월별 배당금', left: 'center', textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' } },
+        title: {
+          text: '월별 배당금',
+          left: 'center',
+          textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' },
+        },
         series: [{ name: '배당금', type: 'bar', data: monthlyDivChartData, itemStyle: { color: '#7a5af8' } }],
       },
       profit: {
@@ -250,7 +268,10 @@ export default function IndividualCharts({
               const name = params[0].name;
               const content = params
                 .map(({ value, marker, seriesName }) => {
-                  const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                  const formattedValue =
+                    currency === 'KRW'
+                      ? Math.round(value).toLocaleString('ko-KR')
+                      : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                   return `${marker}${seriesName}: ${formattedValue} ${currency}`;
                 })
                 .join('<br />');
@@ -259,7 +280,10 @@ export default function IndividualCharts({
 
             const param = Array.isArray(params) ? params[0] : params;
             const value = param.value;
-            const formattedValue = currency === 'KRW' ? Math.round(value).toLocaleString('ko-KR') : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            const formattedValue =
+              currency === 'KRW'
+                ? Math.round(value).toLocaleString('ko-KR')
+                : value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             return `${param.name}<br />${param.marker}${param.seriesName}: ${formattedValue} ${currency}`;
           },
         },
@@ -267,12 +291,34 @@ export default function IndividualCharts({
           ...commonOption.grid,
           top: 100,
         },
-        legend: { data: ['누적 수익', '배당 재투자 수익 (100% 재투자)'], textStyle: { color: isDark ? '#d1d5db' : '#374151' }, top: 50 },
+        legend: {
+          data: ['누적 수익', '배당 재투자 수익 (100% 재투자)'],
+          textStyle: { color: isDark ? '#d1d5db' : '#374151' },
+          top: 50,
+        },
         series: [
-          { data: profitData, lineStyle: { color: '#3b82f6', width: 2 }, name: '누적 수익', showSymbol: false, smooth: true, type: 'line' },
-          { data: reinvestData, lineStyle: { color: '#a855f7', width: 2 }, name: '배당 재투자 수익 (100% 재투자)', showSymbol: false, smooth: true, type: 'line' },
+          {
+            data: profitData,
+            lineStyle: { color: '#3b82f6', width: 2 },
+            name: '누적 수익',
+            showSymbol: false,
+            smooth: true,
+            type: 'line',
+          },
+          {
+            data: reinvestData,
+            lineStyle: { color: '#a855f7', width: 2 },
+            name: '배당 재투자 수익 (100% 재투자)',
+            showSymbol: false,
+            smooth: true,
+            type: 'line',
+          },
         ],
-        title: { left: 'center', text: '누적 수익 vs 재투자 수익', textStyle: { color: isDark ? '#e5e7eb' : '#111827', fontSize: 18 } },
+        title: {
+          left: 'center',
+          text: '누적 수익 vs 재투자 수익',
+          textStyle: { color: isDark ? '#e5e7eb' : '#111827', fontSize: 18 },
+        },
       },
     };
   };
@@ -286,19 +332,19 @@ export default function IndividualCharts({
             <SelectValue placeholder="종목 선택" />
           </SelectTrigger>
           <SelectContent>
-            {stocks.filter((s) => s.ticker).map((s) => (
-              <SelectItem key={s.ticker} value={s.ticker}>
-                {s.ticker}: {s.name}
-              </SelectItem>
-            ))}
+            {stocks
+              .filter((s) => s.ticker)
+              .map((s) => (
+                <SelectItem key={s.ticker} value={s.ticker}>
+                  {s.ticker}: {s.name}
+                </SelectItem>
+              ))}
           </SelectContent>
         </Select>
       </div>
 
       {!chartOptions ? (
-        <div className="chart-empty-state">
-          매수일 정보가 없거나 데이터를 불러올 수 없습니다.
-        </div>
+        <div className="chart-empty-state">매수일 정보가 없거나 데이터를 불러올 수 없습니다.</div>
       ) : (
         <div className="flex flex-col gap-6">
           <div className="chart-card">
@@ -321,8 +367,7 @@ export default function IndividualCharts({
                   type="button"
                   variant={priceChartType === 'line' ? 'secondary' : 'ghost'}
                 >
-                  <TrendingUp size={13} />
-                  선 차트
+                  <TrendingUp size={13} />선 차트
                 </Button>
               </div>
             </div>

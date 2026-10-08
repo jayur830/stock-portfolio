@@ -17,9 +17,7 @@ export default function NotFound() {
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-          페이지를 찾을 수 없습니다.
-        </h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">페이지를 찾을 수 없습니다.</h1>
 
         <p className="text-lg text-gray-600 mb-8 max-w-md mx-auto">
           요청하신 페이지가 존재하지 않거나 이동되었을 수 있습니다.
@@ -42,10 +40,7 @@ export default function NotFound() {
         <div className="mt-12 pt-8 border-t border-gray-200">
           <p className="text-sm text-gray-500">
             문제가 지속되면{' '}
-            <a
-              className="text-blue-600 hover:text-blue-700 underline"
-              href="mailto:opentoyapp@gmail.com"
-            >
+            <a className="text-blue-600 hover:text-blue-700 underline" href="mailto:opentoyapp@gmail.com">
               opentoyapp@gmail.com
             </a>
             로 문의해주세요.

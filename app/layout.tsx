@@ -34,7 +34,15 @@ export const metadata: Metadata = {
   title: '배당주 포트폴리오 계산기 | 배당금 자동 계산',
   description: '배당주 포트폴리오 관리 및 배당금 계산. 국내외 주식, 환율 환산, 종합소득세 계산 지원.',
   keywords: [
-    '배당주', '배당금 계산', '포트폴리오', '주식 투자', '배당률', '월배당', '배당 계산기', '주식 계산기', '배당 포트폴리오',
+    '배당주',
+    '배당금 계산',
+    '포트폴리오',
+    '주식 투자',
+    '배당률',
+    '월배당',
+    '배당 계산기',
+    '주식 계산기',
+    '배당 포트폴리오',
   ],
   authors: [{ name: 'opentoyapp' }],
   openGraph: {
@@ -89,15 +97,11 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
           rel="stylesheet"
         />
-        {adsenseClientId && (
-          <meta content={adsenseClientId} name="google-adsense-account" />
-        )}
+        {adsenseClientId && <meta content={adsenseClientId} name="google-adsense-account" />}
         <StructuredData />
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-      <body
-        className={`${displayFont.variable} ${monoFont.variable} antialiased`}
-      >
+      <body className={`${displayFont.variable} ${monoFont.variable} antialiased`}>
         {adsenseClientId && (
           <Script
             async
@@ -106,16 +110,9 @@ export default function RootLayout({
             strategy="lazyOnload"
           />
         )}
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          disableTransitionOnChange={false}
-          enableSystem
-        >
+        <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange={false} enableSystem>
           <ReactQueryProvider>
-            <div className="w-full min-h-screen">
-              {children}
-            </div>
+            <div className="w-full min-h-screen">{children}</div>
           </ReactQueryProvider>
         </ThemeProvider>
       </body>

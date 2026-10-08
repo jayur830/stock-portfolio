@@ -1,4 +1,3 @@
-
 export interface TaxInfoProps {
   /** 세전 연배당금 */
   stockDividends: {
@@ -13,7 +12,10 @@ export default function TaxInfo({ stockDividends }: TaxInfoProps) {
       <div className="tax-line">
         <span className="tax-label">연간 배당소득 (세전)</span>
         <span className="tax-value">
-          {stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0).toLocaleString('ko-KR', { maximumFractionDigits: 0 })} 원
+          {stockDividends
+            .reduce((sum, { annualDividend }) => sum + annualDividend, 0)
+            .toLocaleString('ko-KR', { maximumFractionDigits: 0 })}{' '}
+          원
         </span>
       </div>
       <div className="tax-line">

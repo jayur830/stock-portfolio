@@ -20,7 +20,10 @@ export default function DividendCalendar() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   /** ticker 문자열 */
-  const tickers = stocks.map((s) => s.ticker).filter(Boolean).join(',');
+  const tickers = stocks
+    .map((s) => s.ticker)
+    .filter(Boolean)
+    .join(',');
 
   /** 실제 야후 파이낸스 배당 히스토리 데이터 조회 (StockCharts와 동일한 캐시 공유) */
   const { data: histories = [] } = useQuery({
@@ -38,7 +41,7 @@ export default function DividendCalendar() {
       }
 
       const data = await response.json();
-      return (data.histories || []);
+      return data.histories || [];
     },
     queryKey: ['stockHistories', tickers] as const,
     staleTime: 1000 * 60 * 60,
@@ -77,9 +80,7 @@ export default function DividendCalendar() {
     }
   };
 
-  const dayOfWeekHeaders = [
-    '일', '월', '화', '수', '목', '금', '토',
-  ];
+  const dayOfWeekHeaders = ['일', '월', '화', '수', '목', '금', '토'];
 
   // 선택된 특정 날짜의 이벤트 목록 (선택 없으면 이번 달 전체)
   const displayEvents = selectedDay ? currentMonthEvents.filter((e) => e.day === selectedDay) : currentMonthEvents;
@@ -89,13 +90,7 @@ export default function DividendCalendar() {
       {/* 캘린더 상단 헤더 & 월 선택 바 */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-border/60 pb-3">
         <div className="flex items-center gap-2">
-          <Button
-            aria-label="이전 달"
-            className="size-8 p-0"
-            onClick={handlePrevMonth}
-            type="button"
-            variant="outline"
-          >
+          <Button aria-label="이전 달" className="size-8 p-0" onClick={handlePrevMonth} type="button" variant="outline">
             <ChevronLeft size={16} />
           </Button>
           <div className="flex items-baseline gap-1.5 px-1">
@@ -103,13 +98,7 @@ export default function DividendCalendar() {
               {selectedYear}년 {selectedMonthIndex + 1}월
             </span>
           </div>
-          <Button
-            aria-label="다음 달"
-            className="size-8 p-0"
-            onClick={handleNextMonth}
-            type="button"
-            variant="outline"
-          >
+          <Button aria-label="다음 달" className="size-8 p-0" onClick={handleNextMonth} type="button" variant="outline">
             <ChevronRight size={16} />
           </Button>
           {today.getMonth() !== selectedMonthIndex && (
@@ -151,7 +140,9 @@ export default function DividendCalendar() {
           return (
             <button
               className={`shrink-0 rounded-md px-2.5 py-1 text-xs font-medium cursor-pointer transition-all ${
-                isSelected ? 'bg-primary text-primary-foreground shadow-2xs font-bold' : 'bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground'
+                isSelected
+                  ? 'bg-primary text-primary-foreground shadow-2xs font-bold'
+                  : 'bg-muted/40 text-muted-foreground hover:bg-muted hover:text-foreground'
               }`}
               key={i}
               onClick={() => {
@@ -171,10 +162,7 @@ export default function DividendCalendar() {
         {/* 요일 헤더 */}
         <div className="grid grid-cols-7 border-b border-border/60 bg-muted/30 text-center text-xs font-semibold text-muted-foreground py-2">
           {dayOfWeekHeaders.map((day, idx) => (
-            <div
-              className={idx === 0 ? 'text-destructive/80' : idx === 6 ? 'text-blue-500' : ''}
-              key={day}
-            >
+            <div className={idx === 0 ? 'text-destructive/80' : idx === 6 ? 'text-blue-500' : ''} key={day}>
               {day}
             </div>
           ))}
@@ -190,7 +178,11 @@ export default function DividendCalendar() {
             return (
               <div
                 className={`min-h-21 sm:min-h-24 p-1.5 sm:p-2 transition-all flex flex-col justify-between ${
-                  !cell.isCurrentMonth ? 'bg-muted/10 opacity-35' : hasEvents ? 'cursor-pointer hover:bg-primary/5' : 'hover:bg-muted/20'
+                  !cell.isCurrentMonth
+                    ? 'bg-muted/10 opacity-35'
+                    : hasEvents
+                      ? 'cursor-pointer hover:bg-primary/5'
+                      : 'hover:bg-muted/20'
                 } ${isSelected ? 'ring-2 ring-primary ring-inset bg-primary/10' : ''}`}
                 key={idx}
                 onClick={() => {
@@ -205,7 +197,13 @@ export default function DividendCalendar() {
                 <div className="flex items-center justify-between">
                   <span
                     className={`inline-flex size-5.5 sm:size-6 items-center justify-center rounded-full text-xs font-semibold ${
-                      cell.isToday ? 'bg-primary text-primary-foreground font-bold shadow-xs' : dayOfWeek === 0 && cell.isCurrentMonth ? 'text-destructive' : dayOfWeek === 6 && cell.isCurrentMonth ? 'text-blue-500' : 'text-foreground/90'
+                      cell.isToday
+                        ? 'bg-primary text-primary-foreground font-bold shadow-xs'
+                        : dayOfWeek === 0 && cell.isCurrentMonth
+                          ? 'text-destructive'
+                          : dayOfWeek === 6 && cell.isCurrentMonth
+                            ? 'text-blue-500'
+                            : 'text-foreground/90'
                     }`}
                   >
                     {cell.dayNumber}
@@ -261,7 +259,9 @@ export default function DividendCalendar() {
           <div className="flex items-center gap-2">
             <CalendarDays className="size-4 text-primary" />
             <h4 className="text-xs font-bold text-foreground">
-              {selectedDay ? `${selectedMonthIndex + 1}월 ${selectedDay}일 배당 입금 상세` : `${selectedMonthIndex + 1}월 전체 배당 타임라인`}
+              {selectedDay
+                ? `${selectedMonthIndex + 1}월 ${selectedDay}일 배당 입금 상세`
+                : `${selectedMonthIndex + 1}월 전체 배당 타임라인`}
             </h4>
           </div>
           {selectedDay && (
@@ -305,7 +305,9 @@ export default function DividendCalendar() {
                       )}
                     </div>
                     <span className="text-[11px] text-muted-foreground/80 mt-0.5">
-                      {event.isExDividendDate ? `${selectedMonthIndex + 1}월 ${event.day}일 배당락 기준` : `${selectedMonthIndex + 1}월 ${event.day}일 지급 예정`}
+                      {event.isExDividendDate
+                        ? `${selectedMonthIndex + 1}월 ${event.day}일 배당락 기준`
+                        : `${selectedMonthIndex + 1}월 ${event.day}일 지급 예정`}
                     </span>
                   </div>
                 </div>

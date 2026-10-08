@@ -2,7 +2,20 @@ import dayjs from 'dayjs';
 
 import type { Stock } from '@/types';
 
-import { calculateStockMonthlyDividends, cn, convertCurrency, convertToKRW, decodeStocksFromBase64, encodeStocksToBase64, getComprehensiveTax, getMonthlyDistributionWeights, getStockDividends, mergeMonthlyDividends, normalizeStockRatios, setSearchParams } from './utils';
+import {
+  calculateStockMonthlyDividends,
+  cn,
+  convertCurrency,
+  convertToKRW,
+  decodeStocksFromBase64,
+  encodeStocksToBase64,
+  getComprehensiveTax,
+  getMonthlyDistributionWeights,
+  getStockDividends,
+  mergeMonthlyDividends,
+  normalizeStockRatios,
+  setSearchParams,
+} from './utils';
 
 describe('@/lib/utils', () => {
   beforeEach(() => {
@@ -112,9 +125,7 @@ describe('@/lib/utils', () => {
     name: 'JP Morgan Nasdaq Equity Premium Income',
     ticker: 'JEPQ',
     currency: 'USD',
-    dividendMonths: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-    ],
+    dividendMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     price: 58,
     yield: 10.2,
     ratio: 1,
@@ -125,9 +136,7 @@ describe('@/lib/utils', () => {
     name: 'iShares 0-3M Treasury Bond',
     ticker: 'SGOV',
     currency: 'USD',
-    dividendMonths: [
-      1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-    ],
+    dividendMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
     price: 100.64,
     yield: 4.2,
     ratio: 1,
@@ -137,9 +146,7 @@ describe('@/lib/utils', () => {
 
   /** {@link calculateStockMonthlyDividends} */
   it('calculateStockMonthlyDividends()', () => {
-    expect(
-      calculateStockMonthlyDividends([], 'USD', 10000),
-    ).toEqual({});
+    expect(calculateStockMonthlyDividends([], 'USD', 10000)).toEqual({});
 
     expect(calculateStockMonthlyDividends(TQQQ.dividendMonths, 'USD', 10000)).toEqual({
       3: 2125,
@@ -182,9 +189,7 @@ describe('@/lib/utils', () => {
   /** {@link mergeMonthlyDividends} */
   it('mergeMonthlyDividends()', () => {
     /** 빈 배열 */
-    expect(mergeMonthlyDividends([])).toEqual([
-      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    ]);
+    expect(mergeMonthlyDividends([])).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
 
     /** 단일 종목 - 분기 배당 (3, 6, 9, 12월) */
     expect(
@@ -198,9 +203,7 @@ describe('@/lib/utils', () => {
           },
         },
       ]),
-    ).toEqual([
-      0, 0, 102.45, 0, 0, 98.76, 0, 0, 105.33, 0, 0, 99.12,
-    ]);
+    ).toEqual([0, 0, 102.45, 0, 0, 98.76, 0, 0, 105.33, 0, 0, 99.12]);
 
     /** 단일 종목 - 매월 배당 */
     expect(
@@ -222,9 +225,7 @@ describe('@/lib/utils', () => {
           },
         },
       ]),
-    ).toEqual([
-      51.23, 49.87, 52.14, 50.65, 48.92, 51.78, 50.34, 49.56, 52.89, 51.45, 50.21, 49.67,
-    ]);
+    ).toEqual([51.23, 49.87, 52.14, 50.65, 48.92, 51.78, 50.34, 49.56, 52.89, 51.45, 50.21, 49.67]);
 
     /** 여러 종목 합산 */
     expect(
@@ -254,9 +255,7 @@ describe('@/lib/utils', () => {
           },
         },
       ]),
-    ).toEqual([
-      48.75, 51.25, 153.25, 50.5, 52.25, 149.75, 51.75, 49.25, 150.25, 52.5, 49.0, 154.0,
-    ]);
+    ).toEqual([48.75, 51.25, 153.25, 50.5, 52.25, 149.75, 51.75, 49.25, 150.25, 52.5, 49.0, 154.0]);
 
     /** 실제 Stock 데이터 활용 */
     const tqqqMonthly = calculateStockMonthlyDividends(TQQQ.dividendMonths, 'USD', 250);
@@ -301,9 +300,7 @@ describe('@/lib/utils', () => {
           },
         },
       ]),
-    ).toEqual([
-      100.25, 0, 0, 0, 0, 199.75, 0, 0, 0, 0, 0, 0,
-    ]);
+    ).toEqual([100.25, 0, 0, 0, 0, 199.75, 0, 0, 0, 0, 0, 0]);
   });
 
   /** {@link getMonthlyDistributionWeights} + 가중 분배 (차트식 월별 편차) */
@@ -348,10 +345,12 @@ describe('@/lib/utils', () => {
     expect(getComprehensiveTax(100000000, [{ income: 100000000, taxRate: 0.15 }])).toBe(6516000);
 
     /** 국가별 세율 혼합 (미국 15% + 영국 0%) */
-    expect(getComprehensiveTax(100000000, [
-      { income: 50000000, taxRate: 0.15 },
-      { income: 50000000, taxRate: 0 },
-    ])).toBe(14016000);
+    expect(
+      getComprehensiveTax(100000000, [
+        { income: 50000000, taxRate: 0.15 },
+        { income: 50000000, taxRate: 0 },
+      ]),
+    ).toBe(14016000);
 
     /** 고액 배당 (납부세액 발생) */
     expect(getComprehensiveTax(1000000000)).toBe(151837000);

@@ -34,12 +34,10 @@ export async function POST(request: NextRequest) {
               close: item.close,
             }));
 
-          const dividends = (events?.dividends || []).map(
-            (item) => ({
-              date: item.date,
-              amount: item.amount || 0,
-            }),
-          );
+          const dividends = (events?.dividends || []).map((item) => ({
+            date: item.date,
+            amount: item.amount || 0,
+          }));
 
           return {
             symbol,
@@ -61,8 +59,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ histories });
   } catch (error) {
     console.error('Stock history error:', error);
-    return NextResponse.json({
-      error: 'Failed to fetch stock histories',
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch stock histories',
+      },
+      { status: 500 },
+    );
   }
 }

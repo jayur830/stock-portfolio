@@ -32,7 +32,7 @@ export const DIVIDEND_KINGS: Record<string, { years: number; name: string }> = {
   JNJ: { years: 62, name: 'Johnson & Johnson' },
   KO: { years: 62, name: 'Coca-Cola' },
   CL: { years: 62, name: 'Colgate-Palmolive' },
-  LOW: { years: 62, name: 'Lowe\'s Companies' },
+  LOW: { years: 62, name: "Lowe's Companies" },
   HRL: { years: 58, name: 'Hormel Foods' },
   ABM: { years: 57, name: 'ABM Industries' },
   SYY: { years: 55, name: 'Sysco Corporation' },
@@ -52,7 +52,7 @@ export const DIVIDEND_KINGS: Record<string, { years: number; name: string }> = {
  */
 export const DIVIDEND_ARISTOCRATS: Record<string, { years: number; name: string }> = {
   O: { years: 31, name: 'Realty Income' },
-  MCD: { years: 48, name: 'McDonald\'s' },
+  MCD: { years: 48, name: "McDonald's" },
   WMT: { years: 51, name: 'Walmart' },
   XOM: { years: 42, name: 'Exxon Mobil' },
   CVX: { years: 37, name: 'Chevron' },
@@ -92,10 +92,7 @@ export const DIVIDEND_CHAMPIONS: Record<string, { years: number; name: string }>
 /**
  * 연도별 배당금 합산 및 5년 CAGR, 연속 증액 연수 계산
  */
-export function calculateDividendGrowth(
-  symbol: string,
-  dividendHistory?: DividendHistoryItem[],
-): DividendGrowthInfo {
+export function calculateDividendGrowth(symbol: string, dividendHistory?: DividendHistoryItem[]): DividendGrowthInfo {
   const upperSymbol = (symbol || '').toUpperCase().trim();
 
   // 1. 사전 정의된 공식 데이터베이스 확인
@@ -139,7 +136,8 @@ export function calculateDividendGrowth(
       for (let i = 0; i < years.length - 1; i++) {
         const currentAmount = yearlyMap[years[i]];
         const prevAmount = yearlyMap[years[i + 1]];
-        if (currentAmount >= prevAmount * 0.98) { // 2% 이내 오차 허용
+        if (currentAmount >= prevAmount * 0.98) {
+          // 2% 이내 오차 허용
           calculatedStreak++;
         } else {
           break;

@@ -7,20 +7,16 @@ import { useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { currencySymbols, exchangeRateCodes } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 const ExchangeRateChart = dynamic(() => import('./ExchangeRateChart'), {
-  loading: () => <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">차트 불러오는 중...</div>,
+  loading: () => (
+    <div className="h-72 flex items-center justify-center text-muted-foreground text-sm">차트 불러오는 중...</div>
+  ),
   ssr: false,
 });
 
@@ -28,18 +24,24 @@ const _exchangeRateCodes = exchangeRateCodes.filter((key) => key !== 'KRW');
 
 /** 환율 */
 export default function ExchangeRates() {
-  const [selectedCurrency, setSelectedCurrency] = useState<typeof _exchangeRateCodes[number]>('USD');
+  const [selectedCurrency, setSelectedCurrency] = useState<(typeof _exchangeRateCodes)[number]>('USD');
   const [modalCurrency, setModalCurrency] = useState<string | null>(null);
   const [isMobileChartOpen, setIsMobileChartOpen] = useState(false);
 
   const { control } = useFormContext<FormValues>();
-  const { field: { onChange, value: exchangeRates } } = useController({
+  const {
+    field: { onChange, value: exchangeRates },
+  } = useController({
     control,
     name: 'exchangeRates',
   });
 
   /** 환율 조회 */
-  const { data: exchangeRateData, isLoading: loadingExchangeRate, refetch: refetchExchangeRate } = useQuery({
+  const {
+    data: exchangeRateData,
+    isLoading: loadingExchangeRate,
+    refetch: refetchExchangeRate,
+  } = useQuery({
     queryKey: ['exchangeRates'],
     async queryFn() {
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/KRW');
@@ -59,7 +61,7 @@ export default function ExchangeRates() {
     if (exchangeRateData) {
       onChange(exchangeRateData);
     }
-  }, [exchangeRateData]);
+  }, [exchangeRateData, onChange]);
 
   /** 환율 조회 버튼 핸들러 */
   const handleFetchExchangeRate = async () => {

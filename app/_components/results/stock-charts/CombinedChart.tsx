@@ -47,9 +47,11 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
 
     let sortedDates = [
       ...new Set(
-        histories.flatMap((h) => h.data
-          .filter((d) => d.close != null && !isNaN(d.close) && d.close > 0)
-          .map((d) => dayjs(d.date).format('YYYY-MM-DD'))),
+        histories.flatMap((h) =>
+          h.data
+            .filter((d) => d.close != null && !isNaN(d.close) && d.close > 0)
+            .map((d) => dayjs(d.date).format('YYYY-MM-DD')),
+        ),
       ),
     ].sort();
 
@@ -58,7 +60,9 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       const periodOption = periodOptions.find((p) => p.value === selectedPeriod);
       if (periodOption) {
         const startDate = dayjs().subtract(periodOption.months, 'month');
-        sortedDates = sortedDates.filter((date) => dayjs(date).isAfter(startDate) || dayjs(date).isSame(startDate, 'day'));
+        sortedDates = sortedDates.filter(
+          (date) => dayjs(date).isAfter(startDate) || dayjs(date).isSame(startDate, 'day'),
+        );
       }
     }
 
@@ -128,9 +132,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
 
     return {
       backgroundColor: 'transparent',
-      color: [
-        '#2451f5', '#7a5af8', '#3b82f6', '#a855f7', '#f04438', '#6b8cff',
-      ],
+      color: ['#2451f5', '#7a5af8', '#3b82f6', '#a855f7', '#f04438', '#6b8cff'],
       textStyle: {
         color: isDark ? '#d1d5db' : '#374151',
       },
@@ -156,7 +158,9 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
             .filter((param: any) => param.value)
             .map((param: any) => {
               const ticker = param.seriesName.match(/\[(.*?)\]/)?.[1] || param.seriesName;
-              return isOverlap ? `${param.marker}${ticker}: ${param.value.toFixed(2)}%` : `${param.marker}${ticker}: ${currency === 'KRW' ? Math.round(param.value).toLocaleString('ko-KR') : param.value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}`;
+              return isOverlap
+                ? `${param.marker}${ticker}: ${param.value.toFixed(2)}%`
+                : `${param.marker}${ticker}: ${currency === 'KRW' ? Math.round(param.value).toLocaleString('ko-KR') : param.value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}`;
             })
             .join('<br />');
           return result + content;
@@ -254,7 +258,12 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
         </Button>
       </div>
       <div className="chart-viewport">
-        <ReactECharts lazyUpdate notMerge={false} option={combinedChartOption} style={{ height: '400px', width: '100%' }} />
+        <ReactECharts
+          lazyUpdate
+          notMerge={false}
+          option={combinedChartOption}
+          style={{ height: '400px', width: '100%' }}
+        />
       </div>
     </div>
   );

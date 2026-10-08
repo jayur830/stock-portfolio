@@ -14,7 +14,10 @@ export function cn(...inputs: ClassValue[]) {
  * @param params URLSearchParams의 인자 타입
  */
 /** @client */
-export function setSearchParams(pathname: string, params: { [key: string]: string | number | boolean | null | undefined }) {
+export function setSearchParams(
+  pathname: string,
+  params: { [key: string]: string | number | boolean | null | undefined },
+) {
   const filteredEntries = Object.entries(params)
     .filter(([_, value]) => value != null && value !== '')
     .map(([key, value]) => [key, String(value)]);
@@ -76,7 +79,7 @@ export const FOREIGN_TAX_RATES: { [key: string]: number } = {
   EUR: 0.26375, // 유럽 (독일 기준, 국가마다 상이)
   JPY: 0.15315, // 일본
   GBP: 0.0, // 영국 (배당세 면제)
-  CNY: 0.10, // 중국
+  CNY: 0.1, // 중국
   AUD: 0.0, // 호주 (배당세 면제)
   CAD: 0.25, // 캐나다
   CHF: 0.35, // 스위스
@@ -106,7 +109,7 @@ export const TAX_BRACKETS: {
   { limit: 88000000, rate: 0.24, deduction: 5760000 },
   { limit: 150000000, rate: 0.35, deduction: 15440000 },
   { limit: 300000000, rate: 0.38, deduction: 19940000 },
-  { limit: 500000000, rate: 0.40, deduction: 25940000 },
+  { limit: 500000000, rate: 0.4, deduction: 25940000 },
   { limit: 1000000000, rate: 0.42, deduction: 35940000 },
   { limit: Infinity, rate: 0.45, deduction: 65940000 },
 ];
@@ -341,13 +344,16 @@ export function mergeMonthlyDividends(
   stockDividends: Array<{ monthlyDividends: Record<number, number> }>,
 ): number[] {
   return stockDividends
-    .reduce((acc, { monthlyDividends }) => {
-    /** reduce로 리팩토링 */
-      Object.entries(monthlyDividends).forEach(([month, amount]) => {
-        acc[Number(month) - 1] += amount;
-      });
-      return acc;
-    }, Array(12).fill(0) as number[])
+    .reduce(
+      (acc, { monthlyDividends }) => {
+        /** reduce로 리팩토링 */
+        Object.entries(monthlyDividends).forEach(([month, amount]) => {
+          acc[Number(month) - 1] += amount;
+        });
+        return acc;
+      },
+      Array(12).fill(0) as number[],
+    )
     .map((value) => +value.toFixed(2));
 }
 

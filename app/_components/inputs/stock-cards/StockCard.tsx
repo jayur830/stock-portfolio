@@ -40,7 +40,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { field: { value: stocks, onChange: onChangeStocks } } = useController({
+  const {
+    field: { value: stocks, onChange: onChangeStocks },
+  } = useController({
     control,
     name: 'stocks',
   });
@@ -389,7 +391,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             />
           </div>
           <div className="field-group">
-            <label className="field-label" htmlFor={`stock-name-${index}`}>종목명</label>
+            <label className="field-label" htmlFor={`stock-name-${index}`}>
+              종목명
+            </label>
             <Input
               className="stock-meta-input"
               disabled={!isEnabled}
@@ -403,7 +407,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
             />
           </div>
           <div className="field-group">
-            <label className="field-label" htmlFor={`stock-price-${index}`}>현재 가격 ({stock.currency})</label>
+            <label className="field-label" htmlFor={`stock-price-${index}`}>
+              현재 가격 ({stock.currency})
+            </label>
             <Input
               aria-label="현재 가격"
               className="stock-meta-input"
@@ -411,7 +417,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               id={`stock-price-${index}`}
               min={0}
               onChange={(e) => {
-                onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)));
+                onChangeStocks(
+                  stocks.map((s, i) => (i === index ? { ...s, price: parseFloat(e.target.value) || 0 } : s)),
+                );
               }}
               placeholder="가격"
               step="any"
@@ -429,10 +437,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           <div className="date-controls">
             <Popover>
               <PopoverTrigger asChild disabled={!isEnabled}>
-                <Button
-                  className={cn('date-picker-button', !stock.purchaseDate && 'is-empty')}
-                  variant="outline"
-                >
+                <Button className={cn('date-picker-button', !stock.purchaseDate && 'is-empty')} variant="outline">
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {stock.purchaseDate ? stock.purchaseDate.format('YYYY년 M월 D일') : <span>날짜를 선택하세요</span>}
                 </Button>
@@ -445,7 +450,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   locale={ko}
                   mode="single"
                   onSelect={(date) => {
-                    onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, purchaseDate: date ? dayjs(date) : undefined } : s)));
+                    onChangeStocks(
+                      stocks.map((s, i) => (i === index ? { ...s, purchaseDate: date ? dayjs(date) : undefined } : s)),
+                    );
                   }}
                   selected={stock.purchaseDate ? stock.purchaseDate.toDate() : undefined}
                 />
@@ -463,7 +470,11 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   disabled={!isEnabled}
                   key={label}
                   onClick={() => {
-                    onChangeStocks(stocks.map((s, i) => (i === index ? ({ ...s, purchaseDate: dayjs().subtract(months, 'month') }) : s)));
+                    onChangeStocks(
+                      stocks.map((s, i) =>
+                        i === index ? { ...s, purchaseDate: dayjs().subtract(months, 'month') } : s,
+                      ),
+                    );
                   }}
                   size="sm"
                   type="button"
@@ -503,12 +514,14 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                 onClick={() => {
                   // 월별: 모든 월 선택 (1~12)
                   onChangeStocks(
-                    stocks.map((s, i) => (i === index ? {
-                      ...s,
-                      dividendMonths: [
-                        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-                      ],
-                    } : s)),
+                    stocks.map((s, i) =>
+                      i === index
+                        ? {
+                            ...s,
+                            dividendMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+                          }
+                        : s,
+                    ),
                   );
                 }}
                 size="sm"
@@ -573,7 +586,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
 
         <div className="stock-metric-grid">
           <div className="metric-control">
-            <label className="metric-label" htmlFor={`stock-yield-${index}`}>연 배당률</label>
+            <label className="metric-label" htmlFor={`stock-yield-${index}`}>
+              연 배당률
+            </label>
             <div className="metric-input-wrap">
               <Input
                 className="metric-input"
@@ -594,7 +609,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
 
           <div className="metric-control">
             <div className="field-label-row">
-              <label className="metric-label" htmlFor={`stock-ratio-${index}`}>포트폴리오 비중</label>
+              <label className="metric-label" htmlFor={`stock-ratio-${index}`}>
+                포트폴리오 비중
+              </label>
               <span className="field-help">합계 100%</span>
             </div>
             <div className="ratio-layout">
@@ -607,7 +624,9 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   max={100}
                   min={0}
                   onChange={(e) => {
-                    onChangeStocks(stocks.map((s, i) => (i === index ? { ...s, ratio: parseFloat(e.target.value) || 0 } : s)));
+                    onChangeStocks(
+                      stocks.map((s, i) => (i === index ? { ...s, ratio: parseFloat(e.target.value) || 0 } : s)),
+                    );
                   }}
                   placeholder="비율"
                   step={1}

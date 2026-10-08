@@ -10,163 +10,247 @@ export const contentType = 'image/png';
 
 export default async function Image() {
   return new ImageResponse(
-    (
+    <div
+      style={{
+        background: 'linear-gradient(130deg, #0B1226 0%, #16295E 52%, #2451F5 100%)',
+        color: '#f3f4ff',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+        padding: '58px 68px',
+        position: 'relative',
+        width: '100%',
+      }}
+    >
       <div
         style={{
-          background: 'linear-gradient(130deg, #0B1226 0%, #16295E 52%, #2451F5 100%)',
-          color: '#f3f4ff',
+          border: '1px solid rgba(199, 210, 254, 0.14)',
+          borderRadius: '50%',
+          bottom: '-230px',
           display: 'flex',
-          flexDirection: 'column',
-          height: '100%',
-          overflow: 'hidden',
-          padding: '58px 68px',
-          position: 'relative',
-          width: '100%',
+          height: '520px',
+          position: 'absolute',
+          right: '-110px',
+          width: '520px',
         }}
-      >
+      />
+      <div
+        style={{
+          border: '1px solid rgba(199, 210, 254, 0.12)',
+          borderRadius: '50%',
+          bottom: '-125px',
+          display: 'flex',
+          height: '330px',
+          position: 'absolute',
+          right: '8px',
+          width: '330px',
+        }}
+      />
+
+      <div style={{ alignItems: 'center', display: 'flex', gap: '14px' }}>
         <div
           style={{
-            border: '1px solid rgba(199, 210, 254, 0.14)',
-            borderRadius: '50%',
-            bottom: '-230px',
+            alignItems: 'center',
+            background: 'linear-gradient(145deg, #6366f1 0%, #7c3aed 100%)',
+            borderRadius: '14px',
             display: 'flex',
-            height: '520px',
-            position: 'absolute',
-            right: '-110px',
-            width: '520px',
-          }}
-        />
-        <div
-          style={{
-            border: '1px solid rgba(199, 210, 254, 0.12)',
-            borderRadius: '50%',
-            bottom: '-125px',
-            display: 'flex',
-            height: '330px',
-            position: 'absolute',
-            right: '8px',
-            width: '330px',
-          }}
-        />
-
-        <div style={{ alignItems: 'center', display: 'flex', gap: '14px' }}>
-          <div
-            style={{
-              alignItems: 'center',
-              background: 'linear-gradient(145deg, #6366f1 0%, #7c3aed 100%)',
-              borderRadius: '14px',
-              display: 'flex',
-              height: '48px',
-              justifyContent: 'center',
-              width: '48px',
-            }}
-          >
-            <svg fill="none" height="26" viewBox="0 0 227 227" width="26" xmlns="http://www.w3.org/2000/svg">
-              <rect fill="#FFFFFF" height="27" rx="4" width="51" y="200" />
-              <rect fill="#FFFFFF" height="50" rx="4" width="53" x="57" y="177" />
-              <rect fill="#FFFFFF" height="104" rx="4" width="54" x="116" y="123" />
-              <rect fill="#FFFFFF" height="164" rx="4" width="51" x="176" y="63" />
-              <path
-                d="M215 7L163.847 16.1291L197.329 55.8646L215 7ZM18 173L20.8997 176.441L186.929 36.5384L184.029 33.0972L181.13 29.656L15.1003 169.559L18 173Z"
-                fill="#FFFFFF"
-              />
-            </svg>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <div style={{ color: '#ffffff', display: 'flex', fontSize: '21px', fontWeight: 800, letterSpacing: '6px' }}>
-              <span>DIVIDEND</span>
-              <span style={{ color: '#7EA2FF' }}>LAB</span>
-            </div>
-            <div style={{ color: 'rgba(230, 233, 251, 0.62)', display: 'flex', fontSize: '10px', fontWeight: 700, letterSpacing: '4px', marginTop: '7px' }}>
-              INCOME, BY DESIGN
-            </div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', marginTop: '70px', width: '690px' }}>
-          <div
-            style={{
-              alignItems: 'center',
-              border: '1px solid rgba(199, 210, 254, 0.28)',
-              borderRadius: '999px',
-              color: '#DCE6FF',
-              display: 'flex',
-              fontSize: '13px',
-              fontWeight: 800,
-              letterSpacing: '3px',
-              padding: '10px 15px',
-            }}
-          >
-            DIVIDEND PORTFOLIO PLANNER
-          </div>
-          <div style={{ color: '#ffffff', display: 'flex', fontSize: '54px', fontWeight: 750, letterSpacing: '-2px', lineHeight: 1.14, marginTop: '24px' }}>
-            배당을 모으는 일이,
-          </div>
-          <div style={{ color: '#7EA2FF', display: 'flex', fontSize: '64px', fontWeight: 800, letterSpacing: '-3px', lineHeight: 1.12 }}>
-            계획이 되도록.
-          </div>
-          <div style={{ color: 'rgba(230, 233, 251, 0.72)', display: 'flex', fontSize: '18px', lineHeight: 1.5, marginTop: '22px' }}>
-            투자금과 목표 배당금으로 설계하는 나만의 현금흐름 플래너
-          </div>
-        </div>
-
-        <div
-          style={{
-            background: 'rgba(255, 255, 255, 0.1)',
-            border: '1px solid rgba(199, 210, 254, 0.22)',
-            borderRadius: '22px',
-            display: 'flex',
-            flexDirection: 'column',
-            height: '278px',
-            padding: '26px',
-            position: 'absolute',
-            right: '74px',
-            top: '150px',
-            width: '326px',
+            height: '48px',
+            justifyContent: 'center',
+            width: '48px',
           }}
         >
-          <div style={{ alignItems: 'flex-start', display: 'flex', justifyContent: 'space-between' }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ color: '#B2CCFF', display: 'flex', fontSize: '10px', fontWeight: 800, letterSpacing: '3px' }}>YOUR INCOME PLAN</div>
-              <div style={{ color: '#ffffff', display: 'flex', fontSize: '23px', fontWeight: 750, marginTop: '10px' }}>Monthly dividend</div>
-              <div style={{ color: 'rgba(230, 233, 251, 0.58)', display: 'flex', fontSize: '11px', marginTop: '5px' }}>작은 습관이 만드는 큰 흐름</div>
-            </div>
-            <div style={{ color: '#DCE6FF', display: 'flex', fontSize: '11px', fontWeight: 750 }}>↗ LIVE</div>
-          </div>
-          <div style={{ display: 'flex', height: '105px', marginTop: '22px', position: 'relative', width: '100%' }}>
-            <div style={{ borderBottom: '1px solid rgba(199, 210, 254, 0.2)', borderTop: '1px solid rgba(199, 210, 254, 0.1)', display: 'flex', height: '54px', position: 'absolute', top: '24px', width: '100%' }} />
-            <svg fill="none" height="105" viewBox="0 0 274 105" width="274" xmlns="http://www.w3.org/2000/svg">
-              <path d="M2 89C22 84 35 71 53 76C74 82 81 57 105 63C126 69 142 43 161 52C180 61 198 29 217 38C236 47 247 14 272 20" stroke="#7EA2FF" strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" />
-              <circle cx="217" cy="38" fill="#FFFFFF" r="5" stroke="#2451F5" strokeWidth="2" />
-            </svg>
-          </div>
-          <div style={{ color: 'rgba(230, 233, 251, 0.54)', display: 'flex', fontSize: '10px', justifyContent: 'space-between', marginTop: '10px' }}>
-            <span>NOW</span>
-            <span>12 MONTHS</span>
-          </div>
+          <svg fill="none" height="26" viewBox="0 0 227 227" width="26" xmlns="http://www.w3.org/2000/svg">
+            <rect fill="#FFFFFF" height="27" rx="4" width="51" y="200" />
+            <rect fill="#FFFFFF" height="50" rx="4" width="53" x="57" y="177" />
+            <rect fill="#FFFFFF" height="104" rx="4" width="54" x="116" y="123" />
+            <rect fill="#FFFFFF" height="164" rx="4" width="51" x="176" y="63" />
+            <path
+              d="M215 7L163.847 16.1291L197.329 55.8646L215 7ZM18 173L20.8997 176.441L186.929 36.5384L184.029 33.0972L181.13 29.656L15.1003 169.559L18 173Z"
+              fill="#FFFFFF"
+            />
+          </svg>
         </div>
-
-        <div style={{ alignItems: 'center', bottom: '52px', color: 'rgba(230, 233, 251, 0.68)', display: 'flex', fontSize: '13px', fontWeight: 700, gap: '20px', position: 'absolute' }}>
-          <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
-            <span style={{ color: '#DCE6FF', fontWeight: 800 }}>01</span>
-            <span>금액 설정</span>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ color: '#ffffff', display: 'flex', fontSize: '21px', fontWeight: 800, letterSpacing: '6px' }}>
+            <span>DIVIDEND</span>
+            <span style={{ color: '#7EA2FF' }}>LAB</span>
           </div>
-          <span style={{ color: '#7EA2FF' }}>•</span>
-          <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
-            <span style={{ color: '#DCE6FF', fontWeight: 800 }}>02</span>
-            <span>종목 배분</span>
+          <div
+            style={{
+              color: 'rgba(230, 233, 251, 0.62)',
+              display: 'flex',
+              fontSize: '10px',
+              fontWeight: 700,
+              letterSpacing: '4px',
+              marginTop: '7px',
+            }}
+          >
+            INCOME, BY DESIGN
           </div>
-          <span style={{ color: '#7EA2FF' }}>•</span>
-          <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
-            <span style={{ color: '#DCE6FF', fontWeight: 800 }}>03</span>
-            <span>현금흐름 확인</span>
-          </div>
-        </div>
-        <div style={{ bottom: '52px', color: 'rgba(230, 233, 251, 0.5)', display: 'flex', fontSize: '13px', position: 'absolute', right: '74px' }}>
-          stock-portfolio.opentoyapp.kr
         </div>
       </div>
-    ),
+
+      <div style={{ display: 'flex', flexDirection: 'column', marginTop: '70px', width: '690px' }}>
+        <div
+          style={{
+            alignItems: 'center',
+            border: '1px solid rgba(199, 210, 254, 0.28)',
+            borderRadius: '999px',
+            color: '#DCE6FF',
+            display: 'flex',
+            fontSize: '13px',
+            fontWeight: 800,
+            letterSpacing: '3px',
+            padding: '10px 15px',
+          }}
+        >
+          DIVIDEND PORTFOLIO PLANNER
+        </div>
+        <div
+          style={{
+            color: '#ffffff',
+            display: 'flex',
+            fontSize: '54px',
+            fontWeight: 750,
+            letterSpacing: '-2px',
+            lineHeight: 1.14,
+            marginTop: '24px',
+          }}
+        >
+          배당을 모으는 일이,
+        </div>
+        <div
+          style={{
+            color: '#7EA2FF',
+            display: 'flex',
+            fontSize: '64px',
+            fontWeight: 800,
+            letterSpacing: '-3px',
+            lineHeight: 1.12,
+          }}
+        >
+          계획이 되도록.
+        </div>
+        <div
+          style={{
+            color: 'rgba(230, 233, 251, 0.72)',
+            display: 'flex',
+            fontSize: '18px',
+            lineHeight: 1.5,
+            marginTop: '22px',
+          }}
+        >
+          투자금과 목표 배당금으로 설계하는 나만의 현금흐름 플래너
+        </div>
+      </div>
+
+      <div
+        style={{
+          background: 'rgba(255, 255, 255, 0.1)',
+          border: '1px solid rgba(199, 210, 254, 0.22)',
+          borderRadius: '22px',
+          display: 'flex',
+          flexDirection: 'column',
+          height: '278px',
+          padding: '26px',
+          position: 'absolute',
+          right: '74px',
+          top: '150px',
+          width: '326px',
+        }}
+      >
+        <div style={{ alignItems: 'flex-start', display: 'flex', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <div style={{ color: '#B2CCFF', display: 'flex', fontSize: '10px', fontWeight: 800, letterSpacing: '3px' }}>
+              YOUR INCOME PLAN
+            </div>
+            <div style={{ color: '#ffffff', display: 'flex', fontSize: '23px', fontWeight: 750, marginTop: '10px' }}>
+              Monthly dividend
+            </div>
+            <div style={{ color: 'rgba(230, 233, 251, 0.58)', display: 'flex', fontSize: '11px', marginTop: '5px' }}>
+              작은 습관이 만드는 큰 흐름
+            </div>
+          </div>
+          <div style={{ color: '#DCE6FF', display: 'flex', fontSize: '11px', fontWeight: 750 }}>↗ LIVE</div>
+        </div>
+        <div style={{ display: 'flex', height: '105px', marginTop: '22px', position: 'relative', width: '100%' }}>
+          <div
+            style={{
+              borderBottom: '1px solid rgba(199, 210, 254, 0.2)',
+              borderTop: '1px solid rgba(199, 210, 254, 0.1)',
+              display: 'flex',
+              height: '54px',
+              position: 'absolute',
+              top: '24px',
+              width: '100%',
+            }}
+          />
+          <svg fill="none" height="105" viewBox="0 0 274 105" width="274" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M2 89C22 84 35 71 53 76C74 82 81 57 105 63C126 69 142 43 161 52C180 61 198 29 217 38C236 47 247 14 272 20"
+              stroke="#7EA2FF"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="3"
+            />
+            <circle cx="217" cy="38" fill="#FFFFFF" r="5" stroke="#2451F5" strokeWidth="2" />
+          </svg>
+        </div>
+        <div
+          style={{
+            color: 'rgba(230, 233, 251, 0.54)',
+            display: 'flex',
+            fontSize: '10px',
+            justifyContent: 'space-between',
+            marginTop: '10px',
+          }}
+        >
+          <span>NOW</span>
+          <span>12 MONTHS</span>
+        </div>
+      </div>
+
+      <div
+        style={{
+          alignItems: 'center',
+          bottom: '52px',
+          color: 'rgba(230, 233, 251, 0.68)',
+          display: 'flex',
+          fontSize: '13px',
+          fontWeight: 700,
+          gap: '20px',
+          position: 'absolute',
+        }}
+      >
+        <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
+          <span style={{ color: '#DCE6FF', fontWeight: 800 }}>01</span>
+          <span>금액 설정</span>
+        </div>
+        <span style={{ color: '#7EA2FF' }}>•</span>
+        <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
+          <span style={{ color: '#DCE6FF', fontWeight: 800 }}>02</span>
+          <span>종목 배분</span>
+        </div>
+        <span style={{ color: '#7EA2FF' }}>•</span>
+        <div style={{ alignItems: 'center', display: 'flex', gap: '5px' }}>
+          <span style={{ color: '#DCE6FF', fontWeight: 800 }}>03</span>
+          <span>현금흐름 확인</span>
+        </div>
+      </div>
+      <div
+        style={{
+          bottom: '52px',
+          color: 'rgba(230, 233, 251, 0.5)',
+          display: 'flex',
+          fontSize: '13px',
+          position: 'absolute',
+          right: '74px',
+        }}
+      >
+        stock-portfolio.opentoyapp.kr
+      </div>
+    </div>,
     {
       ...size,
     },

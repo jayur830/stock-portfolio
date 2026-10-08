@@ -30,7 +30,10 @@ export default function GuideSection() {
   ];
 
   return (
-    <section aria-labelledby="dividend-guide-title" className="mt-16 w-full space-y-12 border-t border-border/70 pt-12 pb-6">
+    <section
+      aria-labelledby="dividend-guide-title"
+      className="mt-16 w-full space-y-12 border-t border-border/70 pt-12 pb-6"
+    >
       {/* 섹션 헤더 */}
       <div className="flex flex-col gap-2">
         <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
@@ -41,7 +44,8 @@ export default function GuideSection() {
           배당주 포트폴리오 설계 가이드 & 투자 상식
         </h2>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-3xl leading-relaxed">
-          지속 가능한 월 현금흐름을 만들기 위한 핵심 투자 원칙과 세금 상식을 확인하고 더 스마트한 배당 포트폴리오를 완성해 보세요.
+          지속 가능한 월 현금흐름을 만들기 위한 핵심 투자 원칙과 세금 상식을 확인하고 더 스마트한 배당 포트폴리오를
+          완성해 보세요.
         </p>
       </div>
 
@@ -59,7 +63,9 @@ export default function GuideSection() {
             </div>
           </div>
           <p className="text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
-            배당률이 연 10%가 넘는 초고배당주는 주가 하락으로 인한 원금 손실이나 배당 삭감(Dividend Cut) 위험이 있습니다. S&P 500 지수 ETF나 SCHD처럼 연속 배당 증액 역사를 지닌 우량 배당성장주와 인컴형 고배당주를 적절히 배분하여 <strong>원금 보존과 인컴 성장</strong>을 동시에 챙기세요.
+            배당률이 연 10%가 넘는 초고배당주는 주가 하락으로 인한 원금 손실이나 배당 삭감(Dividend Cut) 위험이
+            있습니다. S&P 500 지수 ETF나 SCHD처럼 연속 배당 증액 역사를 지닌 우량 배당성장주와 인컴형 고배당주를 적절히
+            배분하여 <strong>원금 보존과 인컴 성장</strong>을 동시에 챙기세요.
           </p>
         </article>
 
@@ -75,7 +81,9 @@ export default function GuideSection() {
             </div>
           </div>
           <p className="text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
-            미국 주식은 3개월마다 배당을 지급하는 분기 배당이 일반적입니다. [1·4·7·10월 주기], [2·5·8·11월 주기], [3·6·9·12월 주기]의 종목들을 교차로 조합하거나 월배당 ETF(JEPI, O 등)를 함께 구성하면 <strong>1년 12달 매월 끊기지 않는 월급 형태의 배당금</strong>을 만들 수 있습니다.
+            미국 주식은 3개월마다 배당을 지급하는 분기 배당이 일반적입니다. [1·4·7·10월 주기], [2·5·8·11월 주기],
+            [3·6·9·12월 주기]의 종목들을 교차로 조합하거나 월배당 ETF(JEPI, O 등)를 함께 구성하면{' '}
+            <strong>1년 12달 매월 끊기지 않는 월급 형태의 배당금</strong>을 만들 수 있습니다.
           </p>
         </article>
 
@@ -91,7 +99,9 @@ export default function GuideSection() {
             </div>
           </div>
           <p className="text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
-            모든 배당금은 수령 시 15.4%가 원천징수됩니다. 연간 금융소득(이자+배당) 합계가 <strong>2,000만원을 초과</strong>하면 금융소득종합과세 대상자가 되며, 건강보험 피부양자 자격 박탈 기준이 되기도 합니다. ISA 계좌나 연금저축펀드 등 절세 계좌를 적극 활용하는 것이 중요합니다.
+            모든 배당금은 수령 시 15.4%가 원천징수됩니다. 연간 금융소득(이자+배당) 합계가{' '}
+            <strong>2,000만원을 초과</strong>하면 금융소득종합과세 대상자가 되며, 건강보험 피부양자 자격 박탈 기준이
+            되기도 합니다. ISA 계좌나 연금저축펀드 등 절세 계좌를 적극 활용하는 것이 중요합니다.
           </p>
         </article>
 
@@ -107,7 +117,9 @@ export default function GuideSection() {
             </div>
           </div>
           <p className="text-xs sm:text-[13px] leading-relaxed text-muted-foreground">
-            배당을 받기 위해서는 주주명부에 등재되어야 하므로 결제일(T+2)을 감안하여 <strong>배당락일 전일까지 매수를 완료</strong>해야 합니다. 본 서비스의 배당 캘린더에서 종목별 배당락일과 예상 입금일을 미리 확인하고 매수 계획을 세우세요.
+            배당을 받기 위해서는 주주명부에 등재되어야 하므로 결제일(T+2)을 감안하여{' '}
+            <strong>배당락일 전일까지 매수를 완료</strong>해야 합니다. 본 서비스의 배당 캘린더에서 종목별 배당락일과
+            예상 입금일을 미리 확인하고 매수 계획을 세우세요.
           </p>
         </article>
       </div>
@@ -118,9 +130,7 @@ export default function GuideSection() {
           <HelpCircle size={15} />
           <span>FREQUENTLY ASKED QUESTIONS</span>
         </div>
-        <h3 className="text-lg sm:text-xl font-bold text-foreground">
-          자주 묻는 질문 (FAQ)
-        </h3>
+        <h3 className="text-lg sm:text-xl font-bold text-foreground">자주 묻는 질문 (FAQ)</h3>
 
         <div className="space-y-3">
           {faqs.map((faq, index) => (

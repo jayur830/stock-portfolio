@@ -41,9 +41,7 @@ describe('calendar-utils', () => {
       },
       {
         currency: 'USD',
-        dividendMonths: [
-          1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
-        ],
+        dividendMonths: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
         enabled: true,
         name: 'JPMorgan Equity Premium ETF',
         price: 55,

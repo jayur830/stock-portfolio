@@ -4,7 +4,8 @@ const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'WebApplication',
   name: '배당주 포트폴리오 계산기',
-  description: '배당주 투자를 위한 포트폴리오 관리 및 배당금 계산 도구. 총 투자금으로 예상 배당금 계산, 목표 배당금으로 필요 투자금 계산. 국내/해외 주식 지원, 환율 자동 환산.',
+  description:
+    '배당주 투자를 위한 포트폴리오 관리 및 배당금 계산 도구. 총 투자금으로 예상 배당금 계산, 목표 배당금으로 필요 투자금 계산. 국내/해외 주식 지원, 환율 자동 환산.',
   url: 'https://stock-portfolio.opentoyapp.kr',
   applicationCategory: 'FinanceApplication',
   operatingSystem: 'Web Browser',

@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -46,7 +46,7 @@
 
 :root {
   --radius: 1rem;
-  --font-sans-kr: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+  --font-sans-kr: 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --background: #f2f4f9;
   --foreground: #101828;
   --card: #ffffff;
@@ -124,7 +124,11 @@
     width: 100%;
     min-height: 100%;
     background-color: var(--background);
-    background-image: radial-gradient(60rem 22rem at 50% -10rem, color-mix(in srgb, var(--primary) 8%, transparent), transparent 70%);
+    background-image: radial-gradient(
+      60rem 22rem at 50% -10rem,
+      color-mix(in srgb, var(--primary) 8%, transparent),
+      transparent 70%
+    );
     background-repeat: no-repeat;
   }
 
@@ -132,8 +136,8 @@
     @apply text-foreground;
     display: flex;
     flex-direction: column;
-    font-family: var(--font-sans-kr), "Pretendard", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
-    font-feature-settings: "tnum" 1;
+    font-family: var(--font-sans-kr), 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    font-feature-settings: 'tnum' 1;
     overflow-x: hidden;
   }
 
@@ -158,7 +162,9 @@
   .chart-card,
   .ledger-total,
   .search-dropdown {
-    transition: background-color 0.3s ease, border-color 0.3s ease;
+    transition:
+      background-color 0.3s ease,
+      border-color 0.3s ease;
   }
 }
 
@@ -258,7 +264,7 @@
     width: auto;
   }
 
-  .calculator-mode-list[data-slot="tabs-list"] {
+  .calculator-mode-list[data-slot='tabs-list'] {
     display: flex;
     width: auto;
     height: 2.5rem;
@@ -270,7 +276,7 @@
     box-shadow: none;
   }
 
-  .calculator-mode-trigger[data-slot="tabs-trigger"] {
+  .calculator-mode-trigger[data-slot='tabs-trigger'] {
     height: 100%;
     min-width: 7.25rem;
     padding: 0.45rem 1rem;
@@ -281,7 +287,7 @@
     font-weight: 700;
   }
 
-  .calculator-mode-trigger[data-slot="tabs-trigger"][data-state="active"] {
+  .calculator-mode-trigger[data-slot='tabs-trigger'][data-state='active'] {
     color: var(--foreground);
     background: var(--card);
     box-shadow: 0 1px 3px rgb(16 24 40 / 0.12);
@@ -295,7 +301,7 @@
     background: var(--muted);
   }
 
-  .theme-switch[data-state="checked"] {
+  .theme-switch[data-state='checked'] {
     background: var(--primary);
   }
 
@@ -306,7 +312,7 @@
     background: var(--card);
   }
 
-  .theme-switch[data-state="checked"] .theme-switch-thumb {
+  .theme-switch[data-state='checked'] .theme-switch-thumb {
     color: var(--primary);
     background: var(--card);
   }
@@ -337,7 +343,7 @@
   .hero-section::before,
   .hero-section::after {
     position: absolute;
-    content: "";
+    content: '';
     pointer-events: none;
     border: 1px solid color-mix(in srgb, #c7d2fe 15%, transparent);
     border-radius: 50%;
@@ -439,7 +445,7 @@
     height: 0.3rem;
     margin-left: 0.2rem;
     border-radius: 50%;
-    content: "";
+    content: '';
     background: #5eead4;
   }
 
@@ -481,7 +487,7 @@
     height: 5rem;
     border: 1px solid color-mix(in srgb, #c7d2fe 26%, transparent);
     border-radius: 1.25rem;
-    content: "";
+    content: '';
     background: color-mix(in srgb, #5eead4 12%, transparent);
   }
 
@@ -528,7 +534,13 @@
     margin-top: 1.5rem;
     overflow: hidden;
     border-bottom: 1px solid color-mix(in srgb, #c7d2fe 19%, transparent);
-    background: repeating-linear-gradient(to bottom, transparent 0, transparent 2.05rem, color-mix(in srgb, #c7d2fe 10%, transparent) 2.1rem, transparent 2.15rem);
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 2.05rem,
+      color-mix(in srgb, #c7d2fe 10%, transparent) 2.1rem,
+      transparent 2.15rem
+    );
   }
 
   .hero-chart svg {
@@ -1054,7 +1066,7 @@
     background: color-mix(in srgb, var(--destructive) 10%, transparent);
   }
 
-  .stock-card-header[data-slot="card-header"] {
+  .stock-card-header[data-slot='card-header'] {
     display: flex;
     grid-template-rows: none;
     gap: 1.1rem;
@@ -1207,7 +1219,7 @@
     color: var(--muted-foreground);
   }
 
-  .stock-card-content[data-slot="card-content"] {
+  .stock-card-content[data-slot='card-content'] {
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
@@ -1358,7 +1370,7 @@
     width: 0.38rem;
     height: 0.38rem;
     border-radius: 50%;
-    content: "";
+    content: '';
     background: var(--primary);
   }
 
@@ -1910,7 +1922,7 @@
     padding: 1rem;
   }
 
-  .chart-section[data-slot="tabs"] {
+  .chart-section[data-slot='tabs'] {
     gap: 1.1rem;
     margin-top: 0.15rem;
   }
@@ -1926,7 +1938,7 @@
     gap: 1rem;
   }
 
-  .chart-tabs-list[data-slot="tabs-list"] {
+  .chart-tabs-list[data-slot='tabs-list'] {
     border-radius: 0.75rem;
   }
 
@@ -2052,11 +2064,11 @@
       display: none;
     }
 
-    .calculator-mode-list[data-slot="tabs-list"] {
+    .calculator-mode-list[data-slot='tabs-list'] {
       height: 2.4rem;
     }
 
-    .calculator-mode-trigger[data-slot="tabs-trigger"] {
+    .calculator-mode-trigger[data-slot='tabs-trigger'] {
       min-width: 0;
       padding: 0.4rem 0.8rem;
       font-size: 0.7rem;
@@ -2145,8 +2157,8 @@
     }
 
     .stock-card-topbar,
-    .stock-card-header[data-slot="card-header"],
-    .stock-card-content[data-slot="card-content"] {
+    .stock-card-header[data-slot='card-header'],
+    .stock-card-content[data-slot='card-content'] {
       padding-left: 1rem !important;
       padding-right: 1rem !important;
     }
@@ -2156,12 +2168,12 @@
       padding-bottom: 0.85rem;
     }
 
-    .stock-card-header[data-slot="card-header"],
-    .stock-card-content[data-slot="card-content"] {
+    .stock-card-header[data-slot='card-header'],
+    .stock-card-content[data-slot='card-content'] {
       gap: 0.9rem;
     }
 
-    .stock-card-content[data-slot="card-content"] {
+    .stock-card-content[data-slot='card-content'] {
       padding-top: 1rem;
       padding-bottom: 1rem;
     }
@@ -2439,7 +2451,7 @@
     background: color-mix(in srgb, var(--primary) 9%, var(--card));
   }
 
-  .calculator-mode-trigger[data-slot="tabs-trigger"][data-state="active"] {
+  .calculator-mode-trigger[data-slot='tabs-trigger'][data-state='active'] {
     color: var(--foreground);
     background: var(--card);
   }

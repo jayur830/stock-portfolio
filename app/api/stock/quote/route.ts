@@ -47,9 +47,7 @@ export async function GET(request: NextRequest) {
         }
 
         // 최근 1년 배당 필터링
-        const recentDividends = dividendHistory.filter(
-          (div) => new Date(div.date) >= oneYearAgo,
-        );
+        const recentDividends = dividendHistory.filter((div) => new Date(div.date) >= oneYearAgo);
 
         // 배당 지급 월 추출 (최근 1년 기준)
         const months = new Set(
@@ -95,8 +93,11 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Stock quote error:', error);
-    return NextResponse.json({
-      error: 'Failed to fetch stock quote',
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch stock quote',
+      },
+      { status: 500 },
+    );
   }
 }
