@@ -4,7 +4,6 @@ import { Calculator, ChevronRight, CircleDollarSign, Scale } from 'lucide-react'
 import dynamic from 'next/dynamic';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
-import GlassBox, { defaultOptics } from '@/components/glass-box';
 import { Button } from '@/components/ui/button';
 import { mergeMonthlyDividends, normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
@@ -112,54 +111,14 @@ export default function Results() {
       </div>
 
       <div className="result-action-row">
-        <GlassBox
-          className="glass-action glass-action-main"
-          optics={{
-            ...defaultOptics,
-            strength: 0.4,
-            curvature: 0.3,
-            sheen: 0.15,
-            specular: 0.3,
-            glow: 0,
-          }}
-          radius={12}
-        >
-          <CalculateButton className="calculate-action" control={control}>
-            <Calculator size={17} />
-            결과 계산하기
-          </CalculateButton>
-        </GlassBox>
-        <GlassBox
-          className="glass-action"
-          optics={{
-            ...defaultOptics,
-            strength: 0.4,
-            curvature: 0.3,
-            sheen: 0.15,
-            specular: 0.3,
-            glow: 0,
-          }}
-        >
-          <Button className="reset-action" type="reset" variant="outline">
-            초기화
-          </Button>
-        </GlassBox>
-        {calculatedCategory && (
-          <GlassBox
-            className="glass-action"
-            optics={{
-              ...defaultOptics,
-              strength: 0.4,
-              curvature: 0.3,
-              sheen: 0.15,
-              specular: 0.3,
-              glow: 0,
-            }}
-            radius={12}
-          >
-            <ExportButton />
-          </GlassBox>
-        )}
+        <CalculateButton className="calculate-action flex-1" control={control}>
+          <Calculator size={17} />
+          결과 계산하기
+        </CalculateButton>
+        <Button className="reset-action bg-card/45" type="reset" variant="outline">
+          초기화
+        </Button>
+        {calculatedCategory && <ExportButton />}
       </div>
 
       {!calculatedCategory && (

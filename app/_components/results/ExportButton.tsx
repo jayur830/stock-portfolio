@@ -32,7 +32,7 @@ export default function ExportButton({ className = '', variant = 'outline' }: Ex
   return (
     <Button
       aria-label="포트폴리오 분석 결과 엑셀(CSV) 다운로드"
-      className={`export-action ${className}`}
+      className={`export-action bg-card/45 ${className}`}
       disabled={isExporting}
       onClick={handleExport}
       title="포트폴리오 분석 결과 엑셀(CSV) 다운로드"

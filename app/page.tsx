@@ -3,7 +3,6 @@ import { Suspense } from 'react';
 import BrandLogo from '@/components/brand-logo';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 import Footer from '@/components/footer';
-import GlassBox, { defaultOptics } from '@/components/glass-box';
 
 import CalculatorFormProvider from './_components/CalculatorFormProvider';
 import CalculatorTabs from './_components/CalculatorTabs';
@@ -14,33 +13,20 @@ import Results from './_components/results';
 export default function Page() {
   return (
     <div className="app-shell flex flex-col justify-between w-full min-h-screen">
-      <header className="topbar">
-        <GlassBox
-          optics={{
-            ...defaultOptics,
-            strength: 0.04,
-            depth: 1,
-            curvature: 1,
-            dispersion: 0.8,
-            frost: 2,
-            brightness: 0.1,
-          }}
-          style={{ width: '100%' }}
-        >
-          <div className="topbar-inner">
-            <div className="topbar-brand">
-              <div aria-hidden="true" className="brand-mark">
-                <BrandLogo size={18} />
-              </div>
-              <span className="topbar-name">Dividend Lab</span>
+      <header className="topbar bg-background/65">
+        <div className="topbar-inner">
+          <div className="topbar-brand">
+            <div aria-hidden="true" className="brand-mark">
+              <BrandLogo size={18} />
             </div>
-            {/** 배당금 계산/투자금 계산 탭 */}
-            <Suspense fallback={<div className="h-9 w-44 rounded-lg bg-muted/40 animate-pulse" />}>
-              <CalculatorTabs />
-            </Suspense>
-            <DarkModeSwitch />
+            <span className="topbar-name">Dividend Lab</span>
           </div>
-        </GlassBox>
+          {/** 배당금 계산/투자금 계산 탭 */}
+          <Suspense fallback={<div className="h-9 w-44 rounded-lg bg-muted/40 animate-pulse" />}>
+            <CalculatorTabs />
+          </Suspense>
+          <DarkModeSwitch />
+        </div>
       </header>
 
       <main aria-label="배당주 포트폴리오 계산기" className="page-content flex-1 w-full">
