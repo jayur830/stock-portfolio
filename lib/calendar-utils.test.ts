@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 import type { Stock, StockDividend } from '@/types';
 
 import { generateMonthCalendar, getEstimatedDividendDay } from './calendar-utils';
@@ -34,7 +36,7 @@ describe('calendar-utils', () => {
         enabled: true,
         name: 'Schwab US Dividend ETF',
         price: 80,
-        purchaseDate: '2025-01-01',
+        purchaseDate: dayjs('2025-01-01'),
         ratio: 50,
         ticker: 'SCHD',
         yield: 3.5,
@@ -45,7 +47,7 @@ describe('calendar-utils', () => {
         enabled: true,
         name: 'JPMorgan Equity Premium ETF',
         price: 55,
-        purchaseDate: '2025-01-01',
+        purchaseDate: dayjs('2025-01-01'),
         ratio: 50,
         ticker: 'JEPI',
         yield: 7.5,

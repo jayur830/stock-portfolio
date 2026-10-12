@@ -43,7 +43,7 @@ describe('exportPortfolioToCsv', () => {
       totalInvestment: 10000000,
       targetAnnualDividend: 500000,
       calculatedCategory: 'dividend',
-      exchangeRates: { USD: 1350, JPY: 9, EUR: 1450, CNY: 185, GBP: 1700, HKD: 170, VND: 0.055 },
+      exchangeRates: { USD: 1350, JPY: 9, EUR: 1450, CNY: 185, GBP: 1700, HKD: 170 },
       stocks: [
         {
           name: '삼성전자',
