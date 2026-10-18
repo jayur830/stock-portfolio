@@ -8,7 +8,7 @@ import { useTheme } from 'next-themes';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { currencySymbols } from '@/lib/utils';
+import { CHART_FONT_FAMILY, currencySymbols } from '@/lib/utils';
 
 export { currencySymbols };
 
@@ -125,12 +125,17 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
 
     return {
       backgroundColor: 'transparent',
+      textStyle: {
+        fontFamily: CHART_FONT_FAMILY,
+        color: isDark ? '#f8fafc' : '#0f172a',
+      },
       tooltip: {
         trigger: 'axis',
         confine: true,
         backgroundColor: isDark ? '#1e293b' : '#ffffff',
         borderColor: isDark ? '#334155' : '#e2e8f0',
         textStyle: {
+          fontFamily: CHART_FONT_FAMILY,
           color: isDark ? '#f8fafc' : '#0f172a',
           fontSize: 12,
         },
@@ -154,10 +159,10 @@ export default function ExchangeRateChart({ currency, height = 300 }: ExchangeRa
             const color = isUp ? '#ef4444' : '#3b82f6';
 
             return `
-              <div style="font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; padding-bottom: 4px;">
+              <div style="font-family: ${CHART_FONT_FAMILY}; font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#334155' : '#e2e8f0'}; padding-bottom: 4px;">
                 ${dateStr} (${currencyInfo.unit})
               </div>
-              <div style="display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 11px;">
+              <div style="font-family: ${CHART_FONT_FAMILY}; display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 11px;">
                 <span style="color: ${isDark ? '#94a3b8' : '#64748b'};">종가:</span>
                 <span style="font-weight: 700; text-align: right; color: ${color};">
                   ${close.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원 (${isUp ? '+' : ''}${diffRate.toFixed(2)}%)

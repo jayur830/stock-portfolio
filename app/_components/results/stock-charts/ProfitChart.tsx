@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
 
-import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
+import { CHART_FONT_FAMILY, convertCurrency, convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
 
 import type { HistoryData, StockChartsProps } from '.';
 
@@ -204,6 +204,7 @@ export default function ProfitChart({
     return {
       backgroundColor: 'transparent',
       textStyle: {
+        fontFamily: CHART_FONT_FAMILY,
         color: isDark ? '#d1d5db' : '#374151',
       },
       title: {
@@ -211,6 +212,7 @@ export default function ProfitChart({
         left: 'center',
         top: '10px',
         textStyle: {
+          fontFamily: CHART_FONT_FAMILY,
           color: isDark ? '#e5e7eb' : '#111827',
         },
       },
@@ -220,6 +222,7 @@ export default function ProfitChart({
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: {
+          fontFamily: CHART_FONT_FAMILY,
           color: isDark ? '#e5e7eb' : '#111827',
         },
         formatter(params: any) {

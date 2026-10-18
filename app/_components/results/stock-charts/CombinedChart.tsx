@@ -3,7 +3,7 @@ import ReactECharts from 'echarts-for-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { convertCurrency } from '@/lib/utils';
+import { CHART_FONT_FAMILY, convertCurrency } from '@/lib/utils';
 
 import { HistoryData, StockChartsProps } from '.';
 
@@ -134,6 +134,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
       backgroundColor: 'transparent',
       color: ['#2451f5', '#7a5af8', '#3b82f6', '#a855f7', '#f04438', '#6b8cff'],
       textStyle: {
+        fontFamily: CHART_FONT_FAMILY,
         color: isDark ? '#d1d5db' : '#374151',
       },
       title: {
@@ -141,6 +142,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
         left: 'center',
         top: '10px',
         textStyle: {
+          fontFamily: CHART_FONT_FAMILY,
           color: isDark ? '#e5e7eb' : '#111827',
         },
       },
@@ -150,6 +152,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
         textStyle: {
+          fontFamily: CHART_FONT_FAMILY,
           color: isDark ? '#e5e7eb' : '#111827',
         },
         formatter(params: any) {

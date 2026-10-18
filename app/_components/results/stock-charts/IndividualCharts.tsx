@@ -7,7 +7,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { convertCurrency, convertToKRW, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES } from '@/lib/utils';
+import { CHART_FONT_FAMILY, convertCurrency, convertToKRW, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 import type { HistoryData } from '.';
@@ -134,13 +134,19 @@ export default function IndividualCharts({
 
     const commonOption = {
       backgroundColor: 'transparent',
-      textStyle: { color: isDark ? '#d1d5db' : '#374151' },
+      textStyle: {
+        fontFamily: CHART_FONT_FAMILY,
+        color: isDark ? '#d1d5db' : '#374151',
+      },
       tooltip: {
         trigger: 'axis',
         confine: true,
         backgroundColor: isDark ? '#1f2937' : '#ffffff',
         borderColor: isDark ? '#374151' : '#e5e7eb',
-        textStyle: { color: isDark ? '#e5e7eb' : '#111827' },
+        textStyle: {
+          fontFamily: CHART_FONT_FAMILY,
+          color: isDark ? '#e5e7eb' : '#111827',
+        },
         formatter(params: any) {
           const param = Array.isArray(params) ? params[0] : params;
           const value = param.value;
@@ -201,10 +207,10 @@ export default function IndividualCharts({
               const color = isUp ? '#ef4444' : '#3b82f6';
 
               return `
-                <div style="font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#374151' : '#e5e7eb'}; padding-bottom: 4px;">
+                <div style="font-family: ${CHART_FONT_FAMILY}; font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#374151' : '#e5e7eb'}; padding-bottom: 4px;">
                   ${dateStr} (${stock.ticker})
                 </div>
-                <div style="display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 11px;">
+                <div style="font-family: ${CHART_FONT_FAMILY}; display: grid; grid-template-columns: auto auto; gap: 4px 16px; font-size: 11px;">
                   <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">종가:</span>
                   <span style="font-weight: 700; text-align: right; color: ${color};">
                     ${formatCurrencyValue(close)} ${currency} (${isUp ? '+' : ''}${diffRate.toFixed(2)}%)

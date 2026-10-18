@@ -494,6 +494,10 @@ export function normalizeStockRatios(stocks: Stock[]): Stock[] {
   });
 }
 
+/** 차트 공통 폰트 패밀리 (Pretendard 우선) */
+export const CHART_FONT_FAMILY =
+  "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif";
+
 /** 통화별 심볼 및 표시 정보 */
 export const currencySymbols: Record<string, { symbol: string; name: string; unit: string }> = {
   USD: { symbol: 'USDKRW=X', name: '미국 달러', unit: '1 USD' },
