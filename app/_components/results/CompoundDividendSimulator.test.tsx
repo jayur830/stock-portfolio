@@ -29,11 +29,15 @@ const mockStocks: Stock[] = [
     enabled: true,
     dividendMonths: [3, 6, 9, 12],
     dividendGrowth: {
-      cagr5: 8.5,
-      payoutYears: 12,
-      tier: 'ACHIEVER',
-      badge: '배당성취자 (10년+)',
-      description: '',
+      cagr5Y: 8.5,
+      growthStreak: 12,
+      badge: {
+        type: 'champion',
+        label: '배당 챔피언',
+        icon: '🥈',
+        colorClass: 'text-blue-500',
+        description: '10년 이상 연속 배당 증액',
+      },
     },
   },
 ];

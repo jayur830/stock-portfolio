@@ -46,7 +46,7 @@ export default function CompoundDividendSimulator({
     let ratioWithCagr = 0;
 
     enabledStocks.forEach((s) => {
-      const cagr = s.dividendGrowth?.cagr5;
+      const cagr = s.dividendGrowth?.cagr5Y;
       if (typeof cagr === 'number' && !isNaN(cagr)) {
         weightedCagrSum += cagr * s.ratio;
         ratioWithCagr += s.ratio;
