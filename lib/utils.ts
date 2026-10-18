@@ -504,3 +504,51 @@ export const currencySymbols: Record<string, { symbol: string; name: string; uni
   HKD: { symbol: 'HKDKRW=X', name: '홍콩 달러', unit: '1 HKD' },
   VND: { symbol: 'VNDKRW=X', name: '베트남 동', unit: '1 VND' },
 };
+
+export interface HealthInsuranceResult {
+  /** 피부양자 자격 유지 여부 (금융소득 2,000만원 이하) */
+  isDependentEligible: boolean;
+  /** 피부양자 잔여 한도 (원, 2000만원 이하일 때) */
+  dependentRemainingAmount: number;
+  /** 피부양자 초과 금액 (원, 2000만원 초과일 때) */
+  dependentExcessAmount: number;
+  /** 직장가입자 월 추가 건강보험료 (원) */
+  monthlyExtraHealthInsurance: number;
+  /** 직장가입자 연 추가 건강보험료 (원) */
+  annualExtraHealthInsurance: number;
+  /** 지역가입자 건보료 산정 점수 합산 대상 여부 (금융소득 1,000만원 초과) */
+  isRegionalCombined: boolean;
+}
+
+/**
+ * 연간 금융(배당) 소득에 따른 건강보험료 영향 계산
+ * - 피부양자 자격 요건: 금융소득 연 2,000만 원 이하 (초과 시 지역가입자 자동 전환)
+ * - 직장가입자 보수 외 소득월액 보험료: 연 2,000만 원 초과 시 초과분에 대해 부과
+ *   (건강보험료율 7.09% + 장기요양보험료율 12.95% = 약 8.008%)
+ * - 지역가입자: 금융소득 연 1,000만 원 초과 시 전액 합산
+ */
+export function calculateHealthInsurance(annualDividend: number): HealthInsuranceResult {
+  const DEPENDENT_LIMIT = 20_000_000;
+  const REGIONAL_LIMIT = 10_000_000;
+  const HEALTH_INSURANCE_RATE = 0.0709;
+  const LONG_TERM_CARE_RATE = 0.1295;
+  const COMBINED_RATE = HEALTH_INSURANCE_RATE * (1 + LONG_TERM_CARE_RATE);
+
+  const isDependentEligible = annualDividend <= DEPENDENT_LIMIT;
+  const dependentRemainingAmount = Math.max(0, DEPENDENT_LIMIT - annualDividend);
+  const dependentExcessAmount = Math.max(0, annualDividend - DEPENDENT_LIMIT);
+
+  const annualExtra = dependentExcessAmount > 0 ? Math.round(dependentExcessAmount * COMBINED_RATE) : 0;
+  const monthlyExtra = Math.round(annualExtra / 12);
+
+  const isRegionalCombined = annualDividend > REGIONAL_LIMIT;
+
+  return {
+    isDependentEligible,
+    dependentRemainingAmount,
+    dependentExcessAmount,
+    monthlyExtraHealthInsurance: monthlyExtra,
+    annualExtraHealthInsurance: annualExtra,
+    isRegionalCombined,
+  };
+}

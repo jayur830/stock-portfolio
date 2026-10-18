@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import type { Stock } from '@/types';
 
 import {
+  calculateHealthInsurance,
   calculateStockMonthlyDividends,
   cn,
   convertCurrency,
@@ -498,6 +499,39 @@ describe('@/lib/utils', () => {
       expect(normalizeStockRatios([])).toEqual([]);
       const allDisabled: Stock[] = [{ ...TQQQ, ratio: 50, enabled: false }];
       expect(normalizeStockRatios(allDisabled)).toEqual(allDisabled);
+    });
+  });
+
+  describe('calculateHealthInsurance', () => {
+    it('calculates correctly when dividend is 10,000,000 or less', () => {
+      const result = calculateHealthInsurance(5_000_000);
+      expect(result.isDependentEligible).toBe(true);
+      expect(result.dependentRemainingAmount).toBe(15_000_000);
+      expect(result.dependentExcessAmount).toBe(0);
+      expect(result.monthlyExtraHealthInsurance).toBe(0);
+      expect(result.annualExtraHealthInsurance).toBe(0);
+      expect(result.isRegionalCombined).toBe(false);
+    });
+
+    it('calculates correctly when dividend is between 10,000,000 and 20,000,000', () => {
+      const result = calculateHealthInsurance(15_000_000);
+      expect(result.isDependentEligible).toBe(true);
+      expect(result.dependentRemainingAmount).toBe(5_000_000);
+      expect(result.dependentExcessAmount).toBe(0);
+      expect(result.monthlyExtraHealthInsurance).toBe(0);
+      expect(result.annualExtraHealthInsurance).toBe(0);
+      expect(result.isRegionalCombined).toBe(true);
+    });
+
+    it('calculates correctly when dividend exceeds 20,000,000', () => {
+      const result = calculateHealthInsurance(30_000_000);
+      expect(result.isDependentEligible).toBe(false);
+      expect(result.dependentRemainingAmount).toBe(0);
+      expect(result.dependentExcessAmount).toBe(10_000_000);
+      // 초과 1000만원 * (0.0709 * 1.1295) = 약 800,815원
+      expect(result.annualExtraHealthInsurance).toBe(800816);
+      expect(result.monthlyExtraHealthInsurance).toBe(Math.round(800816 / 12));
+      expect(result.isRegionalCombined).toBe(true);
     });
   });
 });

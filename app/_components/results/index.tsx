@@ -11,6 +11,7 @@ import type { FormValues } from '@/types';
 import CalculateButton from './CalculateButton';
 import CountPerStock from './CountPerStock';
 import ExportButton from './ExportButton';
+import HealthInsuranceInfo from './HealthInsuranceInfo';
 import MonthlyDividends from './MonthlyDividends';
 import TaxInfo from './TaxInfo';
 
@@ -182,6 +183,7 @@ export default function Results() {
               <h3 className="tax-surface-title">배당소득세 정보</h3>
               <TaxInfo stockDividends={stockDividends} />
             </div>
+            <HealthInsuranceInfo annualDividend={annualDividend} />
           </div>
         </div>
       )}
@@ -225,6 +227,7 @@ export default function Results() {
               <h3 className="tax-surface-title">배당소득세 정보</h3>
               {targetAnnualDividend > 0 && <TaxInfo stockDividends={stockDividends} />}
             </div>
+            {targetAnnualDividend > 0 && <HealthInsuranceInfo annualDividend={targetAnnualDividend} />}
           </div>
         </div>
       )}
