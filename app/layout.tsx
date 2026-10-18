@@ -3,7 +3,6 @@ import './globals.css';
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
 import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
-import Script from 'next/script';
 import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
@@ -68,19 +67,9 @@ export const metadata: Metadata = {
   verification: {
     other: {
       'naver-site-verification': process.env.NEXT_PUBLIC_NAVER_SITE_VERIFICATION,
-      ...(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && {
-        'google-adsense-account': process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID,
-      }),
     },
   },
-  other: {
-    ...(process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID && {
-      'google-adsense-account': process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID,
-    }),
-  },
 };
-
-const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 export default function RootLayout({
   children,
@@ -97,19 +86,10 @@ export default function RootLayout({
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
           rel="stylesheet"
         />
-        {adsenseClientId && <meta content={adsenseClientId} name="google-adsense-account" />}
         <StructuredData />
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       <body className={`${displayFont.variable} ${monoFont.variable} antialiased`}>
-        {adsenseClientId && (
-          <Script
-            async
-            crossOrigin="anonymous"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`}
-            strategy="lazyOnload"
-          />
-        )}
         <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange={false} enableSystem>
           <ReactQueryProvider>
             <div className="w-full min-h-screen">{children}</div>
