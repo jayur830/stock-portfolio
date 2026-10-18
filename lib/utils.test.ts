@@ -3,6 +3,7 @@ import dayjs from 'dayjs';
 import type { Stock } from '@/types';
 
 import {
+  calculateCompoundDividend,
   calculateHealthInsurance,
   calculateStockMonthlyDividends,
   cn,
@@ -532,6 +533,42 @@ describe('@/lib/utils', () => {
       expect(result.annualExtraHealthInsurance).toBe(800816);
       expect(result.monthlyExtraHealthInsurance).toBe(Math.round(800816 / 12));
       expect(result.isRegionalCombined).toBe(true);
+    });
+  });
+
+  describe('calculateCompoundDividend', () => {
+    it('simulates 10-year growth with DRIP correctly', () => {
+      const result = calculateCompoundDividend({
+        initialInvestment: 10_000_000,
+        monthlyContribution: 500_000,
+        dividendYield: 4.0,
+        dividendGrowthRate: 5.0,
+        priceGrowthRate: 3.0,
+        years: 10,
+        reinvestDividend: true,
+      });
+
+      expect(result.yearlyResults).toHaveLength(11); // 0 to 10
+      expect(result.totalContributed).toBe(10_000_000 + 500_000 * 12 * 10); // 70,000,000
+      expect(result.finalAsset).toBeGreaterThan(result.totalContributed);
+      expect(result.finalMonthlyDividend).toBeGreaterThan(0);
+      expect(result.totalReturnRate).toBeGreaterThan(0);
+    });
+
+    it('simulates without DRIP correctly', () => {
+      const result = calculateCompoundDividend({
+        initialInvestment: 10_000_000,
+        monthlyContribution: 0,
+        dividendYield: 5.0,
+        dividendGrowthRate: 0,
+        priceGrowthRate: 0,
+        years: 5,
+        reinvestDividend: false,
+      });
+
+      expect(result.totalContributed).toBe(10_000_000);
+      expect(result.finalAsset).toBe(10_000_000);
+      expect(result.totalCumulativeDividend).toBeGreaterThan(0);
     });
   });
 });

@@ -556,3 +556,136 @@ export function calculateHealthInsurance(annualDividend: number): HealthInsuranc
     isRegionalCombined,
   };
 }
+
+export interface CompoundSimulationParams {
+  /** 초기 투자 원금 (원) */
+  initialInvestment: number;
+  /** 월 추가 적립금 (원) */
+  monthlyContribution: number;
+  /** 초기 배당수익률 (%) (예: 4.5) */
+  dividendYield: number;
+  /** 연간 배당 성장률 (%) (예: 5.0) */
+  dividendGrowthRate: number;
+  /** 연간 주가 상승률 (%) (예: 3.0) */
+  priceGrowthRate: number;
+  /** 시뮬레이션 기간 (년) */
+  years: number;
+  /** 배당 재투자 여부 (DRIP) */
+  reinvestDividend: boolean;
+  /** 배당소득세율 (기본값: 0.154) */
+  taxRate?: number;
+}
+
+export interface YearlySimulationResult {
+  year: number;
+  /** 누적 투자 원금 */
+  totalContributed: number;
+  /** 총 자산 평가액 */
+  totalAsset: number;
+  /** 해당 연도 세후 연간 배당금 */
+  annualDividend: number;
+  /** 해당 연도 세후 월평균 배당금 */
+  monthlyDividend: number;
+  /** 누적 수령 배당금 (세후) */
+  cumulativeDividend: number;
+}
+
+export interface CompoundSimulationResult {
+  yearlyResults: YearlySimulationResult[];
+  finalAsset: number;
+  finalMonthlyDividend: number;
+  finalAnnualDividend: number;
+  totalContributed: number;
+  totalCumulativeDividend: number;
+  totalReturnRate: number;
+}
+
+/**
+ * 미래 복리 & 배당 성장 시뮬레이션 계산
+ * 월 적립식 투자 + 배당 재투자(DRIP) + 배당 성장률 + 주가 상승률을 결합한 자산 및 현금흐름 예측
+ */
+export function calculateCompoundDividend(params: CompoundSimulationParams): CompoundSimulationResult {
+  const {
+    initialInvestment,
+    monthlyContribution,
+    dividendYield,
+    dividendGrowthRate,
+    priceGrowthRate,
+    years,
+    reinvestDividend,
+    taxRate = 0.154,
+  } = params;
+
+  let currentAsset = Math.max(0, initialInvestment);
+  let cumulativeContributed = currentAsset;
+  let cumulativeDividend = 0;
+
+  const yearlyResults: YearlySimulationResult[] = [];
+
+  // 0년차(현재) 상태
+  const initialAnnualDiv = currentAsset * (dividendYield / 100) * (1 - taxRate);
+  yearlyResults.push({
+    year: 0,
+    totalContributed: Math.round(cumulativeContributed),
+    totalAsset: Math.round(currentAsset),
+    annualDividend: Math.round(initialAnnualDiv),
+    monthlyDividend: Math.round(initialAnnualDiv / 12),
+    cumulativeDividend: 0,
+  });
+
+  const monthlyPriceRate = priceGrowthRate / 100 / 12;
+
+  for (let y = 1; y <= years; y++) {
+    const currentYield = (dividendYield / 100) * Math.pow(1 + dividendGrowthRate / 100, y - 1);
+    const monthlyYield = currentYield / 12;
+
+    let yearDividend = 0;
+
+    for (let m = 0; m < 12; m++) {
+      currentAsset += monthlyContribution;
+      cumulativeContributed += monthlyContribution;
+
+      currentAsset *= 1 + monthlyPriceRate;
+
+      const monthDiv = currentAsset * monthlyYield * (1 - taxRate);
+      yearDividend += monthDiv;
+      cumulativeDividend += monthDiv;
+
+      if (reinvestDividend) {
+        currentAsset += monthDiv;
+      }
+    }
+
+    yearlyResults.push({
+      year: y,
+      totalContributed: Math.round(cumulativeContributed),
+      totalAsset: Math.round(currentAsset),
+      annualDividend: Math.round(yearDividend),
+      monthlyDividend: Math.round(yearDividend / 12),
+      cumulativeDividend: Math.round(cumulativeDividend),
+    });
+  }
+
+  const finalResult = yearlyResults[yearlyResults.length - 1];
+  const finalAsset = finalResult.totalAsset;
+  const totalContributed = finalResult.totalContributed;
+  const totalCumulativeDividend = finalResult.cumulativeDividend;
+  const totalReturnRate =
+    totalContributed > 0
+      ? +(
+          (((reinvestDividend ? finalAsset : finalAsset + totalCumulativeDividend) - totalContributed) /
+            totalContributed) *
+          100
+        ).toFixed(1)
+      : 0;
+
+  return {
+    yearlyResults,
+    finalAsset,
+    finalMonthlyDividend: finalResult.monthlyDividend,
+    finalAnnualDividend: finalResult.annualDividend,
+    totalContributed,
+    totalCumulativeDividend,
+    totalReturnRate,
+  };
+}

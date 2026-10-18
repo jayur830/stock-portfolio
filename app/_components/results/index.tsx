@@ -9,6 +9,7 @@ import { mergeMonthlyDividends, normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
 import CalculateButton from './CalculateButton';
+import CompoundDividendSimulator from './CompoundDividendSimulator';
 import CountPerStock from './CountPerStock';
 import ExportButton from './ExportButton';
 import HealthInsuranceInfo from './HealthInsuranceInfo';
@@ -26,6 +27,9 @@ export default function Results() {
   const {
     field: { value: stocks },
   } = useController({ control, name: 'stocks' });
+  const {
+    field: { value: totalInvestment },
+  } = useController({ control, name: 'totalInvestment' });
   const {
     field: { value: targetAnnualDividend },
   } = useController({ control, name: 'targetAnnualDividend' });
@@ -230,6 +234,15 @@ export default function Results() {
             {targetAnnualDividend > 0 && <HealthInsuranceInfo annualDividend={targetAnnualDividend} />}
           </div>
         </div>
+      )}
+
+      {/** 미래 복리 & 배당 성장 시뮬레이터 */}
+      {calculatedCategory && (calculatedCategory === 'investment' ? requiredInvestment : totalInvestment) > 0 && (
+        <CompoundDividendSimulator
+          initialInvestment={calculatedCategory === 'investment' ? requiredInvestment : totalInvestment}
+          portfolioDividendYield={weightedDividendYield * 100}
+          stocks={stocks}
+        />
       )}
 
       {/** 차트 */}
