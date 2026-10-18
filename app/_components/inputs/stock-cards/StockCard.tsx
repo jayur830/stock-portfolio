@@ -34,11 +34,34 @@ interface StockQuote {
   exchange: string;
 }
 
+interface TopTradingStock {
+  symbol: string;
+  name: string;
+  label: string;
+  exchange: string;
+  tradingValue: string;
+}
+
 const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
+  const [selectedMarket, setSelectedMarket] = useState<'KOSPI' | 'NASDAQ'>('KOSPI');
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  /** 거래대금 TOP 10 종목 조회 */
+  const { data: topTradingData, isLoading: isLoadingTopTrading } = useQuery<{
+    market: string;
+    stocks: TopTradingStock[];
+  }>({
+    queryKey: ['topTradingStocks', selectedMarket],
+    queryFn: async () => {
+      const res = await fetch(`/api/stock/top-trading?market=${selectedMarket}`);
+      if (!res.ok) throw new Error('Failed to fetch top trading stocks');
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5, // 5분
+  });
 
   const {
     field: { value: stocks, onChange: onChangeStocks },
@@ -324,6 +347,71 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
                   </button>
                 ))}
               </div>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <div className="flex items-center gap-1 mr-0.5">
+              <span className="text-[11px] font-semibold text-muted-foreground">거래대금 TOP 10:</span>
+              <div className="inline-flex rounded-md border border-border/60 bg-muted/30 p-0.5 text-[10px]">
+                <button
+                  className={cn(
+                    'px-1.5 py-0.5 rounded font-medium transition-colors cursor-pointer',
+                    selectedMarket === 'KOSPI'
+                      ? 'bg-background text-foreground shadow-2xs font-bold'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                  onClick={() => setSelectedMarket('KOSPI')}
+                  type="button"
+                >
+                  국내
+                </button>
+                <button
+                  className={cn(
+                    'px-1.5 py-0.5 rounded font-medium transition-colors cursor-pointer',
+                    selectedMarket === 'NASDAQ'
+                      ? 'bg-background text-foreground shadow-2xs font-bold'
+                      : 'text-muted-foreground hover:text-foreground',
+                  )}
+                  onClick={() => setSelectedMarket('NASDAQ')}
+                  type="button"
+                >
+                  미국
+                </button>
+              </div>
+            </div>
+
+            {isLoadingTopTrading ? (
+              <span className="text-[11px] text-muted-foreground/70">불러오는 중...</span>
+            ) : (
+              topTradingData?.stocks?.map((rec) => {
+                const isSelected = stock.ticker === rec.symbol;
+                return (
+                  <button
+                    className={cn(
+                      'inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium transition-all cursor-pointer',
+                      'border border-border/70 hover:border-primary/50 hover:bg-primary/5',
+                      isSelected
+                        ? 'bg-primary/10 text-primary border-primary/50 font-semibold shadow-xs'
+                        : 'bg-background/80 text-muted-foreground hover:text-foreground',
+                      (!isEnabled || isLoadingQuote) && 'opacity-50 cursor-not-allowed pointer-events-none',
+                    )}
+                    disabled={!isEnabled || isLoadingQuote}
+                    key={rec.symbol}
+                    onClick={() =>
+                      handleStockSelect({
+                        symbol: rec.symbol,
+                        shortname: rec.name,
+                        exchange: rec.exchange,
+                      })
+                    }
+                    title={`${rec.name} (${rec.symbol})${rec.tradingValue ? ` · 거래대금: ${rec.tradingValue}` : ''}`}
+                    type="button"
+                  >
+                    {rec.label}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
