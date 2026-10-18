@@ -123,8 +123,11 @@ export default function IndividualCharts({
       reinvestData.push(convertCurrency(reinvestProfit, 'KRW', currency, exchangeRates));
     });
 
-    // 배당 차트 전용 월별 데이터 구성
-    const monthlyLabels = [...new Set(filteredData.map((d) => dayjs(d.date).format('YYYY.MM')))].sort();
+    // 배당 차트 전용 월별 데이터 구성 (현재 월은 제외)
+    const currentMonth = dayjs().format('YYYY.MM');
+    const monthlyLabels = [...new Set(filteredData.map((d) => dayjs(d.date).format('YYYY.MM')))]
+      .filter((m) => m < currentMonth)
+      .sort();
     const monthlyDivChartData = monthlyLabels.map((m) =>
       convertCurrency(monthlyDivSumMap.get(m) || 0, 'KRW', currency, exchangeRates),
     );
@@ -251,6 +254,10 @@ export default function IndividualCharts({
         xAxis: {
           ...commonOption.xAxis,
           data: monthlyLabels,
+        },
+        yAxis: {
+          ...commonOption.yAxis,
+          min: 0,
         },
         title: {
           text: '월별 배당금',
