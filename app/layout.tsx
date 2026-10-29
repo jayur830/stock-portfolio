@@ -2,30 +2,15 @@ import './globals.css';
 
 import { GoogleAnalytics } from '@next/third-parties/google';
 import type { Metadata, Viewport } from 'next';
-import { JetBrains_Mono, Space_Grotesk } from 'next/font/google';
 import type { ReactNode } from 'react';
 
 import ReactQueryProvider from '@/components/react-query-provider';
 import StructuredData from '@/components/structured-data';
 import { ThemeProvider } from '@/components/theme-provider';
 
-const displayFont = Space_Grotesk({
-  variable: '--font-display',
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
-});
-
-const monoFont = JetBrains_Mono({
-  variable: '--font-mono-kr',
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-});
-
 export const viewport: Viewport = {
-  themeColor: '#f2f4f9',
+  themeColor: '#fafafa',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
 };
 
 export const metadata: Metadata = {
@@ -89,7 +74,7 @@ export default function RootLayout({
         <StructuredData />
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
-      <body className={`${displayFont.variable} ${monoFont.variable} antialiased`}>
+      <body className="antialiased">
         <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange={false} enableSystem>
           <ReactQueryProvider>
             <div className="w-full min-h-screen">{children}</div>

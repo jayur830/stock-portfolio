@@ -6,11 +6,11 @@ export default function Inputs() {
   return (
     <div className="input-stack">
       <div className="input-grid">
-        {/** 환율 */}
-        <ExchangeRates />
-
         {/** 총 투자금/목표 연 배당금 입력 */}
         <TargetInput />
+
+        {/** 환율 */}
+        <ExchangeRates />
       </div>
 
       {/** 종목 리스트 영역 */}

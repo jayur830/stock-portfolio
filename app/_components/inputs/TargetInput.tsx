@@ -31,9 +31,7 @@ export default function TargetInput() {
     <section className="target-surface">
       <div className="target-topline">
         <div className="surface-leading">
-          <span className="section-index">02</span>
           <div>
-            <span className="surface-kicker">SET YOUR TARGET</span>
             <h3 className="surface-title">{labels[tab]}</h3>
             <p className="surface-description">
               {tab === 'dividend'
@@ -42,7 +40,6 @@ export default function TargetInput() {
             </p>
           </div>
         </div>
-        <span className="target-badge">{tab === 'dividend' ? 'INVESTMENT' : 'INCOME GOAL'}</span>
       </div>
 
       <div className="target-input-row">
@@ -81,8 +78,6 @@ export default function TargetInput() {
                 { label: '+100만', value: 1000000 },
                 { label: '+1000만', value: 10000000 },
                 { label: '+1억', value: 100000000 },
-                { label: '+10억', value: 1000000000 },
-                { label: '+100억', value: 10000000000 },
                 { label: '초기화', value: NaN },
               ].map(({ label, value }) => (
                 <Button

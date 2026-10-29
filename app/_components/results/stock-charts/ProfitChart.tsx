@@ -232,7 +232,7 @@ export default function ProfitChart({
               currency === 'KRW'
                 ? Math.round(param.value).toLocaleString('ko-KR')
                 : param.value.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            const color = value >= 0 ? '#3b82f6' : '#f04438';
+            const color = value >= 0 ? '#6b8a9c' : '#f04438';
             result += `${param.marker}<span style="color:${color}">${param.seriesName}: ${value.toLocaleString('ko-KR', { maximumFractionDigits: 2 })} ${currency}</span><br/>`;
           });
           return result;
@@ -305,10 +305,10 @@ export default function ProfitChart({
           },
           lineStyle: {
             width: 2,
-            color: '#3b82f6',
+            color: '#6b8a9c',
           },
           itemStyle: {
-            color: '#3b82f6',
+            color: '#6b8a9c',
           },
         },
         {
@@ -337,10 +337,10 @@ export default function ProfitChart({
           },
           lineStyle: {
             width: 2,
-            color: '#7a5af8',
+            color: '#537f72',
           },
           itemStyle: {
-            color: '#7a5af8',
+            color: '#537f72',
           },
         },
         {
@@ -369,10 +369,10 @@ export default function ProfitChart({
           },
           lineStyle: {
             width: 2,
-            color: '#3b82f6',
+            color: '#6b8a9c',
           },
           itemStyle: {
-            color: '#3b82f6',
+            color: '#6b8a9c',
           },
         },
       ],

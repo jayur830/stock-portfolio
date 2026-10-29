@@ -204,7 +204,7 @@ export default function IndividualCharts({
               const diff = close - open;
               const diffRate = open > 0 ? (diff / open) * 100 : 0;
               const isUp = diff >= 0;
-              const color = isUp ? '#ef4444' : '#3b82f6';
+              const color = isUp ? '#ef4444' : '#6b8a9c';
 
               return `
                 <div style="font-family: ${CHART_FONT_FAMILY}; font-weight: 600; margin-bottom: 6px; font-size: 12px; border-bottom: 1px solid ${isDark ? '#374151' : '#e5e7eb'}; padding-bottom: 4px;">
@@ -220,7 +220,7 @@ export default function IndividualCharts({
                   <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">고가:</span>
                   <span style="font-weight: 600; text-align: right; color: #ef4444;">${formatCurrencyValue(high)} ${currency}</span>
                   <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">저가:</span>
-                  <span style="font-weight: 600; text-align: right; color: #3b82f6;">${formatCurrencyValue(low)} ${currency}</span>
+                  <span style="font-weight: 600; text-align: right; color: #6b8a9c;">${formatCurrencyValue(low)} ${currency}</span>
                 </div>
               `;
             }
@@ -238,9 +238,9 @@ export default function IndividualCharts({
                   data: candleData,
                   itemStyle: {
                     color: '#ef4444',
-                    color0: '#3b82f6',
+                    color0: '#6b8a9c',
                     borderColor: '#ef4444',
-                    borderColor0: '#3b82f6',
+                    borderColor0: '#6b8a9c',
                   },
                 },
               ]
@@ -251,7 +251,7 @@ export default function IndividualCharts({
                   data: priceData,
                   smooth: true,
                   showSymbol: false,
-                  lineStyle: { width: 2, color: '#2451f5' },
+                  lineStyle: { width: 2, color: '#28745c' },
                 },
               ],
       },
@@ -270,7 +270,7 @@ export default function IndividualCharts({
           left: 'center',
           textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' },
         },
-        series: [{ name: '배당금', type: 'bar', data: monthlyDivChartData, itemStyle: { color: '#7a5af8' } }],
+        series: [{ name: '배당금', type: 'bar', data: monthlyDivChartData, itemStyle: { color: '#537f72' } }],
       },
       profit: {
         ...commonOption,
@@ -312,7 +312,7 @@ export default function IndividualCharts({
         series: [
           {
             data: profitData,
-            lineStyle: { color: '#3b82f6', width: 2 },
+            lineStyle: { color: '#6b8a9c', width: 2 },
             name: '누적 수익',
             showSymbol: false,
             smooth: true,
@@ -320,7 +320,7 @@ export default function IndividualCharts({
           },
           {
             data: reinvestData,
-            lineStyle: { color: '#a855f7', width: 2 },
+            lineStyle: { color: '#ab926b', width: 2 },
             name: '배당 재투자 수익 (100% 재투자)',
             showSymbol: false,
             smooth: true,

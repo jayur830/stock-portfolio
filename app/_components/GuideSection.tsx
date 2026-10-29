@@ -32,16 +32,16 @@ export default function GuideSection() {
   return (
     <section
       aria-labelledby="dividend-guide-title"
-      className="mt-16 w-full space-y-12 border-t border-border/70 pt-12 pb-6"
+      className="guide-section mt-16 w-full space-y-12 border-t border-border/70 pt-12 pb-6"
     >
       {/* 섹션 헤더 */}
       <div className="flex flex-col gap-2">
         <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
           <BookOpen size={15} />
-          <span>KNOWLEDGE BASE & GUIDES</span>
+          <span>배당 투자 가이드</span>
         </div>
         <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground" id="dividend-guide-title">
-          배당주 포트폴리오 설계 가이드 & 투자 상식
+          계획에 도움이 되는 투자 상식
         </h2>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-3xl leading-relaxed">
           지속 가능한 월 현금흐름을 만들기 위한 핵심 투자 원칙과 세금 상식을 확인하고 더 스마트한 배당 포트폴리오를
@@ -128,7 +128,7 @@ export default function GuideSection() {
       <div className="space-y-4 pt-4">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
           <HelpCircle size={15} />
-          <span>FREQUENTLY ASKED QUESTIONS</span>
+          <span>궁금한 점이 있나요?</span>
         </div>
         <h3 className="text-lg sm:text-xl font-bold text-foreground">자주 묻는 질문 (FAQ)</h3>
 

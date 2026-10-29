@@ -45,11 +45,9 @@ export default function StockCards() {
     <section className="stock-list-surface">
       <div className="stock-list-heading">
         <div className="surface-leading">
-          <span className="section-index">03</span>
           <div>
-            <span className="surface-kicker">YOUR POSITIONS</span>
-            <h3 className="surface-title">종목을 담아보세요</h3>
-            <p className="surface-description">보유 종목의 배당률과 비중을 입력하면 예상 현금흐름이 완성됩니다.</p>
+            <h3 className="surface-title">투자 종목</h3>
+            <p className="surface-description">종목을 추가하고 배당률과 투자 비중을 설정하세요.</p>
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
@@ -66,7 +64,7 @@ export default function StockCards() {
               100% 자동 맞춤
             </Button>
           )}
-          <span className="stock-count">{fields.length} POSITIONS</span>
+          <span className="stock-count">{fields.length}개 종목</span>
         </div>
       </div>
 

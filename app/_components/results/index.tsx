@@ -1,6 +1,6 @@
 'use client';
 
-import { Calculator, ChevronRight, CircleDollarSign, Scale } from 'lucide-react';
+import { Calculator, CircleDollarSign, Scale } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Controller, useController, useFormContext } from 'react-hook-form';
 
@@ -21,7 +21,7 @@ const StockCharts = dynamic(() => import('./stock-charts'), {
   ssr: false,
 });
 
-export default function Results() {
+export default function Results({ view = 'summary' }: { view?: 'summary' | 'details' }) {
   const { control, setValue } = useFormContext<FormValues>();
 
   const {
@@ -79,75 +79,95 @@ export default function Results() {
   // const requiredInvestmentAdditionalTax = calculatedCategory === 'investment' && targetAnnualDividend ? getComprehensiveTax(targetAnnualDividend, foreignDividends) : null;
   // #endregion
 
-  return (
-    <div className="results-stack">
-      <div className="allocation-card">
-        <div className="allocation-topline">
-          <div className="flex items-center gap-2">
-            <span className="allocation-label">현재 포트폴리오 배분</span>
-            {totalRatio !== 100 && stocks.some((s) => s.enabled) && (
-              <button
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-primary/10 text-primary hover:bg-primary/15 border border-primary/25 transition-all cursor-pointer shadow-xs active:scale-95"
-                onClick={handleNormalizeRatios}
-                title="각 종목의 상대적 비율을 유지한 채 합계가 정확히 100%가 되도록 비례 환산합니다"
-                type="button"
-              >
-                <Scale size={12} />
-                <span>100% 자동 맞춤</span>
-              </button>
-            )}
+  if (view === 'summary')
+    return (
+      <div className="results-stack">
+        <div className="allocation-card">
+          <div className="allocation-topline">
+            <div className="flex items-center gap-2">
+              <span className="allocation-label">현재 포트폴리오 배분</span>
+              {totalRatio !== 100 && stocks.some((s) => s.enabled) && (
+                <button
+                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold bg-primary/10 text-primary hover:bg-primary/15 border border-primary/25 transition-all cursor-pointer shadow-xs active:scale-95"
+                  onClick={handleNormalizeRatios}
+                  title="각 종목의 상대적 비율을 유지한 채 합계가 정확히 100%가 되도록 비례 환산합니다"
+                  type="button"
+                >
+                  <Scale size={12} />
+                  <span>100% 자동 맞춤</span>
+                </button>
+              )}
+            </div>
+            <strong className={`allocation-value ${ratioState}`}>{totalRatio.toFixed(1)}%</strong>
           </div>
-          <strong className={`allocation-value ${ratioState}`}>{totalRatio.toFixed(1)}%</strong>
-        </div>
-        <div
-          aria-label={`포트폴리오 배분 ${totalRatio.toFixed(1)}%`}
-          aria-valuemax={100}
-          aria-valuemin={0}
-          aria-valuenow={Math.min(totalRatio, 100)}
-          className="allocation-track"
-          role="progressbar"
-        >
           <div
-            className={`allocation-track-fill ${ratioState === 'is-over' ? 'is-over' : ''}`}
-            style={{ width: `${Math.min(totalRatio, 100)}%` }}
-          />
-        </div>
-        <p className={`allocation-help ${ratioState}`}>{ratioMessage}</p>
-      </div>
-
-      <div className="result-action-row">
-        <CalculateButton className="calculate-action flex-1" control={control}>
-          <Calculator size={17} />
-          결과 계산하기
-        </CalculateButton>
-        <Button className="reset-action bg-card/45" type="reset" variant="outline">
-          초기화
-        </Button>
-        {calculatedCategory && <ExportButton />}
-      </div>
-
-      {!calculatedCategory && (
-        <div className="empty-result">
-          <div className="empty-icon">
-            <CircleDollarSign size={25} />
+            aria-label={`포트폴리오 배분 ${totalRatio.toFixed(1)}%`}
+            aria-valuemax={100}
+            aria-valuemin={0}
+            aria-valuenow={Math.min(totalRatio, 100)}
+            className="allocation-track"
+            role="progressbar"
+          >
+            <div
+              className={`allocation-track-fill ${ratioState === 'is-over' ? 'is-over' : ''}`}
+              style={{ width: `${Math.min(totalRatio, 100)}%` }}
+            />
           </div>
-          <h3 className="empty-title">계산 결과가 이곳에 표시됩니다</h3>
-          <p className="empty-description">
-            투자금 또는 목표 배당금을 입력하고, 종목별 비중을 정한 뒤 결과를 확인하세요.
-          </p>
-          <div className="empty-steps">
-            <span className="empty-step-number">1</span>
-            <span>입력</span>
-            <ChevronRight size={12} />
-            <span className="empty-step-number">2</span>
-            <span>계산</span>
-            <ChevronRight size={12} />
-            <span className="empty-step-number">3</span>
-            <span>확인</span>
-          </div>
+          <p className={`allocation-help ${ratioState}`}>{ratioMessage}</p>
         </div>
-      )}
 
+        <div className="result-action-row">
+          <CalculateButton className="calculate-action flex-1" control={control}>
+            <Calculator size={17} />
+            결과 계산하기
+          </CalculateButton>
+          <Button className="reset-action bg-card/45" type="reset" variant="outline">
+            초기화
+          </Button>
+          {calculatedCategory && <ExportButton />}
+        </div>
+
+        {!calculatedCategory && (
+          <div className="empty-result">
+            <div className="empty-icon">
+              <CircleDollarSign size={25} />
+            </div>
+            <h3 className="empty-title">포트폴리오의 다음을 그려보세요</h3>
+            <p className="empty-description">
+              투자금과 종목을 입력하면 예상 배당금과 월별 현금흐름을 확인할 수 있어요.
+            </p>
+          </div>
+        )}
+
+        {calculatedCategory && (
+          <div aria-live="polite" className="result-highlight">
+            <span className="result-overline">
+              {calculatedCategory === 'dividend' ? '예상 세후 연 배당금' : '필요한 투자금'}
+            </span>
+            <strong className="result-value">
+              {Math.round(
+                calculatedCategory === 'dividend' ? afterTaxAnnualDividend : requiredInvestment,
+              ).toLocaleString('ko-KR')}
+              원
+            </strong>
+            {calculatedCategory === 'dividend' && (
+              <p className="surface-description">
+                월 평균 {Math.round(afterTaxAnnualDividend / 12).toLocaleString('ko-KR')}원
+              </p>
+            )}
+            <a className="result-detail-link" href="#portfolio-details">
+              상세 결과 보기 ↓
+            </a>
+          </div>
+        )}
+      </div>
+    );
+
+  if (!calculatedCategory) return null;
+
+  return (
+    <section aria-label="포트폴리오 상세 결과" className="results-stack result-details" id="portfolio-details">
+      <h2 className="section-title">포트폴리오 분석</h2>
       {/** 배당금 결과 */}
       {calculatedCategory === 'dividend' && (
         <div className="results-bento">
@@ -155,7 +175,7 @@ export default function Results() {
             <div aria-live="polite" className="result-highlight is-dividend">
               <div className="result-highlight-head">
                 <div>
-                  <span className="result-overline">CALCULATED INCOME</span>
+                  <span className="result-overline">연간 현금흐름</span>
                   <h3 className="result-highlight-title">예상 배당금</h3>
                 </div>
                 <div className="result-highlight-icon">
@@ -199,7 +219,7 @@ export default function Results() {
             <div aria-live="polite" className="result-highlight is-investment">
               <div className="result-highlight-head">
                 <div>
-                  <span className="result-overline">YOUR REQUIRED CAPITAL</span>
+                  <span className="result-overline">목표 달성을 위한 투자금</span>
                   <h3 className="result-highlight-title">필요한 투자금</h3>
                 </div>
                 <div className="result-highlight-icon">
@@ -261,6 +281,6 @@ export default function Results() {
           </>
         )}
       />
-    </div>
+    </section>
   );
 }

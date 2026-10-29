@@ -132,7 +132,7 @@ export default function CombinedChart({ isDark, histories, stocks, exchangeRates
 
     return {
       backgroundColor: 'transparent',
-      color: ['#2451f5', '#7a5af8', '#3b82f6', '#a855f7', '#f04438', '#6b8cff'],
+      color: ['#28745c', '#537f72', '#6b8a9c', '#ab926b', '#f04438', '#9baea4'],
       textStyle: {
         fontFamily: CHART_FONT_FAMILY,
         color: isDark ? '#d1d5db' : '#374151',

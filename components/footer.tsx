@@ -4,14 +4,14 @@ import { OpenToyAppLogo, OpenToyAppTextLogo } from '@/components/opentoyapp-logo
 
 export default function Footer() {
   return (
-    <footer className="mt-auto w-full border-t border-border/70 bg-card/60 text-muted-foreground backdrop-blur-md">
+    <footer className="mt-auto w-full border-t border-border/70 bg-card text-muted-foreground">
       <div className="mx-auto w-full max-w-desktop px-[clamp(1.25rem,4vw,3.5rem)] py-8 pb-28 sm:pb-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-12">
           {/* 브랜드 & 소개 */}
           <div className="flex flex-col gap-2.5 max-w-xl">
             <div className="inline-flex items-center gap-2.5 text-foreground">
-              <OpenToyAppLogo className="h-9 w-auto dark:invert" />
-              <OpenToyAppTextLogo className="h-4.5 w-auto text-foreground" />
+              <OpenToyAppLogo className="h-7 w-auto dark:invert" />
+              <OpenToyAppTextLogo className="h-4 w-auto text-foreground" />
             </div>
             <p className="text-xs leading-relaxed text-muted-foreground">
               <strong>opentoyapp</strong>은 다양한 영역에서 유용한 웹 도구를 개발하는 토이 프로젝트 연구소입니다. 배당주

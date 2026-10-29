@@ -75,12 +75,9 @@ export default function ExchangeRates() {
     <section className="input-surface exchange-rates-surface">
       <div className="surface-heading">
         <div className="surface-leading">
-          <span className="section-index">01</span>
           <div>
-            <span className="surface-kicker">MARKET DATA</span>
             <h3 className="surface-title">환율 기준</h3>
-            <p className="surface-description">외화 종목을 담았다면 원화 환산 기준을 먼저 맞춰주세요.</p>
-            <span className="surface-status">KRW 기준 환율</span>
+            <p className="surface-description">해외 주식의 원화 환산에 적용됩니다.</p>
           </div>
         </div>
         <Button

@@ -129,7 +129,7 @@ export default function CompoundDividendSimulator({
             </div>
             <div style="display: grid; grid-template-columns: auto auto; gap: 4px 14px; font-size: 11px;">
               <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">총 자산 평가액:</span>
-              <span style="font-weight: 700; color: #7a5af8; text-align: right;">${Math.round(
+              <span style="font-weight: 700; color: #28745c; text-align: right;">${Math.round(
                 res.totalAsset,
               ).toLocaleString('ko-KR')}원</span>
               <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">예상 월 배당금:</span>
@@ -224,10 +224,10 @@ export default function CompoundDividendSimulator({
           type: 'line',
           data: assetData,
           smooth: true,
-          lineStyle: { width: 3, color: '#7a5af8' },
-          itemStyle: { color: '#7a5af8' },
+          lineStyle: { width: 3, color: '#28745c' },
+          itemStyle: { color: '#28745c' },
           areaStyle: {
-            color: isDark ? 'rgba(122, 90, 248, 0.15)' : 'rgba(122, 90, 248, 0.08)',
+            color: isDark ? 'rgba(40, 116, 92, 0.15)' : 'rgba(40, 116, 92, 0.08)',
           },
         },
         {
@@ -254,10 +254,10 @@ export default function CompoundDividendSimulator({
   }, [simulation, isDark]);
 
   return (
-    <Card className="compound-simulator-card p-5 sm:p-6 rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md shadow-xs">
+    <Card className="simulator-surface">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 pb-4 border-b border-border/70">
         <div className="flex items-center gap-2.5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
             <Coins className="h-5 w-5" />
           </div>
           <div>
@@ -296,7 +296,7 @@ export default function CompoundDividendSimulator({
       {/* 조절 컨트롤 패널 */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 pb-5">
         {/* 월 추가 적립금 */}
-        <div className="space-y-2 p-3.5 rounded-xl bg-background/60 border border-border/60">
+        <div className="space-y-2 p-3.5 rounded-lg bg-background/60 border border-border/60">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-foreground" htmlFor={sliderId}>
               매월 추가 적립금
@@ -331,7 +331,7 @@ export default function CompoundDividendSimulator({
         </div>
 
         {/* 투자 기간 */}
-        <div className="space-y-2 p-3.5 rounded-xl bg-background/60 border border-border/60">
+        <div className="space-y-2 p-3.5 rounded-lg bg-background/60 border border-border/60">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-foreground">투자 기간</span>
             <span className="text-xs font-bold text-primary">{years}년</span>
@@ -358,14 +358,14 @@ export default function CompoundDividendSimulator({
         </div>
 
         {/* 배당금 재투자 (DRIP) 스위치 */}
-        <div className="p-3.5 rounded-xl bg-background/60 border border-border/60 flex flex-col justify-between">
+        <div className="p-3.5 rounded-lg bg-background/60 border border-border/60 flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-foreground">배당금 100% 재투자 (DRIP)</span>
             <Switch checked={reinvestDividend} onCheckedChange={setReinvestDividend} />
           </div>
           <p className="text-[11px] text-muted-foreground leading-relaxed mt-2">
             {reinvestDividend
-              ? '✨ 세후 배당금을 원금에 전액 재투자하여 기하급수적 복리 효과를 창출합니다.'
+              ? '세후 배당금을 다시 투자해 복리로 자산을 쌓아갑니다.'
               : '수령한 배당금을 인출하여 생활비로 사용하며, 원금만 적립식으로 운용합니다.'}
           </p>
           <div className="pt-2 flex items-center justify-between border-t border-border/40 mt-2">
@@ -386,7 +386,7 @@ export default function CompoundDividendSimulator({
 
       {/* 상세 파라미터 (아코디언) */}
       {showAdvanced && (
-        <div className="p-3.5 mb-5 rounded-xl bg-muted/30 border border-border/60 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+        <div className="p-3.5 mb-5 rounded-lg bg-muted/30 border border-border/60 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
             <label className="font-semibold text-foreground flex items-center justify-between mb-1">
               <span>연간 배당 성장률 (Dividend CAGR)</span>
@@ -428,9 +428,9 @@ export default function CompoundDividendSimulator({
 
       {/* 핵심 결과 하이라이트 카드 4종 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-        <div className="p-3.5 rounded-xl bg-primary/5 border border-primary/20 flex flex-col justify-between">
+        <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground">{years}년 후 예상 총 자산</span>
-          <strong className="text-lg sm:text-xl font-extrabold text-primary tracking-tight mt-1">
+          <strong className="text-lg sm:text-xl font-semibold text-primary tracking-tight mt-1">
             {Math.round(simulation.finalAsset).toLocaleString('ko-KR')}원
           </strong>
           <span className="text-[10px] text-muted-foreground mt-1">
@@ -441,9 +441,9 @@ export default function CompoundDividendSimulator({
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-emerald-500/5 border border-emerald-500/20 flex flex-col justify-between">
+        <div className="p-3.5 rounded-lg bg-muted/40 border border-border flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground">{years}년 후 월 배당금 (실수령)</span>
-          <strong className="text-lg sm:text-xl font-extrabold text-emerald-600 dark:text-emerald-400 tracking-tight mt-1">
+          <strong className="text-lg sm:text-xl font-semibold text-primary tracking-tight mt-1">
             월 약 {Math.round(simulation.finalMonthlyDividend).toLocaleString('ko-KR')}원
           </strong>
           <span className="text-[10px] text-muted-foreground mt-1">
@@ -451,7 +451,7 @@ export default function CompoundDividendSimulator({
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-muted/40 border border-border/70 flex flex-col justify-between">
+        <div className="p-3.5 rounded-lg bg-muted/40 border border-border/70 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground">누적 투자 원금</span>
           <strong className="text-base sm:text-lg font-bold text-foreground mt-1">
             {Math.round(simulation.totalContributed).toLocaleString('ko-KR')}원
@@ -461,7 +461,7 @@ export default function CompoundDividendSimulator({
           </span>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-muted/40 border border-border/70 flex flex-col justify-between">
+        <div className="p-3.5 rounded-lg bg-muted/40 border border-border/70 flex flex-col justify-between">
           <span className="text-[11px] font-semibold text-muted-foreground">총 누적 수령 배당금</span>
           <strong className="text-base sm:text-lg font-bold text-foreground mt-1">
             {Math.round(simulation.totalCumulativeDividend).toLocaleString('ko-KR')}원
@@ -473,7 +473,7 @@ export default function CompoundDividendSimulator({
       </div>
 
       {/* 인터랙티브 ECharts 복리 그래프 */}
-      <div className="rounded-xl border border-border/60 bg-background/50 p-3 sm:p-4">
+      <div className="rounded-lg border border-border/60 bg-background/50 p-3 sm:p-4">
         <div className="flex items-center justify-between pb-2 mb-2 border-b border-border/40">
           <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5 text-primary" />
