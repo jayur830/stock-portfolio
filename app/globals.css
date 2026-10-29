@@ -1227,9 +1227,71 @@
     background: var(--positive);
   }
   .ledger-amount {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
     font-size: 12px;
     text-align: right;
     white-space: nowrap;
+  }
+  .ledger-formula {
+    color: var(--muted-foreground);
+    font-size: 10px;
+    font-weight: 400;
+  }
+  .ledger-amount strong {
+    color: var(--positive);
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .monthly-insurance-note {
+    margin: 0;
+    padding: 14px 0 18px 24px;
+    color: var(--muted-foreground);
+    font-size: 10px;
+    line-height: 1.7;
+  }
+  .monthly-info-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px 0 24px;
+    border-top: 1px solid var(--border);
+  }
+  .monthly-info-button {
+    display: grid;
+    flex: 0 0 auto;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    color: var(--muted-foreground);
+    cursor: pointer;
+    transition:
+      color 160ms ease,
+      background 160ms ease;
+  }
+  .monthly-info-button:hover {
+    color: var(--foreground);
+    background: var(--muted);
+  }
+  .monthly-info-popover {
+    width: min(320px, calc(100vw - 32px));
+    padding: 16px;
+    font-size: 11px;
+    line-height: 1.75;
+  }
+  .monthly-info-popover strong {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 12px;
+  }
+  .monthly-info-popover p + p {
+    margin-top: 8px;
+    color: var(--muted-foreground);
   }
   .ledger-total {
     display: flex;
@@ -1673,6 +1735,15 @@
     }
     .ledger-amount {
       font-size: 11px;
+    }
+    .ledger-formula {
+      font-size: 9px;
+    }
+    .ledger-amount strong {
+      font-size: 13px;
+    }
+    .monthly-insurance-note {
+      padding: 12px 0 12px 18px;
     }
     .chart-section,
     .simulator-surface[data-slot='card'] {

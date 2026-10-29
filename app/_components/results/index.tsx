@@ -209,7 +209,11 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
                 </div>
               </div>
             </div>
-            <MonthlyDividends amounts={monthlyDividends} />
+            <MonthlyDividends
+              amounts={monthlyDividends}
+              annualDividend={annualDividend}
+              stockDividends={stockDividends}
+            />
           </div>
           <div className="bento-side">
             <CountPerStock />
@@ -253,7 +257,11 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
                 </div>
               </div>
             </div>
-            <MonthlyDividends amounts={monthlyDividends} />
+            <MonthlyDividends
+              amounts={monthlyDividends}
+              annualDividend={annualDividend}
+              stockDividends={stockDividends}
+            />
           </div>
           <div className="bento-side">
             <CountPerStock />
