@@ -40,7 +40,7 @@ export default function Footer() {
               개인정보처리방침
             </Link>
             <span>•</span>
-            <Link className="hover:text-foreground transition-colors underline-offset-4 hover:underline" href="/">
+            <Link className="hover:text-foreground transition-colors underline-offset-4 hover:underline" href="/about">
               서비스 소개
             </Link>
           </div>

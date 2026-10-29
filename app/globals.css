@@ -211,7 +211,8 @@
     font-size: 13px;
     color: var(--muted-foreground);
   }
-  .topbar-nav a:hover {
+  .topbar-nav a:hover,
+  .topbar-nav a[aria-current='page'] {
     color: var(--foreground);
   }
   .topbar-actions {
@@ -373,6 +374,16 @@
     padding: 70px 0 0;
     scroll-margin-top: 110px;
   }
+  .calculator-page .calculator-section {
+    padding: 125px 0 80px;
+  }
+  .calculator-page .calculator-intro {
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .about-overview {
+    padding-top: 70px;
+  }
   .calculator-intro {
     margin-bottom: 42px;
     text-align: center;
@@ -383,6 +394,7 @@
     font-size: 10px;
     letter-spacing: 0.18em;
   }
+  .calculator-intro h1,
   .calculator-intro h2 {
     font-size: clamp(24px, 3vw, 36px);
     font-weight: 550;
@@ -1588,14 +1600,15 @@
       font-size: 14px;
     }
     .topbar-nav {
-      display: none;
+      gap: 14px;
+      font-size: 12px;
+      white-space: nowrap;
     }
     .topbar-actions {
       gap: 6px;
     }
     .nav-start {
-      padding: 8px 12px;
-      font-size: 11px;
+      display: none;
     }
     .page-content {
       width: calc(100% - 32px);
@@ -1643,9 +1656,16 @@
     .calculator-section {
       padding-top: 36px;
     }
+    .calculator-page .calculator-section {
+      padding: 100px 0 56px;
+    }
+    .about-overview {
+      padding-top: 48px;
+    }
     .calculator-intro {
       margin-bottom: 30px;
     }
+    .calculator-intro h1,
     .calculator-intro h2 {
       font-size: 24px;
     }
