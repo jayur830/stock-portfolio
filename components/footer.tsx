@@ -4,8 +4,8 @@ import { OpenToyAppLogo, OpenToyAppTextLogo } from '@/components/opentoyapp-logo
 
 export default function Footer() {
   return (
-    <footer className="mt-auto w-full border-t border-border/70 bg-card text-muted-foreground">
-      <div className="mx-auto w-full max-w-desktop px-[clamp(1.25rem,4vw,3.5rem)] py-8 pb-28 sm:pb-8">
+    <footer className="site-footer mt-auto w-full border-t border-border/70 text-muted-foreground">
+      <div className="mx-auto w-full max-w-desktop px-[clamp(1.25rem,4vw,3.5rem)] py-14 pb-14">
         <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between md:gap-12">
           {/* 브랜드 & 소개 */}
           <div className="flex flex-col gap-2.5 max-w-xl">

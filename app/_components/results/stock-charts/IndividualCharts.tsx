@@ -251,7 +251,7 @@ export default function IndividualCharts({
                   data: priceData,
                   smooth: true,
                   showSymbol: false,
-                  lineStyle: { width: 2, color: '#28745c' },
+                  lineStyle: { width: 2, color: isDark ? '#e4e4e7' : '#27272a' },
                 },
               ],
       },
@@ -270,7 +270,14 @@ export default function IndividualCharts({
           left: 'center',
           textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' },
         },
-        series: [{ name: '배당금', type: 'bar', data: monthlyDivChartData, itemStyle: { color: '#537f72' } }],
+        series: [
+          {
+            name: '배당금',
+            type: 'bar',
+            data: monthlyDivChartData,
+            itemStyle: { color: isDark ? '#00c49a' : '#00866a' },
+          },
+        ],
       },
       profit: {
         ...commonOption,

@@ -9,7 +9,7 @@ import StructuredData from '@/components/structured-data';
 import { ThemeProvider } from '@/components/theme-provider';
 
 export const viewport: Viewport = {
-  themeColor: '#fafafa',
+  themeColor: '#09090b',
   initialScale: 1,
 };
 
@@ -75,7 +75,13 @@ export default function RootLayout({
       </head>
       <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />
       <body className="antialiased">
-        <ThemeProvider attribute="class" defaultTheme="system" disableTransitionOnChange={false} enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          storageKey="dividend-lab-theme"
+          disableTransitionOnChange={false}
+          enableSystem
+        >
           <ReactQueryProvider>
             <div className="w-full min-h-screen">{children}</div>
           </ReactQueryProvider>

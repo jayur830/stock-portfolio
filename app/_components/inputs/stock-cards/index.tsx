@@ -83,7 +83,7 @@ export default function StockCards() {
           variant="outline"
         >
           <Plus size={16} />
-          종목 추가
+          {fields.length === 0 ? '첫 종목을 추가하세요' : '종목 추가'}
         </Button>
       </div>
     </section>

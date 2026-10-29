@@ -1,62 +1,28 @@
 'use client';
 
-import * as SwitchPrimitive from '@radix-ui/react-switch';
 import { Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useEffect, useState } from 'react';
 
-import { cn } from '@/lib/utils';
-
 export function DarkModeSwitch() {
   const [mounted, setMounted] = useState(false);
-  const { theme, setTheme, resolvedTheme } = useTheme();
-
+  const { setTheme, resolvedTheme } = useTheme();
   useEffect(() => {
     setMounted(true);
   }, []);
-
-  useEffect(() => {
-    if (mounted && theme === 'system' && resolvedTheme) {
-      setTheme(resolvedTheme);
-    }
-  }, [mounted, theme, resolvedTheme, setTheme]);
-
-  if (!mounted) {
-    return (
-      <SwitchPrimitive.Root
-        checked={false}
-        className={cn(
-          'theme-switch cursor-pointer peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-6 w-11 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
-        )}
-        disabled
-      >
-        <SwitchPrimitive.Thumb
-          className={cn(
-            'theme-switch-thumb bg-card text-primary pointer-events-none flex items-center justify-center size-5 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0',
-          )}
-        >
-          <Sun className="h-3.5 w-3.5" />
-        </SwitchPrimitive.Thumb>
-      </SwitchPrimitive.Root>
-    );
-  }
+  const isDark = mounted && resolvedTheme === 'dark';
 
   return (
-    <SwitchPrimitive.Root
+    <button
       aria-label="테마 전환"
-      checked={theme === 'dark'}
-      className={cn(
-        'theme-switch cursor-pointer peer data-[state=checked]:bg-primary data-[state=unchecked]:bg-input focus-visible:border-ring focus-visible:ring-ring/50 dark:data-[state=unchecked]:bg-input/80 inline-flex h-6 w-11 shrink-0 items-center rounded-full border border-transparent shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50',
-      )}
-      onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
+      aria-pressed={isDark}
+      className="theme-button"
+      disabled={!mounted}
+      onClick={() => setTheme(isDark ? 'light' : 'dark')}
+      title={isDark ? '라이트 모드로 전환' : '다크 모드로 전환'}
+      type="button"
     >
-      <SwitchPrimitive.Thumb
-        className={cn(
-          'theme-switch-thumb bg-card text-primary pointer-events-none flex items-center justify-center size-5 rounded-full ring-0 transition-transform data-[state=checked]:translate-x-5 data-[state=unchecked]:translate-x-0',
-        )}
-      >
-        {theme === 'dark' ? <Moon className="h-3.5 w-3.5" /> : <Sun className="h-3.5 w-3.5" />}
-      </SwitchPrimitive.Thumb>
-    </SwitchPrimitive.Root>
+      {isDark ? <Sun size={17} /> : <Moon size={17} />}
+    </button>
   );
 }

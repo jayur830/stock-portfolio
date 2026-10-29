@@ -30,17 +30,14 @@ export default function GuideSection() {
   ];
 
   return (
-    <section
-      aria-labelledby="dividend-guide-title"
-      className="guide-section mt-16 w-full space-y-12 border-t border-border/70 pt-12 pb-6"
-    >
+    <section aria-labelledby="dividend-guide-title" className="guide-section w-full space-y-12">
       {/* 섹션 헤더 */}
       <div className="flex flex-col gap-2">
-        <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-primary">
+        <div className="inline-flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">
           <BookOpen size={15} />
-          <span>배당 투자 가이드</span>
+          <span>조금 더 깊이 알아보기</span>
         </div>
-        <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight text-foreground" id="dividend-guide-title">
+        <h2 className="text-2xl sm:text-4xl font-semibold tracking-tight text-foreground" id="dividend-guide-title">
           계획에 도움이 되는 투자 상식
         </h2>
         <p className="text-xs sm:text-sm text-muted-foreground max-w-3xl leading-relaxed">

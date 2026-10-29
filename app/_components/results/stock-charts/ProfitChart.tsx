@@ -337,10 +337,10 @@ export default function ProfitChart({
           },
           lineStyle: {
             width: 2,
-            color: '#537f72',
+            color: isDark ? '#00c49a' : '#00866a',
           },
           itemStyle: {
-            color: '#537f72',
+            color: isDark ? '#00c49a' : '#00866a',
           },
         },
         {

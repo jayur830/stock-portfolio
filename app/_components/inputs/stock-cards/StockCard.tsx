@@ -298,7 +298,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
       </div>
 
-      <CardHeader className="stock-card-header px-4! sm:px-[1.35rem]!">
+      <CardHeader className="stock-card-header">
         <div className="stock-search-block">
           <div className="field-label-row">
             <div>
@@ -588,7 +588,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         </div>
       </CardHeader>
 
-      <CardContent className="stock-card-content px-4! sm:px-[1.35rem]!">
+      <CardContent className="stock-card-content">
         <div className="stock-control-block">
           <div className="stock-control-head">
             <div>

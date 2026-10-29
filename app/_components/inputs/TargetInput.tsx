@@ -16,10 +16,6 @@ const labels: Record<Category, string> = {
   dividend: '총 투자금',
   investment: '목표 연 배당금',
 };
-const placeholders: Record<Category, string> = {
-  dividend: '총 투자금을 입력하세요',
-  investment: '목표 연 배당금을 입력하세요',
-};
 
 export default function TargetInput() {
   const searchParams = useSearchParams();
@@ -53,7 +49,7 @@ export default function TargetInput() {
                 className="target-input"
                 maxLength={24}
                 min={0}
-                placeholder={placeholders[tab]}
+                placeholder="0"
                 step="any"
                 type="number"
                 {...field}

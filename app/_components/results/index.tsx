@@ -132,7 +132,17 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
             <div className="empty-icon">
               <CircleDollarSign size={25} />
             </div>
-            <h3 className="empty-title">포트폴리오의 다음을 그려보세요</h3>
+            <h3 className="empty-title">나의 다음 현금흐름</h3>
+            <div aria-hidden="true" className="empty-metrics">
+              <div>
+                <span>세후 연 배당금</span>
+                <strong>—</strong>
+              </div>
+              <div>
+                <span>월 평균 배당금</span>
+                <strong>—</strong>
+              </div>
+            </div>
             <p className="empty-description">
               투자금과 종목을 입력하면 예상 배당금과 월별 현금흐름을 확인할 수 있어요.
             </p>

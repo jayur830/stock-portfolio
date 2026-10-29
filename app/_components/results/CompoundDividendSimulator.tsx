@@ -129,7 +129,7 @@ export default function CompoundDividendSimulator({
             </div>
             <div style="display: grid; grid-template-columns: auto auto; gap: 4px 14px; font-size: 11px;">
               <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">총 자산 평가액:</span>
-              <span style="font-weight: 700; color: #28745c; text-align: right;">${Math.round(
+              <span style="font-weight: 700; color: ${isDark ? '#e4e4e7' : '#27272a'}; text-align: right;">${Math.round(
                 res.totalAsset,
               ).toLocaleString('ko-KR')}원</span>
               <span style="color: ${isDark ? '#9ca3af' : '#6b7280'};">예상 월 배당금:</span>
@@ -224,10 +224,10 @@ export default function CompoundDividendSimulator({
           type: 'line',
           data: assetData,
           smooth: true,
-          lineStyle: { width: 3, color: '#28745c' },
-          itemStyle: { color: '#28745c' },
+          lineStyle: { width: 3, color: isDark ? '#e4e4e7' : '#27272a' },
+          itemStyle: { color: isDark ? '#e4e4e7' : '#27272a' },
           areaStyle: {
-            color: isDark ? 'rgba(40, 116, 92, 0.15)' : 'rgba(40, 116, 92, 0.08)',
+            color: isDark ? 'rgba(228, 228, 231, 0.08)' : 'rgba(39, 39, 42, 0.06)',
           },
         },
         {
