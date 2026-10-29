@@ -140,6 +140,7 @@ export default function MonthlyDividends({ amounts, stockDividends = [], annualD
               건강보험료는 기존 연간 건보료 계산 결과를 12개월로 균등 배분한 예상치이며, 추가 부과 대상이 아니면 0원으로
               표시됩니다.
             </p>
+            <p>표시 금액에는 종합소득세 신고에 따른 추가 납부·환급 정산이 반영되지 않습니다.</p>
           </PopoverContent>
         </Popover>
       </div>
