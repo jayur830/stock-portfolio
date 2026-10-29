@@ -20,6 +20,7 @@ const nextConfig: NextConfig = {
 
   // 번들 최적화
   experimental: {
+    agentUpgrade: 'security',
     optimizePackageImports: ['echarts', '@tanstack/react-query', 'react-hook-form'],
   },
 
