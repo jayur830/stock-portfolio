@@ -285,7 +285,6 @@
   .hero-badge {
     display: inline-flex;
     align-items: center;
-    gap: 9px;
     padding: 9px 15px;
     border: 1px solid var(--border);
     border-radius: 999px;
@@ -293,13 +292,6 @@
     color: var(--muted-foreground);
     font-size: 12px;
     box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.03);
-  }
-  .hero-badge > span {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--positive);
-    box-shadow: 0 0 8px color-mix(in srgb, var(--positive) 45%, transparent);
   }
   .page-hero-title {
     margin: 32px 0 0;
@@ -375,14 +367,13 @@
     scroll-margin-top: 110px;
   }
   .calculator-page .calculator-section {
-    padding: 125px 0 80px;
-  }
-  .calculator-page .calculator-intro {
-    margin-bottom: 28px;
-    text-align: left;
+    padding: 112px 0 80px;
   }
   .about-overview {
     padding-top: 70px;
+  }
+  .about-overview + .about-overview {
+    padding-top: clamp(80px, 10vw, 128px);
   }
   .calculator-intro {
     margin-bottom: 42px;
@@ -394,7 +385,6 @@
     font-size: 10px;
     letter-spacing: 0.18em;
   }
-  .calculator-intro h1,
   .calculator-intro h2 {
     font-size: clamp(24px, 3vw, 36px);
     font-weight: 550;
@@ -1657,7 +1647,7 @@
       padding-top: 36px;
     }
     .calculator-page .calculator-section {
-      padding: 100px 0 56px;
+      padding: 88px 0 56px;
     }
     .about-overview {
       padding-top: 48px;
@@ -1665,7 +1655,6 @@
     .calculator-intro {
       margin-bottom: 30px;
     }
-    .calculator-intro h1,
     .calculator-intro h2 {
       font-size: 24px;
     }

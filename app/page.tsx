@@ -14,10 +14,9 @@ export default function Page() {
       <SiteHeader activePage="calculator" />
       <main aria-label="배당주 포트폴리오 계산기" className="page-content calculator-page">
         <section aria-labelledby="calculator-title" className="calculator-section" id="calculator">
-          <div className="calculator-intro">
-            <h1 id="calculator-title">배당주 포트폴리오 계산기</h1>
-            <p>투자금과 종목을 입력해 예상 배당금과 월별 현금흐름을 확인하세요.</p>
-          </div>
+          <h1 className="sr-only" id="calculator-title">
+            배당주 포트폴리오 계산기
+          </h1>
           <Suspense fallback={<div aria-label="계산기 불러오는 중" className="calculator-loading animate-pulse" />}>
             <CalculatorFormProvider>
               <div className="calculator-toolbar">

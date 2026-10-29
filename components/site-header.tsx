@@ -17,11 +17,11 @@ export default function SiteHeader({ activePage }: { activePage: 'calculator' | 
           <span className="topbar-name">Dividend Lab</span>
         </Link>
         <nav aria-label="주 메뉴" className="topbar-nav">
-          <Link aria-current={activePage === 'calculator' ? 'page' : undefined} href={calculatorHref}>
-            계산기
-          </Link>
           <Link aria-current={activePage === 'about' ? 'page' : undefined} href="/about">
             서비스 소개
+          </Link>
+          <Link aria-current={activePage === 'calculator' ? 'page' : undefined} href={calculatorHref}>
+            계산기
           </Link>
         </nav>
         <div className="topbar-actions">

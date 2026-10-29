@@ -19,10 +19,7 @@ export default function AboutPage() {
       <SiteHeader activePage="about" />
       <main aria-label="Dividend Lab 서비스 소개" className="page-content">
         <section aria-labelledby="hero-title" className="page-hero">
-          <div className="hero-badge">
-            <span />
-            작은 계획에서 시작하는 배당 투자
-          </div>
+          <div className="hero-badge">작은 계획에서 시작하는 배당 투자</div>
           <h1 className="page-hero-title" id="hero-title">
             투자는 차분하게.
             <br />
