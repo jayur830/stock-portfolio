@@ -60,7 +60,7 @@ export default function TargetInput() {
               />
             )}
           />
-          <span className="target-currency">원</span>
+          <span className="metric-unit">원</span>
         </div>
       </div>
       <div className="quick-add-row">

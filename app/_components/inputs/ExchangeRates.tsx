@@ -119,7 +119,7 @@ export default function ExchangeRates() {
                   <LineChart className="size-3.5" />
                 </Button>
               </div>
-              <div className="flex items-center gap-1.5">
+              <div className="target-input-shell w-full">
                 <Input
                   className="rate-input flex-1"
                   min={0}
@@ -135,6 +135,7 @@ export default function ExchangeRates() {
                   type="number"
                   value={exchangeRates?.[currency as keyof typeof exchangeRates] || ''}
                 />
+                <span className="metric-unit">₩</span>
               </div>
             </div>
           ))}
@@ -172,7 +173,7 @@ export default function ExchangeRates() {
               type="number"
               value={exchangeRates?.[selectedCurrency as keyof typeof exchangeRates] || ''}
             />
-            <span className="target-currency">원</span>
+            <span className="target-currency">₩</span>
           </div>
 
           {/* 모바일 Accordion 차트 토글 */}

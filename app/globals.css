@@ -924,9 +924,6 @@
   .ratio-input-wrap {
     flex: 0 0 90px;
   }
-  .ratio-input {
-    text-align: right;
-  }
   .ratio-slider {
     flex: 1;
   }

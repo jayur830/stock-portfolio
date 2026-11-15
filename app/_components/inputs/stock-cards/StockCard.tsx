@@ -706,7 +706,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
               <div className="ratio-input-wrap">
                 <Input
                   aria-label="포트폴리오 비중"
-                  className="metric-input ratio-input"
+                  className="metric-input"
                   disabled={!isEnabled}
                   id={`stock-ratio-${index}`}
                   max={100}
