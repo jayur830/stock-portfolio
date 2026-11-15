@@ -5,6 +5,7 @@ import ReactECharts from 'echarts-for-react';
 import { ChevronDown, ChevronUp, Coins, RotateCcw, TrendingUp } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useId, useMemo, useState } from 'react';
+import { useFormContext, useWatch } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
 import { calculateCompoundDividend, CHART_FONT_FAMILY } from '@/lib/utils';
-import type { Stock } from '@/types';
+import type { FormValues, Stock } from '@/types';
 
 export interface CompoundDividendSimulatorProps {
   /** 현재 포트폴리오의 총 투자 원금 (원화) */
@@ -22,6 +23,8 @@ export interface CompoundDividendSimulatorProps {
   /** 포트폴리오 종목 리스트 (가중평균 배당성장률 계산용) */
   stocks: Stock[];
 }
+
+import { useAppliedCalculation } from '../AppliedCalculationContext';
 
 const YEAR_OPTIONS = [5, 10, 15, 20, 30];
 const CONTRIBUTION_PRESETS = [0, 300_000, 500_000, 1_000_000, 2_000_000];
@@ -63,33 +66,36 @@ export default function CompoundDividendSimulator({
   }, [stocks]);
 
   // 시뮬레이터 조절 상태
-  const [monthlyContribution, setMonthlyContribution] = useState<number>(500_000);
-  const [years, setYears] = useState<number>(10);
-  const [reinvestDividend, setReinvestDividend] = useState<boolean>(true);
-  const [dividendGrowthRate, setDividendGrowthRate] = useState<number>(defaultDividendGrowth);
-  const [priceGrowthRate, setPriceGrowthRate] = useState<number>(3.0);
+  const { control, setValue } = useFormContext<FormValues>();
+  const draft = useWatch({ control, name: 'compoundSettings' });
+  const applied = useAppliedCalculation();
+  const settings = applied!.compoundSettings;
+  const monthlyContribution = draft?.monthlyContribution ?? 500_000;
+  const years = draft?.years ?? 10;
+  const reinvestDividend = draft?.reinvestDividend ?? true;
+  const dividendGrowthRate = draft?.dividendGrowthRate ?? defaultDividendGrowth;
+  const priceGrowthRate = draft?.priceGrowthRate ?? 3;
+  const setMonthlyContribution = (value: number) => setValue('compoundSettings.monthlyContribution', value);
+  const setYears = (value: number) => setValue('compoundSettings.years', value);
+  const setReinvestDividend = (value: boolean) => setValue('compoundSettings.reinvestDividend', value);
+  const setDividendGrowthRate = (value: number) => setValue('compoundSettings.dividendGrowthRate', value);
+  const setPriceGrowthRate = (value: number) => setValue('compoundSettings.priceGrowthRate', value);
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
 
-  // 시뮬레이션 계산
-  const simulation = useMemo(() => {
-    return calculateCompoundDividend({
-      initialInvestment: Math.max(0, initialInvestment),
-      monthlyContribution,
-      dividendYield: Math.max(0, portfolioDividendYield),
-      dividendGrowthRate,
-      priceGrowthRate,
-      years,
-      reinvestDividend,
-    });
-  }, [
-    initialInvestment,
-    monthlyContribution,
-    portfolioDividendYield,
-    dividendGrowthRate,
-    priceGrowthRate,
-    years,
-    reinvestDividend,
-  ]);
+  // 메인 계산 버튼으로 적용한 설정만 결과에 사용합니다.
+  const simulation = useMemo(
+    () =>
+      calculateCompoundDividend({
+        initialInvestment: Math.max(0, initialInvestment),
+        monthlyContribution: settings.monthlyContribution,
+        dividendYield: Math.max(0, portfolioDividendYield),
+        dividendGrowthRate: settings.dividendGrowthRate ?? defaultDividendGrowth,
+        priceGrowthRate: settings.priceGrowthRate,
+        years: settings.years,
+        reinvestDividend: settings.reinvestDividend,
+      }),
+    [initialInvestment, portfolioDividendYield, settings, defaultDividendGrowth],
+  );
 
   // 복리 차트 옵션
   const chartOption = useMemo(() => {
@@ -429,7 +435,7 @@ export default function CompoundDividendSimulator({
       {/* 핵심 결과 하이라이트 카드 4종 */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 flex flex-col justify-between">
-          <span className="text-[11px] font-semibold text-muted-foreground">{years}년 후 예상 총 자산</span>
+          <span className="text-[11px] font-semibold text-muted-foreground">{settings.years}년 후 예상 총 자산</span>
           <strong className="text-lg sm:text-xl font-semibold text-primary tracking-tight mt-1">
             {Math.round(simulation.finalAsset).toLocaleString('ko-KR')}원
           </strong>
@@ -442,7 +448,9 @@ export default function CompoundDividendSimulator({
         </div>
 
         <div className="p-3.5 rounded-lg bg-muted/40 border border-border flex flex-col justify-between">
-          <span className="text-[11px] font-semibold text-muted-foreground">{years}년 후 월 배당금 (실수령)</span>
+          <span className="text-[11px] font-semibold text-muted-foreground">
+            {settings.years}년 후 월 배당금 (실수령)
+          </span>
           <strong className="text-lg sm:text-xl font-semibold text-primary tracking-tight mt-1">
             월 약 {Math.round(simulation.finalMonthlyDividend).toLocaleString('ko-KR')}원
           </strong>
@@ -467,7 +475,7 @@ export default function CompoundDividendSimulator({
             {Math.round(simulation.totalCumulativeDividend).toLocaleString('ko-KR')}원
           </strong>
           <span className="text-[10px] text-muted-foreground mt-1">
-            {reinvestDividend ? '전액 원금 재투자됨' : '전액 현금 인출 수령'}
+            {settings.reinvestDividend ? '전액 원금 재투자됨' : '전액 현금 인출 수령'}
           </span>
         </div>
       </div>

@@ -21,7 +21,7 @@ describe('ComprehensiveTaxInfo', () => {
 });
 
 it('필수 입력을 검증하고 계산·변경 시 결과를 갱신한다', () => {
-  render(<ComprehensiveTaxInfo annualDividend={40000000} />);
+  const { rerender } = render(<ComprehensiveTaxInfo annualDividend={40000000} />);
   fireEvent.click(screen.getByRole('button', { name: '예상 세액 계산' }));
   expect(screen.getByRole('alert').textContent).toContain('모든 금액');
   const inputs = screen.getAllByRole('spinbutton');
@@ -32,7 +32,10 @@ it('필수 입력을 검증하고 계산·변경 시 결과를 갱신한다', ()
   fireEvent.click(screen.getByRole('button', { name: '예상 세액 계산' }));
   expect(screen.getByRole('status').textContent).toContain('2,200,000원');
   fireEvent.change(inputs[2], { target: { value: '10000000' } });
-  expect(screen.queryByRole('status')).toBeNull();
+  expect(screen.getByRole('status').textContent).toContain('2,200,000원');
   fireEvent.click(screen.getByRole('button', { name: '예상 세액 계산' }));
   expect(screen.getByRole('status').textContent).toContain('1,210,000원');
+  rerender(<ComprehensiveTaxInfo annualDividend={50000000} />);
+  expect(screen.getByRole('status').textContent).toContain('다시 계산');
+  expect(screen.getByRole('status').textContent).not.toContain('1,210,000원');
 });

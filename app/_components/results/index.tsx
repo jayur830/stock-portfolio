@@ -2,12 +2,13 @@
 
 import { Calculator, CircleDollarSign, Scale } from 'lucide-react';
 import dynamic from 'next/dynamic';
-import { Controller, useController, useFormContext } from 'react-hook-form';
+import { useController, useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { mergeMonthlyDividends, normalizeStockRatios } from '@/lib/utils';
 import type { FormValues } from '@/types';
 
+import { useAppliedCalculation } from '../AppliedCalculationContext';
 import CalculateButton from './CalculateButton';
 import CompoundDividendSimulator from './CompoundDividendSimulator';
 import CountPerStock from './CountPerStock';
@@ -27,18 +28,15 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
   const {
     field: { value: stocks },
   } = useController({ control, name: 'stocks' });
+  const applied = useAppliedCalculation();
   const {
-    field: { value: totalInvestment },
-  } = useController({ control, name: 'totalInvestment' });
-  const {
-    field: { value: targetAnnualDividend },
-  } = useController({ control, name: 'targetAnnualDividend' });
-  const {
-    field: { value: calculatedCategory },
-  } = useController({ control, name: 'calculatedCategory' });
-  const {
-    field: { value: stockDividends },
-  } = useController({ control, name: 'stockDividends' });
+    totalInvestment = 0,
+    targetAnnualDividend = 0,
+    calculatedCategory,
+    stockDividends = [],
+    weightedDividendYield = 0,
+    requiredInvestment = 0,
+  } = applied || {};
 
   /** 종목별 연 배당금 합산 (세전 총 연 배당금) */
   const annualDividend = stockDividends.reduce((sum, { annualDividend }) => sum + annualDividend, 0);
@@ -48,12 +46,6 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
     (sum, { annualDividend, taxRate }) => sum + Math.round(annualDividend * (1 - taxRate)),
     0,
   );
-
-  /** 필요한 투자금 */
-  const weightedDividendYield = stocks
-    .filter(({ enabled }) => enabled)
-    .reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
-  const requiredInvestment = weightedDividendYield > 0 ? targetAnnualDividend / weightedDividendYield : 0;
 
   /** 종목별 월별 배당금 합산 */
   const monthlyDividends = mergeMonthlyDividends(stockDividends);
@@ -279,26 +271,12 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
         <CompoundDividendSimulator
           initialInvestment={calculatedCategory === 'investment' ? requiredInvestment : totalInvestment}
           portfolioDividendYield={weightedDividendYield * 100}
-          stocks={stocks}
+          stocks={applied!.stocks}
         />
       )}
 
       {/** 차트 */}
-      <Controller
-        control={control}
-        name="chartData"
-        render={({ field: { value: chartData } }) => (
-          <>
-            {calculatedCategory && chartData && chartData.stocks.length > 0 && (
-              <StockCharts
-                exchangeRates={chartData.exchangeRates}
-                stocks={chartData.stocks}
-                totalInvestment={chartData.totalInvestment}
-              />
-            )}
-          </>
-        )}
-      />
+      {applied?.chartData && <StockCharts {...applied.chartData} />}
     </section>
   );
 }

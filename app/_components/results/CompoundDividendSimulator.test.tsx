@@ -1,7 +1,10 @@
 import { render } from '@testing-library/react';
+import type { PropsWithChildren } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
 
-import type { Stock } from '@/types';
+import type { AppliedCalculation, FormValues, Stock } from '@/types';
 
+import { AppliedCalculationContext } from '../AppliedCalculationContext';
 import CompoundDividendSimulator from './CompoundDividendSimulator';
 
 class ResizeObserverMock {
@@ -42,10 +45,22 @@ const mockStocks: Stock[] = [
   },
 ];
 
+function Wrapper({ children }: PropsWithChildren) {
+  const compoundSettings = { monthlyContribution: 500000, years: 10, reinvestDividend: true, priceGrowthRate: 3 };
+  const methods = useForm<FormValues>({ defaultValues: { compoundSettings } });
+  const applied = { compoundSettings } as AppliedCalculation;
+  return (
+    <FormProvider {...methods}>
+      <AppliedCalculationContext.Provider value={applied}>{children}</AppliedCalculationContext.Provider>
+    </FormProvider>
+  );
+}
+
 describe('CompoundDividendSimulator', () => {
   it('renders correctly with given portfolio values', () => {
     const { container } = render(
       <CompoundDividendSimulator initialInvestment={10_000_000} portfolioDividendYield={4.0} stocks={mockStocks} />,
+      { wrapper: Wrapper },
     );
 
     expect(container.textContent).toContain('미래 복리 & 배당 성장 시뮬레이터');

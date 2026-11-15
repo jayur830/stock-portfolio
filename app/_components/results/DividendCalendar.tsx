@@ -3,16 +3,16 @@
 import { useQuery } from '@tanstack/react-query';
 import { CalendarDays, ChevronLeft, ChevronRight, DollarSign } from 'lucide-react';
 import { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { generateMonthCalendar } from '@/lib/calendar-utils';
-import type { FormValues } from '@/types';
+
+import { useAppliedCalculation } from '../AppliedCalculationContext';
 
 export default function DividendCalendar() {
-  const { watch } = useFormContext<FormValues>();
-  const stocks = watch('stocks') || [];
-  const stockDividends = watch('stockDividends') || [];
+  const applied = useAppliedCalculation();
+  const stocks = applied?.stocks || [];
+  const stockDividends = applied?.stockDividends || [];
 
   const today = new Date();
   const [selectedYear, setSelectedYear] = useState(today.getFullYear());

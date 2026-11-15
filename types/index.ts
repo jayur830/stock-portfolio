@@ -45,6 +45,7 @@ export interface StockDividend {
 }
 
 export interface FormValues {
+  compoundSettings?: CompoundSettings;
   /** 총 투자금 */
   totalInvestment: number;
   /** 목표 연 배당금 */
@@ -66,4 +67,18 @@ export interface FormValues {
     /** 주식 종목 목록 */
     stocks: Stock[];
   };
+}
+
+export interface CompoundSettings {
+  monthlyContribution: number;
+  years: number;
+  reinvestDividend: boolean;
+  dividendGrowthRate?: number;
+  priceGrowthRate: number;
+}
+export interface AppliedCalculation extends FormValues {
+  calculatedCategory: Category;
+  requiredInvestment: number;
+  weightedDividendYield: number;
+  compoundSettings: CompoundSettings;
 }

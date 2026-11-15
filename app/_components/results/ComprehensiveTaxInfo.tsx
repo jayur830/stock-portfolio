@@ -8,6 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { estimateComprehensiveTax } from '@/lib/comprehensive-tax';
 
+import { useAppliedCalculation } from '../AppliedCalculationContext';
+
 const references = [
   {
     href: 'https://www.law.go.kr/lsLinkCommonInfo.do?lsJoLnkSeq=1033963385',
@@ -32,13 +34,15 @@ export default function ComprehensiveTaxInfo({
   expectedWithholding?: number;
   foreignDividend?: number;
 }) {
+  const applied = useAppliedCalculation();
+  const [taxPortfolio, setTaxPortfolio] = useState(applied);
   const [values, setValues] = useState({ external: '', other: '', deductions: '', national: '', local: '' });
   const [confirmed, setConfirmed] = useState(false);
   const [error, setError] = useState('');
   const [result, setResult] = useState<ReturnType<typeof estimateComprehensiveTax> | null>(null);
   const [snapshot, setSnapshot] = useState('');
-  const currentSnapshot = JSON.stringify({ values, confirmed, annualDividend, expectedWithholding, foreignDividend });
-  const shown = snapshot === currentSnapshot ? result : null;
+  const currentSnapshot = JSON.stringify({ annualDividend, expectedWithholding, foreignDividend });
+  const shown = snapshot === currentSnapshot && taxPortfolio === applied ? result : null;
   const fields = [
     ['external', '포트폴리오 외 일반 과세대상 이자·배당소득'],
     ['other', '금융소득 외 종합소득금액'],
@@ -47,7 +51,6 @@ export default function ComprehensiveTaxInfo({
     ['local', '금융소득 기납부 지방소득세'],
   ] as const;
   const calculate = () => {
-    setResult(null);
     try {
       if (Object.values(values).some((value) => !value.trim()))
         throw new Error('모든 금액을 입력하세요. 없는 항목은 0원을 입력하세요.');
@@ -62,6 +65,7 @@ export default function ComprehensiveTaxInfo({
         excludedFromGrossUp: confirmed,
       });
       setResult(next);
+      setTaxPortfolio(applied);
       setSnapshot(currentSnapshot);
       setError('');
     } catch (cause) {
@@ -73,6 +77,11 @@ export default function ComprehensiveTaxInfo({
       aria-labelledby="comprehensive-tax-title"
       className="mt-4 rounded-xl border border-border/70 bg-card/60 p-4"
     >
+      {result && !shown && (
+        <p role="status" className="mb-3 text-sm text-muted-foreground">
+          포트폴리오가 변경되었습니다. 예상 세액을 다시 계산해주세요.
+        </p>
+      )}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <h4 className="text-sm font-semibold text-foreground" id="comprehensive-tax-title">

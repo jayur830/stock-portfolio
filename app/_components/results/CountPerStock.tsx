@@ -1,14 +1,10 @@
-import { useController, useFormContext } from 'react-hook-form';
-
 import { calculateDividendGrowth } from '@/lib/dividend-growth';
 import { cn, convertToKRW } from '@/lib/utils';
-import type { FormValues } from '@/types';
+
+import { useAppliedCalculation } from '../AppliedCalculationContext';
 
 export default function CountPerStock() {
-  const { control } = useFormContext<FormValues>();
-  const {
-    field: { value: chartData },
-  } = useController({ control, name: 'chartData' });
+  const chartData = useAppliedCalculation()?.chartData;
 
   if (!chartData || chartData.stocks.length === 0) {
     return null;

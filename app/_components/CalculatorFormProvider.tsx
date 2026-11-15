@@ -2,13 +2,16 @@
 
 import { usePathname, useSearchParams } from 'next/navigation';
 import type { PropsWithChildren } from 'react';
-import { useEffect, useLayoutEffect } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
 import { decodeStocksFromBase64, encodeStocksToBase64, getStockDividends, setSearchParams } from '@/lib/utils';
-import type { Category, FormValues, Stock } from '@/types';
+import type { AppliedCalculation, Category, FormValues, Stock } from '@/types';
+
+import { AppliedCalculationContext } from './AppliedCalculationContext';
 
 export default function CalculatorFormProvider({ children }: PropsWithChildren) {
+  const [applied, setApplied] = useState<AppliedCalculation | null>(null);
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const searchParamsString = searchParams.toString();
@@ -23,9 +26,10 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       exchangeRates: {},
       stocks: searchParams.has('stocks') ? decodeStocksFromBase64(searchParams.get('stocks')!) : [],
       stockDividends: [],
+      compoundSettings: { monthlyContribution: 500_000, years: 10, reinvestDividend: true, priceGrowthRate: 3 },
     },
   });
-  const { getValues, setValue, handleSubmit, reset, watch } = methods;
+  const { getValues, handleSubmit, reset, watch } = methods;
 
   useLayoutEffect(() => {
     const params = new URLSearchParams(searchParamsString);
@@ -118,51 +122,12 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     return null;
   };
 
-  /** 배당금 계산: 투자금 → 배당금 */
-  const calculateDividendFromInvestment = ({ stocks, totalInvestment, exchangeRates }: FormValues) => {
-    const enabledStocks = stocks.filter(({ enabled }) => enabled);
-    /** 필요한 투자금 */
-    const investment = totalInvestment;
-
-    const stockDividends = getStockDividends(enabledStocks, investment, exchangeRates);
-
-    setValue('stockDividends', stockDividends);
-    setValue('chartData', {
-      totalInvestment: investment,
-      exchangeRates,
-      stocks: enabledStocks,
-    });
-    setValue('calculatedCategory', 'dividend');
-  };
-
-  /** 투자금 계산: 목표 배당금 → 필요한 투자금 */
-  const calculateInvestmentFromDividend = ({ stocks, targetAnnualDividend, exchangeRates }: FormValues) => {
-    const enabledStocks = stocks.filter(({ enabled }) => enabled);
-    /** 각 종목별 비율에 따른 배당 수익률의 합 */
-    const weightedDividendYield = enabledStocks.reduce(
-      (sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100),
-      0,
-    );
-    if (weightedDividendYield <= 0) {
-      return;
-    }
-    /** 필요한 투자금 */
-    const investment = targetAnnualDividend / weightedDividendYield;
-
-    const stockDividends = getStockDividends(enabledStocks, investment, exchangeRates);
-
-    setValue('stockDividends', stockDividends);
-    setValue('chartData', {
-      totalInvestment: investment,
-      exchangeRates,
-      stocks: enabledStocks,
-    });
-    setValue('calculatedCategory', 'investment');
-  };
-
   const handleReset = () => {
     const currentExchangeRates = getValues('exchangeRates');
+    setApplied(null);
     reset({
+      compoundSettings: { monthlyContribution: 500_000, years: 10, reinvestDividend: true, priceGrowthRate: 3 },
+      stockDividends: [],
       totalInvestment: 0,
       targetAnnualDividend: 0,
       exchangeRates: currentExchangeRates,
@@ -179,23 +144,54 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       return;
     }
 
-    switch (activeTab) {
-      case 'dividend':
-        calculateDividendFromInvestment(data);
-        break;
-      case 'investment':
-        calculateInvestmentFromDividend(data);
-        break;
-      default:
-        break;
+    try {
+      const stocks = data.stocks
+        .filter((stock) => stock.enabled)
+        .map((stock) => ({
+          ...stock,
+          dividendMonths: [...stock.dividendMonths],
+          purchaseDate: stock.purchaseDate?.clone(),
+          dividendGrowth: stock.dividendGrowth
+            ? { ...stock.dividendGrowth, badge: stock.dividendGrowth.badge ? { ...stock.dividendGrowth.badge } : null }
+            : stock.dividendGrowth,
+        }));
+      const exchangeRates = { ...data.exchangeRates };
+      const weightedDividendYield = stocks.reduce((sum, stock) => sum + (stock.yield / 100) * (stock.ratio / 100), 0);
+      const investment =
+        activeTab === 'investment' ? data.targetAnnualDividend / weightedDividendYield : data.totalInvestment;
+      const stockDividends = getStockDividends(stocks, investment, exchangeRates);
+      if (!Number.isFinite(investment) || stockDividends.some((item) => !Number.isFinite(item.annualDividend))) {
+        throw new Error('계산 가능한 유효한 값을 입력해주세요.');
+      }
+      setApplied({
+        ...data,
+        stocks,
+        exchangeRates,
+        stockDividends,
+        calculatedCategory: activeTab,
+        requiredInvestment: investment,
+        weightedDividendYield,
+        chartData: { totalInvestment: investment, stocks, exchangeRates },
+        compoundSettings: {
+          monthlyContribution: 500_000,
+          years: 10,
+          reinvestDividend: true,
+          priceGrowthRate: 3,
+          ...data.compoundSettings,
+        },
+      });
+    } catch {
+      alert('계산에 실패했습니다. 입력값을 확인해주세요.');
     }
   };
 
   return (
     <FormProvider {...methods}>
-      <form className="flex flex-col gap-2" onReset={handleReset} onSubmit={handleSubmit(onSubmit)}>
-        {children}
-      </form>
+      <AppliedCalculationContext.Provider value={applied}>
+        <form className="flex flex-col gap-2" onReset={handleReset} onSubmit={handleSubmit(onSubmit)}>
+          {children}
+        </form>
+      </AppliedCalculationContext.Provider>
     </FormProvider>
   );
 }

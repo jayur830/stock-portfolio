@@ -2,11 +2,11 @@
 
 import { FileDown } from 'lucide-react';
 import { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { exportPortfolioToCsv } from '@/lib/export-excel';
-import type { FormValues } from '@/types';
+
+import { useAppliedCalculation } from '../AppliedCalculationContext';
 
 interface ExportButtonProps {
   className?: string;
@@ -14,14 +14,13 @@ interface ExportButtonProps {
 }
 
 export default function ExportButton({ className = '', variant = 'outline' }: ExportButtonProps) {
-  const { getValues } = useFormContext<FormValues>();
+  const applied = useAppliedCalculation();
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExport = () => {
     try {
       setIsExporting(true);
-      const values = getValues();
-      exportPortfolioToCsv(values);
+      if (applied) exportPortfolioToCsv(applied);
     } catch (error) {
       console.error('엑셀 내보내기 실패:', error);
     } finally {
@@ -33,7 +32,7 @@ export default function ExportButton({ className = '', variant = 'outline' }: Ex
     <Button
       aria-label="포트폴리오 분석 결과 엑셀(CSV) 다운로드"
       className={`export-action bg-card/45 ${className}`}
-      disabled={isExporting}
+      disabled={isExporting || !applied}
       onClick={handleExport}
       title="포트폴리오 분석 결과 엑셀(CSV) 다운로드"
       type="button"
