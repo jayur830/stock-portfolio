@@ -1,6 +1,8 @@
 import dayjs from 'dayjs';
 import ReactECharts from 'echarts-for-react';
 
+import { findHistoricalRate, type HistoricalRate } from '@/lib/historical-exchange-rates';
+import { currencySymbols } from '@/lib/utils';
 import { CHART_FONT_FAMILY, convertCurrency, convertToKRW, DIVIDEND_TAX_RATE } from '@/lib/utils';
 
 import type { HistoryData, StockChartsProps } from '.';
@@ -9,6 +11,7 @@ export interface ProfitChartProps extends StockChartsProps {
   isDark: boolean;
   histories: HistoryData[];
   currency: string;
+  rateHistories: { symbol: string; data?: HistoricalRate[]; error?: string }[];
 }
 
 /** 수익금 차트 (매수일 기준) */
@@ -19,6 +22,7 @@ export default function ProfitChart({
   totalInvestment,
   exchangeRates,
   currency,
+  rateHistories,
 }: ProfitChartProps) {
   const getProfitChartOption = () => {
     if (stocks.every(({ purchaseDate }) => !purchaseDate)) {
@@ -113,6 +117,28 @@ export default function ProfitChart({
       .sort((a, b) => (dayjs(a[0]).isBefore(b[0]) ? -1 : 1));
     /** 매매차익 차트 데이터 */
     const profits = profitList.map(([, price]) => convertCurrency(price, 'KRW', currency, exchangeRates));
+    const fxProfitMap = new Map<string, number>();
+    stockInfoList.forEach(({ stock, shares, purchasePriceInKRW, purchaseDate }) => {
+      if (stock.currency === 'KRW') return;
+      const symbol = currencySymbols[stock.currency]?.symbol || `${stock.currency}KRW=X`;
+      const rateHistory = rateHistories.find((item) => item.symbol === symbol && !item.error)?.data || [];
+      const purchaseRate = findHistoricalRate(rateHistory, purchaseDate.toDate());
+      if (purchaseRate === null) return;
+      const history = histories.find((item) => item.symbol === stock.ticker);
+      history?.data.forEach((point) => {
+        const date = dayjs(point.date).format('YYYY-MM-DD');
+        if (dayjs(date).isBefore(purchaseDate, 'day') || point.close <= 0) return;
+        const rate = findHistoricalRate(rateHistory, date);
+        if (rate === null) return;
+        const priceAtPurchaseInForeign = purchasePriceInKRW / purchaseRate;
+        const fxProfit = shares * priceAtPurchaseInForeign * (rate - purchaseRate);
+        fxProfitMap.set(date, (fxProfitMap.get(date) || 0) + fxProfit);
+      });
+    });
+    const fxProfits = profitList.map(([date]) => {
+      const value = fxProfitMap.get(date) || 0;
+      return convertCurrency(value, 'KRW', currency, exchangeRates);
+    });
     /** xAxis 데이터 */
     const dates = profitList.map(([date]) => dayjs(date).format('YYYY.MM.DD'));
 
@@ -239,7 +265,7 @@ export default function ProfitChart({
         },
       },
       legend: {
-        data: ['평가 수익', '월별 배당 수익', '누적 수익'],
+        data: ['평가 수익', '환차 손익', '월별 배당 수익', '누적 수익'],
         top: '45px',
         textStyle: {
           color: isDark ? '#d1d5db' : '#374151',
@@ -342,6 +368,14 @@ export default function ProfitChart({
           itemStyle: {
             color: isDark ? '#00c49a' : '#00866a',
           },
+        },
+        {
+          name: '환차 손익',
+          type: 'line',
+          data: fxProfits,
+          smooth: true,
+          lineStyle: { width: 2, type: 'dashed', color: '#a855f7' },
+          itemStyle: { color: '#a855f7' },
         },
         {
           name: '누적 수익',

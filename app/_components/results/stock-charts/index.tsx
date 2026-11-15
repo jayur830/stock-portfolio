@@ -6,6 +6,7 @@ import { useState } from 'react';
 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { currencySymbols, exchangeRateCodes } from '@/lib/utils';
 import type { Stock } from '@/types';
 
 import CombinedChart from './CombinedChart';
@@ -68,6 +69,31 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
   });
 
   const currencies = ['KRW', ...Object.keys(exchangeRates)];
+  const foreignStockCurrencies = [...new Set(stocks.map((stock) => stock.currency).filter((value) => value !== 'KRW'))];
+  const historicalRateSymbols = [
+    ...new Set([...foreignStockCurrencies, ...(currency !== 'KRW' && foreignStockCurrencies.length ? [currency] : [])]),
+  ]
+    .map(
+      (code) =>
+        currencySymbols[code]?.symbol || (exchangeRateCodes.includes(code as never) ? `${code}KRW=X` : undefined),
+    )
+    .filter(Boolean);
+  const { data: rateHistories = [], error: rateHistoryError } = useQuery({
+    queryKey: ['historicalExchangeRates', historicalRateSymbols],
+    enabled: historicalRateSymbols.length > 0,
+    retry: false,
+    staleTime: 1000 * 60 * 60,
+    async queryFn() {
+      const response = await fetch('/api/stock/history', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ symbols: historicalRateSymbols }),
+      });
+      if (!response.ok) throw new Error('환율 이력 조회 실패');
+      const payload = await response.json();
+      return payload.histories || [];
+    },
+  });
 
   if (isLoading) {
     return (
@@ -121,6 +147,7 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           currency={currency}
           exchangeRates={exchangeRates}
           histories={histories}
+          rateHistories={rateHistories}
           isDark={isDark}
           stocks={stocks}
           totalInvestment={totalInvestment}
@@ -132,6 +159,8 @@ const StockCharts = ({ stocks, totalInvestment, exchangeRates }: StockChartsProp
           currency={currency}
           exchangeRates={exchangeRates}
           histories={histories}
+          rateHistories={rateHistories}
+          rateHistoryError={!!rateHistoryError}
           isDark={isDark}
           stocks={stocks}
           totalInvestment={totalInvestment}

@@ -148,7 +148,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
         setQuoteLoadError(true);
       }
     },
-    onError(error, quote) {
+    onError(error) {
       console.error('Failed to fetch stock quote:', error);
       setQuoteLoadError(true);
     },

@@ -7,7 +7,15 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CHART_FONT_FAMILY, convertCurrency, convertToKRW, DIVIDEND_TAX_RATE, FOREIGN_TAX_RATES } from '@/lib/utils';
+import { convertHistoricalDividend, type HistoricalRate } from '@/lib/historical-exchange-rates';
+import {
+  CHART_FONT_FAMILY,
+  convertCurrency,
+  convertToKRW,
+  currencySymbols,
+  DIVIDEND_TAX_RATE,
+  FOREIGN_TAX_RATES,
+} from '@/lib/utils';
 import type { Stock } from '@/types';
 
 import type { HistoryData } from '.';
@@ -15,6 +23,8 @@ import type { HistoryData } from '.';
 interface IndividualChartsProps {
   stocks: Stock[];
   histories: HistoryData[];
+  rateHistories: { symbol: string; data?: { date: Date; close: number }[]; error?: string }[];
+  rateHistoryError: boolean;
   exchangeRates: { [key: string]: number };
   currency: string;
   isDark: boolean;
@@ -24,6 +34,8 @@ interface IndividualChartsProps {
 export default function IndividualCharts({
   stocks,
   histories,
+  rateHistories,
+  rateHistoryError,
   exchangeRates,
   currency,
   isDark,
@@ -83,6 +95,26 @@ export default function IndividualCharts({
     const profitData: number[] = [];
     const reinvestData: number[] = [];
     const monthlyDivSumMap = new Map<string, number>();
+    const monthlyDivErrorMap = new Map<string, string>();
+    const ratesByCurrency: Record<string, HistoricalRate[]> = {};
+    for (const rateHistory of rateHistories) {
+      const code = Object.keys(currencySymbols).find((key) => currencySymbols[key].symbol === rateHistory.symbol);
+      if (code && !rateHistory.error && rateHistory.data?.length) ratesByCurrency[code] = rateHistory.data;
+    }
+
+    const dividendTaxRate = FOREIGN_TAX_RATES[stock.currency] ?? DIVIDEND_TAX_RATE;
+    for (const dividend of sortedDividends) {
+      const month = dayjs(dividend.date).format('YYYY.MM');
+      const converted = convertHistoricalDividend(
+        dividend.amount * initialShares * (1 - dividendTaxRate),
+        stock.currency,
+        currency,
+        dividend.date,
+        ratesByCurrency,
+      );
+      if (converted === null) monthlyDivErrorMap.set(month, '과거 환율 데이터가 없거나 조회되지 않았습니다.');
+      else monthlyDivSumMap.set(month, (monthlyDivSumMap.get(month) || 0) + converted);
+    }
 
     filteredData.forEach((d) => {
       const currentDate = dayjs(d.date);
@@ -100,11 +132,6 @@ export default function IndividualCharts({
 
         // 배당금 계산 (세후)
         const divAmountInKRW = convertToKRW(div.amount, stock.currency, exchangeRates);
-
-        // 월별 배당금 합계용 (초기 보유량 기준 세후 배당금)
-        const divAmtNormal = divAmountInKRW * initialShares * (1 - taxRate);
-        const monthStr = divDate.format('YYYY.MM');
-        monthlyDivSumMap.set(monthStr, (monthlyDivSumMap.get(monthStr) || 0) + divAmtNormal);
 
         // 재투자 모드: 당시 보유량(reinvestShares) 기준으로 발생한 세후 배당금 -> 현재 주가로 주식 재매수
         const divAmtReinvest = divAmountInKRW * reinvestShares * (1 - taxRate);
@@ -129,7 +156,7 @@ export default function IndividualCharts({
       .filter((m) => m < currentMonth)
       .sort();
     const monthlyDivChartData = monthlyLabels.map((m) =>
-      convertCurrency(monthlyDivSumMap.get(m) || 0, 'KRW', currency, exchangeRates),
+      monthlyDivErrorMap.has(m) ? null : (monthlyDivSumMap.get(m) ?? 0),
     );
 
     const commonOption = {
@@ -266,7 +293,7 @@ export default function IndividualCharts({
           min: 0,
         },
         title: {
-          text: '월별 배당금',
+          text: '월별 배당금 (배당 이벤트 날짜 기준 환율 추정치)',
           left: 'center',
           textStyle: { fontSize: 18, color: isDark ? '#e5e7eb' : '#111827' },
         },
@@ -278,6 +305,19 @@ export default function IndividualCharts({
             itemStyle: { color: isDark ? '#00c49a' : '#00866a' },
           },
         ],
+        tooltip: {
+          ...commonOption.tooltip,
+          formatter(params: any) {
+            const param = Array.isArray(params) ? params[0] : params;
+            if (param.value == null)
+              return `${param.name}<br />환율 데이터 없음: ${monthlyDivErrorMap.get(param.name) || '자료 누락'}`;
+            const amount =
+              currency === 'KRW'
+                ? Math.round(param.value).toLocaleString('ko-KR')
+                : param.value.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
+            return `${param.name}<br />${param.marker}${param.seriesName}: ${amount} ${currency}`;
+          },
+        },
       },
       profit: {
         ...commonOption,
@@ -396,6 +436,11 @@ export default function IndividualCharts({
             </div>
           </div>
           <div className="chart-card">
+            <p className="px-3 pt-3 text-xs text-muted-foreground" role="note">
+              배당 이력의 이벤트 날짜 기준 환율 추정치입니다. 직전 7일 이내 유효 환율을 사용하며, 환율이 없는 월은 막대
+              대신 데이터 없음으로 표시합니다.
+              {rateHistoryError && ' 환율 이력 조회 실패로 해당 월 금액을 확인할 수 없습니다.'}
+            </p>
             <div className="chart-viewport">
               <ReactECharts notMerge option={chartOptions.dividend} style={{ height: '320px', width: '100%' }} />
             </div>
