@@ -47,6 +47,7 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [selectedMarket, setSelectedMarket] = useState<'KOSPI' | 'NASDAQ'>('KOSPI');
+  const [quoteLoadError, setQuoteLoadError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   /** 거래대금 TOP 10 종목 조회 */
@@ -109,13 +110,13 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
   const { mutate: fetchStockQuote, isPending: isLoadingQuote } = useMutation({
     async mutationFn(quote: StockQuote) {
       const response = await fetch(`/api/stock/quote?symbol=${encodeURIComponent(quote.symbol)}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch stock quote');
-      }
-      return response.json();
+      const data = await response.json();
+      if (!response.ok || data?.error) throw new Error(data?.error || 'Failed to fetch stock quote');
+      return data;
     },
     onSuccess(data, quote) {
       if (data && !data.error) {
+        setQuoteLoadError(false);
         onChangeStocks(
           stocks.map((s, i) => {
             if (i !== index) {
@@ -144,36 +145,12 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
           }),
         );
       } else {
-        onChangeStocks(
-          stocks.map((s, i) => {
-            if (i === index) {
-              return {
-                ...s,
-                ticker: quote.symbol,
-                name: quote.shortname,
-              };
-            }
-
-            return s;
-          }),
-        );
+        setQuoteLoadError(true);
       }
     },
     onError(error, quote) {
       console.error('Failed to fetch stock quote:', error);
-      onChangeStocks(
-        stocks.map((s, i) => {
-          if (i === index) {
-            return {
-              ...s,
-              ticker: quote.symbol,
-              name: quote.shortname,
-            };
-          }
-
-          return s;
-        }),
-      );
+      setQuoteLoadError(true);
     },
   });
 
@@ -237,6 +214,11 @@ const StockCard = ({ control, index, onDelete }: StockCardProps) => {
       )}
 
       <div className="stock-card-topbar">
+        {quoteLoadError && (
+          <p role="alert" className="w-full text-xs text-amber-600 dark:text-amber-400">
+            종목 정보를 불러오지 못했습니다. 현재 표시된 정보는 이전 종목의 정보입니다.
+          </p>
+        )}
         <div className="stock-card-ident">
           <div className="min-w-0">
             <span className="stock-card-label">종목 {String(index + 1).padStart(2, '0')}</span>
