@@ -5,6 +5,7 @@ import type { PropsWithChildren } from 'react';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { FormProvider, useForm } from 'react-hook-form';
 
+import { readPortfolios, restorePortfolio } from '@/lib/saved-portfolios';
 import { decodeStocksFromBase64, encodeStocksToBase64, getStockDividends, setSearchParams } from '@/lib/utils';
 import type { AppliedCalculation, Category, FormValues, Stock } from '@/types';
 
@@ -30,6 +31,18 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
     },
   });
   const { getValues, handleSubmit, reset, watch } = methods;
+  const loadId = searchParams.get('load');
+  useEffect(() => {
+    if (!loadId) return;
+    try {
+      const item = readPortfolios().find((p) => p.id === loadId);
+      if (!item) throw new Error('저장 구성을 찾을 수 없습니다.');
+      reset(restorePortfolio(item));
+      setApplied(null);
+    } catch {
+      alert('저장 구성을 불러오지 못했습니다. 저장 데이터와 브라우저 접근 권한을 확인해주세요.');
+    }
+  }, [loadId, reset]);
 
   useLayoutEffect(() => {
     const params = new URLSearchParams(searchParamsString);
@@ -165,6 +178,14 @@ export default function CalculatorFormProvider({ children }: PropsWithChildren) 
       }
       setApplied({
         ...data,
+        configurationStocks: data.stocks.map((stock) => ({
+          ...stock,
+          dividendMonths: [...stock.dividendMonths],
+          purchaseDate: stock.purchaseDate?.clone(),
+          dividendGrowth: stock.dividendGrowth
+            ? { ...stock.dividendGrowth, badge: stock.dividendGrowth.badge ? { ...stock.dividendGrowth.badge } : null }
+            : stock.dividendGrowth,
+        })),
         stocks,
         exchangeRates,
         stockDividends,

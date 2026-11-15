@@ -77,6 +77,7 @@ export interface CompoundSettings {
   priceGrowthRate: number;
 }
 export interface AppliedCalculation extends FormValues {
+  configurationStocks?: Stock[];
   calculatedCategory: Category;
   requiredInvestment: number;
   weightedDividendYield: number;

@@ -15,6 +15,7 @@ import CountPerStock from './CountPerStock';
 import ExportButton from './ExportButton';
 import HealthInsuranceInfo from './HealthInsuranceInfo';
 import MonthlyDividends from './MonthlyDividends';
+import SavePortfolio from './SavePortfolio';
 import TaxInfo from './TaxInfo';
 
 const StockCharts = dynamic(() => import('./stock-charts'), {
@@ -74,6 +75,7 @@ export default function Results({ view = 'summary' }: { view?: 'summary' | 'deta
   if (view === 'summary')
     return (
       <div className="results-stack">
+        <SavePortfolio />
         <div className="allocation-card">
           <div className="allocation-topline">
             <div className="flex items-center gap-2">

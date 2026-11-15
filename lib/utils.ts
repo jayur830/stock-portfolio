@@ -235,13 +235,14 @@ export function calculateStockMonthlyDividends(
   annualDividend: number,
   /** 실제 배당 히스토리 (있으면 최근 1년 비율로 가중 분배, 없으면 N등분) */
   historyDividends?: DividendHistoryItem[] | null,
+  taxRateOverride?: number,
 ): Record<number, number> {
   if (!dividendMonths || dividendMonths.length === 0) {
     return {};
   }
 
   /** 통화에 따라 세율 선택 */
-  const taxRate = resolveMonthlyTaxRate(currency);
+  const taxRate = taxRateOverride ?? resolveMonthlyTaxRate(currency);
   const afterTaxTotal = annualDividend * (1 - taxRate);
 
   const weights = getMonthlyDistributionWeights(historyDividends);

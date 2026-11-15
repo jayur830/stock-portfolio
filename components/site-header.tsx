@@ -4,7 +4,7 @@ import Link from 'next/link';
 import BrandLogo from '@/components/brand-logo';
 import { DarkModeSwitch } from '@/components/dark-mode-switch';
 
-export default function SiteHeader({ activePage }: { activePage: 'calculator' | 'about' }) {
+export default function SiteHeader({ activePage }: { activePage: 'calculator' | 'about' | 'compare' }) {
   const calculatorHref = activePage === 'calculator' ? '#calculator' : '/#calculator';
 
   return (
@@ -22,6 +22,9 @@ export default function SiteHeader({ activePage }: { activePage: 'calculator' | 
           </Link>
           <Link aria-current={activePage === 'calculator' ? 'page' : undefined} href={calculatorHref}>
             계산기
+          </Link>
+          <Link aria-current={activePage === 'compare' ? 'page' : undefined} href="/compare">
+            포트폴리오 비교
           </Link>
         </nav>
         <div className="topbar-actions">

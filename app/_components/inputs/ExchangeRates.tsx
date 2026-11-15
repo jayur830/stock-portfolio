@@ -3,6 +3,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { ChevronDown, LineChart, RefreshCw } from 'lucide-react';
 import dynamic from 'next/dynamic';
+import { useSearchParams } from 'next/navigation';
+import { useRef } from 'react';
 import { useEffect, useState } from 'react';
 import { useController, useFormContext } from 'react-hook-form';
 
@@ -24,6 +26,14 @@ const _exchangeRateCodes = exchangeRateCodes.filter((key) => key !== 'KRW');
 
 /** 환율 */
 export default function ExchangeRates() {
+  const loadId = useSearchParams().get('load');
+  const currentLoad = useRef<string | null | undefined>(loadId);
+  useEffect(() => {
+    currentLoad.current = loadId;
+    return () => {
+      currentLoad.current = undefined;
+    };
+  }, [loadId]);
   const [selectedCurrency, setSelectedCurrency] = useState<(typeof _exchangeRateCodes)[number]>('USD');
   const [modalCurrency, setModalCurrency] = useState<string | null>(null);
   const [isMobileChartOpen, setIsMobileChartOpen] = useState(false);
@@ -43,6 +53,7 @@ export default function ExchangeRates() {
     refetch: refetchExchangeRate,
   } = useQuery({
     queryKey: ['exchangeRates'],
+    enabled: !loadId,
     async queryFn() {
       const response = await fetch('https://api.exchangerate-api.com/v4/latest/KRW');
       if (!response.ok) {
@@ -58,15 +69,16 @@ export default function ExchangeRates() {
 
   /** 환율 데이터가 변경되면 폼에 반영 */
   useEffect(() => {
-    if (exchangeRateData) {
+    if (exchangeRateData && !loadId) {
       onChange(exchangeRateData);
     }
-  }, [exchangeRateData, onChange]);
+  }, [exchangeRateData, onChange, loadId]);
 
   /** 환율 조회 버튼 핸들러 */
   const handleFetchExchangeRate = async () => {
+    const requestLoad = loadId;
     const result = await refetchExchangeRate();
-    if (result.data) {
+    if (result.data && currentLoad.current === requestLoad) {
       onChange(result.data);
     }
   };
