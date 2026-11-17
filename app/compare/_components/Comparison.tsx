@@ -263,6 +263,26 @@ export default function Comparison() {
             비교 계산
           </Button>
         </CardContent>
+        <div className="quick-add-row">
+          {[
+            { label: '+10만', amount: 100000 },
+            { label: '+100만', amount: 1000000 },
+            { label: '+1000만', amount: 10000000 },
+            { label: '+1억', amount: 100000000 },
+            { label: '초기화', amount: null },
+          ].map(({ label, amount }) => (
+            <Button
+              className="quick-add-button"
+              key={label}
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setInvestment((current) => (amount === null ? '' : String((Number(current) || 0) + amount)))}
+            >
+              {label}
+            </Button>
+          ))}
+        </div>
         <CardDescription className="note">
           저장된 가격과 환율을 사용합니다. 세후 배당은 배당소득세 차감 기준이며 건보료·종합소득세 정산은 제외합니다.
         </CardDescription>
