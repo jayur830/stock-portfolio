@@ -122,7 +122,6 @@ export default function Comparison() {
         </CardHeader>
         {items.length === 0 ? (
           <div className="empty">
-            <div className="empty">+</div>
             <h3>저장된 구성이 없습니다</h3>
             <p>계산기에서 계산을 마친 뒤 이름을 붙여 저장하면 여기서 비교할 수 있어요.</p>
             <Button asChild variant="link">
