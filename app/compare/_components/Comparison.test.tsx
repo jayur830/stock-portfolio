@@ -1,7 +1,19 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 
-import { type SavedPortfolio, writePortfolios } from '../../lib/saved-portfolios';
+import { type SavedPortfolio, writePortfolios } from '@/lib/saved-portfolios';
+
 import Comparison from './Comparison';
+it('shows a selection error instead of dereferencing a missing baseline', async () => {
+  writePortfolios([]);
+  render(<Comparison />);
+
+  fireEvent.click(screen.getByRole('button', { name: '비교 계산' }));
+
+  expect((await screen.findByRole('alert')).textContent).toContain('비교할 포트폴리오를 2개 이상 선택해주세요.');
+  expect(screen.queryByText(/undefined/)).toBeNull();
+  expect(screen.queryByRole('region', { name: '비교 결과' })).toBeNull();
+});
+
 it('selects three saved items, freezes results until calculation and changes baseline', async () => {
   const items: SavedPortfolio[] = ['하나', '둘', '셋'].map((name, i) => ({
     version: 1,
@@ -46,8 +58,8 @@ it('selects three saved items, freezes results until calculation and changes bas
 
 it('saves three named applied configurations then compares them after mounting the page', async () => {
   localStorage.clear();
-  const { AppliedCalculationContext } = await import('../_components/AppliedCalculationContext');
-  const { default: SavePortfolio } = await import('../_components/results/SavePortfolio');
+  const { AppliedCalculationContext } = await import('../../_components/AppliedCalculationContext');
+  const { default: SavePortfolio } = await import('../../_components/results/SavePortfolio');
   const applied = {
     totalInvestment: 1000000,
     targetAnnualDividend: 0,
@@ -86,5 +98,42 @@ it('saves three named applied configurations then compares them after mounting t
   fireEvent.click(screen.getByText('모두 선택'));
   fireEvent.click(screen.getByRole('button', { name: '비교 계산' }));
   const result = screen.getByRole('region', { name: '비교 결과' });
-  expect(result.querySelectorAll('td[class*=emerald]').length).toBeGreaterThan(0);
+  expect(result.querySelectorAll('td.best').length).toBeGreaterThan(0);
+});
+
+it('keeps card selection separate from loading and deleting saved items after adopting UI components', async () => {
+  const items: SavedPortfolio[] = ['one', 'two'].map((id) => ({
+    id,
+    version: 1,
+    name: id,
+    savedAt: '2026-01-01',
+    mode: 'dividend',
+    investment: 1000000,
+    targetAnnualDividend: 0,
+    exchangeRates: {},
+    stocks: [
+      {
+        ticker: 'TEST',
+        name: '종목',
+        currency: 'KRW',
+        price: 10000,
+        yield: 10,
+        ratio: 100,
+        enabled: true,
+        dividendMonths: [1],
+      },
+    ],
+  }));
+  writePortfolios(items);
+  render(<Comparison />);
+  const checkbox = await screen.findByRole('checkbox', { name: 'one 선택' });
+  fireEvent.click(checkbox);
+  expect((checkbox as HTMLInputElement).checked).toBe(true);
+  const loadLink = screen.getAllByRole('link', { name: '계산기로 불러오기' })[0];
+  expect(loadLink.getAttribute('href')).toBe('/?load=one&tab=dividend');
+  expect(screen.getByText('1개 선택')).toBeTruthy();
+  fireEvent.click(screen.getByRole('button', { name: 'two 삭제' }));
+  expect(screen.queryByRole('checkbox', { name: 'two 선택' })).toBeNull();
+  expect((checkbox as HTMLInputElement).checked).toBe(true);
+  expect(screen.queryByRole('region', { name: '비교 결과' })).toBeNull();
 });
