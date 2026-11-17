@@ -331,11 +331,6 @@ export default function Comparison() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                <TableRow className="group">
-                  <TableHead colSpan={result.length + 1}>
-                    <span className="groupLabel">연간 배당</span>
-                  </TableHead>
-                </TableRow>
                 {rows.map((row) => {
                   const best = Math.max(...result.map(row.get));
                   return (
@@ -349,35 +344,15 @@ export default function Comparison() {
                     </TableRow>
                   );
                 })}
-                <TableRow className="group">
-                  <TableHead colSpan={result.length + 1}>
-                    <span className="groupLabel">투자 효율</span>
-                  </TableHead>
-                </TableRow>
                 {metricRows.slice(0, 2).map((row) => (
                   <MetricRow key={row.key} row={row} result={result} formatMetric={formatMetric} />
                 ))}
-                <TableRow className="group">
-                  <TableHead colSpan={result.length + 1}>
-                    <span className="groupLabel">투자금 활용</span>
-                  </TableHead>
-                </TableRow>
                 {metricRows.slice(2, 5).map((row) => (
                   <MetricRow key={row.key} row={row} result={result} formatMetric={formatMetric} />
                 ))}
-                <TableRow className="group">
-                  <TableHead colSpan={result.length + 1}>
-                    <span className="groupLabel">현금흐름 분포</span>
-                  </TableHead>
-                </TableRow>
                 {metricRows.slice(5, 10).map((row) => (
                   <MetricRow key={row.key} row={row} result={result} formatMetric={formatMetric} />
                 ))}
-                <TableRow className="group">
-                  <TableHead colSpan={result.length + 1}>
-                    <span className="groupLabel">종목 집중도</span>
-                  </TableHead>
-                </TableRow>
                 {metricRows.slice(10).map((row) => (
                   <MetricRow key={row.key} row={row} result={result} formatMetric={formatMetric} />
                 ))}

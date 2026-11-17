@@ -42,6 +42,15 @@
   gap: 1rem;
   margin-bottom: 1rem;
 }
+.sectionHead > div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+.sectionHead > div:first-child > div {
+  display: grid;
+  gap: 0.4rem;
+}
 .sectionTitle {
   display: flex;
   align-items: center;
@@ -65,9 +74,10 @@
   font-weight: 750;
 }
 .sectionHead p {
-  margin-top: 0.15rem;
+  margin-top: 0;
   color: var(--muted-foreground);
   font-size: 0.75rem;
+  line-height: 1.6;
 }
 .tools {
   display: flex;
@@ -309,6 +319,9 @@
   display: grid;
   gap: 1rem;
 }
+.compare-results > .summaries {
+  margin-bottom: 1.25rem;
+}
 .summary {
   padding: 1rem;
 }
@@ -427,18 +440,6 @@
   background: color-mix(in srgb, var(--primary) 6%, var(--card));
   text-align: left;
   font-size: 0.67rem;
-}
-.groupLabel {
-  position: sticky;
-  left: 0;
-  z-index: 2;
-  display: block;
-  width: max-content;
-  padding: 0.15rem 0.3rem;
-  background: var(--card);
-  box-shadow:
-    0.35rem 0 0 var(--card),
-    -0.35rem 0 0 var(--card);
 }
 .annual {
   overflow: auto;
